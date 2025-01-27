@@ -98,7 +98,8 @@ export function DepositReview({
     });
 
     coinBUtxos.forEach((utxo) => {
-      runeAmount += BigInt(utxo.rune?.amount ?? "0");
+      const rune = utxo.runes.find((rune) => rune.id === coinB.id);
+      runeAmount += BigInt(rune!.amount);
     });
 
     const changeBtcAmount = btcAmount - (coinAAmountBigInt + txFee);
@@ -110,7 +111,8 @@ export function DepositReview({
       poolRuneAmount = BigInt(0);
 
     poolUtxos.forEach((utxo) => {
-      poolRuneAmount += BigInt(utxo.rune!.amount);
+      const rune = utxo.runes.find((rune) => rune.id === coinB.id);
+      poolRuneAmount += BigInt(rune!.amount);
       poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
     });
 
@@ -223,7 +225,8 @@ export function DepositReview({
       let poolRuneAmount = BigInt(0);
 
       poolUtxos.forEach((utxo) => {
-        poolRuneAmount += BigInt(utxo.rune!.amount);
+        const rune = utxo.runes.find((rune) => rune.id === coinB.id);
+        poolRuneAmount += BigInt(rune!.amount);
       });
 
       const txid = await Orchestrator.invoke({

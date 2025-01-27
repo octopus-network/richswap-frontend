@@ -101,6 +101,7 @@ export function SwapReview({
     const txFee = BigInt(Math.ceil(374 * (recommendedFeeRate ?? 10)));
 
     const isSwapRune = coinA.id === BITCOIN.id;
+    const involvedRune = isSwapRune ? coinB : coinA;
 
     const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
     const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
@@ -123,7 +124,8 @@ export function SwapReview({
     });
 
     runeUtxos.forEach((utxo) => {
-      runeAmount += BigInt(utxo.rune!.amount);
+      const rune = utxo.runes.find((rune) => rune.id === involvedRune.id);
+      runeAmount += BigInt(rune!.amount);
     });
 
     let changeBtcAmount =
@@ -148,11 +150,11 @@ export function SwapReview({
 
     poolUtxos.forEach((utxo) => {
       // pool have only one utxo now
-      poolRunesAmount += BigInt(utxo.rune!.amount);
+      const rune = utxo.runes.find((rune) => rune.id === involvedRune.id);
+      poolRunesAmount += BigInt(rune!.amount);
       poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
     });
 
-    const involvedRune = isSwapRune ? coinB : coinA;
     const [runeBlock, runeIdx] = involvedRune.id.split(":");
 
     const toSendRunesAmount = isSwapRune

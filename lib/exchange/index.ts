@@ -123,12 +123,15 @@ export class Exchange {
           satoshis: satoshis.toString(),
           address: address!,
           scriptPk: output,
+          runes: [],
         };
         if (balance.id !== BITCOIN.id) {
-          tmpObj.rune = {
-            id: balance.id,
-            amount: balance.value.toString(),
-          };
+          tmpObj.runes = [
+            {
+              id: balance.id,
+              amount: balance.value.toString(),
+            },
+          ];
         }
         utxos.push(tmpObj);
       });
@@ -199,10 +202,12 @@ export class Exchange {
         satoshis: satoshis.toString(),
         address: address!,
         scriptPk: outputScript,
-        rune: {
-          id: balance.id,
-          amount: balance.value.toString(),
-        },
+        runes: [
+          {
+            id: balance.id,
+            amount: balance.value.toString(),
+          },
+        ],
       };
 
       const quote = {

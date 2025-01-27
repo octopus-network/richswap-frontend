@@ -8,7 +8,10 @@ import { Coin, UnspentOutput } from "@/types";
 function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
   const isBitcoin = coin.id === BITCOIN.id;
   const filteredUtxos = utxos.filter((utxo) =>
-    isBitcoin ? !utxo.rune : utxo.rune && utxo.rune.id === coin.id
+    isBitcoin
+      ? !utxo.runes.length
+      : utxo.runes.length &&
+        utxo.runes.findIndex((rune) => rune.id === coin.id) >= 0
   );
 
   if (!filteredUtxos.length) {
@@ -21,7 +24,7 @@ function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
 
     amount += isBitcoin
       ? BigInt(utxo.satoshis)
-      : BigInt(utxo.rune?.amount ?? 0);
+      : BigInt(utxo.runes.find((rune) => rune.id === coin.id)?.amount ?? 0);
   }
 
   return formatCoinAmount(amount.toString(), coin);

@@ -4,12 +4,8 @@ export interface UnspentOutput {
   satoshis: string;
   scriptPk: string;
   address: string;
-  rune?: {
+  runes: {
     id: string;
     amount: string;
-  };
-  status?: {
-    confirmed: boolean;
-    blockHeight: number;
-  };
+  }[];
 }

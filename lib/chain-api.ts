@@ -1,5 +1,9 @@
 import axios from "axios";
-import { getUtxoByOutpoint } from "./utils";
+import { getTxScript } from "./utils";
+import { UnspentOutput } from "@/types";
+import { COIN_LIST } from "./constants";
+
+const ORD_SCAN_API_KEY = process.env.ORD_SCAN_API_KEY;
 
 const unisatApi = axios.create({
   baseURL: `https://wallet-api.unisat.io/v5`,
@@ -14,6 +18,14 @@ const unisatQueryApi = axios.create({
   baseURL: `https://api.unisat.space/query-v4`,
   headers: {
     "Content-Type": "application/json",
+  },
+});
+
+const ordScanApi = axios.create({
+  baseURL: `https://api.ordiscan.com/v1`,
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${ORD_SCAN_API_KEY}`,
   },
 });
 
@@ -54,34 +66,82 @@ export async function getAddressBalance(address: string) {
   return Number(btcAmount);
 }
 
-export async function getAddressUtxos(address: string) {
-  const data = await mempoolApi
-    .get<
-      {
-        txid: string;
-        vout: number;
-        value: number;
-        status: {
-          confirmed: boolean;
-          block_height: number;
-        };
-      }[]
-    >(`address/${address}/utxo`)
-    .then((res) => res.data ?? []);
+// export async function getAddressUtxos(address: string) {
+//   const data = await mempoolApi
+//     .get<
+//       {
+//         txid: string;
+//         vout: number;
+//         value: number;
+//         status: {
+//           confirmed: boolean;
+//           block_height: number;
+//         };
+//       }[]
+//     >(`address/${address}/utxo`)
+//     .then((res) => res.data ?? []);
 
-  const utxos = data.length
-    ? await Promise.all(
-        data.map(({ txid, vout }) => getUtxoByOutpoint(txid, vout))
-      )
+//   const utxos = data.length
+//     ? await Promise.all(
+//         data.map(({ txid, vout }) => getUtxoByOutpoint(txid, vout))
+//       )
+//     : [];
+
+//   return utxos
+//     .filter((utxo) => !!utxo)
+//     .sort((a, b) =>
+//       a.status?.blockHeight && b.status?.blockHeight
+//         ? a.status.blockHeight - b.status.blockHeight
+//         : 0
+//     );
+// }
+
+export async function getAddressUtxos(address: string) {
+  const data = await ordScanApi
+    .get<{
+      data: {
+        outpoint: string;
+        value: number;
+        runes: {
+          name: string;
+          balance: string;
+        }[];
+        inscriptions: string[];
+      }[];
+    }>(`address/${address}/utxos`)
+    .then((res) => res.data.data ?? []);
+
+  const scripts = data.length
+    ? await Promise.all(data.map(({ outpoint }) => getTxScript(outpoint)))
     : [];
 
-  return utxos
-    .filter((utxo) => !!utxo)
-    .sort((a, b) =>
-      a.status?.blockHeight && b.status?.blockHeight
-        ? a.status.blockHeight - b.status.blockHeight
-        : 0
-    );
+  const validUtxos: UnspentOutput[] = [];
+
+  data.forEach(({ outpoint, runes, value, inscriptions }, idx) => {
+    const [txid, vout] = outpoint.split(":");
+    if (inscriptions.length) {
+      return;
+    }
+    const utxo: UnspentOutput = {
+      txid,
+      vout: Number(vout),
+      satoshis: String(value),
+      scriptPk: scripts[idx].scriptPk,
+      address: scripts[idx].address,
+      runes: runes.map(({ name, balance }) => {
+        const runeId =
+          COIN_LIST.find((coin) => coin.runeId === name)?.id ?? "UNKNOWN";
+        return {
+          id: runeId,
+          amount: balance,
+        };
+      }),
+    };
+
+    validUtxos.push(utxo);
+  });
+
+  return validUtxos;
 }
 
 export async function getBtcPrice() {
