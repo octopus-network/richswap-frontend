@@ -127,8 +127,6 @@ export function DepositReview({
 
     const [runeBlock, runeIdx] = coinB.id.split(":");
 
-    const toSendRunesAmount = coinBAmountBigInt;
-
     const sendBtcAmount = coinAAmountBigInt + poolBtcAmount;
 
     const sendRuneAmount = coinBAmountBigInt + poolRuneAmount;
