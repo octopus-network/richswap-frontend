@@ -1,16 +1,15 @@
-import { PoolInfo, Field, DepositState, DepositQuote } from "@/types";
+import { PoolInfo, Field, DepositState } from "@/types";
 import { CoinField } from "@/components/coin-field";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Decimal from "decimal.js";
 import { formatCoinAmount } from "@/lib/utils";
 
-import { useAddPopup } from "@/store/popups";
 import {
   useDerivedDepositInfo,
   useDepositState,
@@ -25,7 +24,6 @@ export function DepositForm({
   onReview: (coinAAmount: string, coinBAmount: string, nonce: string) => void;
 }) {
   const { address } = useLaserEyes();
-  const [isCreating, setIsCreating] = useState(false);
 
   const { onUserInput } = useDepositActionHandlers();
   const depositState = useDepositState();
@@ -142,7 +140,6 @@ export function DepositForm({
               )
             }
           >
-            {isCreating && <Loader2 className="animate-spin" />}
             {deposit?.state === DepositState.INVALID
               ? deposit?.errorMessage ?? "Review"
               : insufficientCoinABalance

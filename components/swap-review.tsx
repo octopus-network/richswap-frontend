@@ -243,6 +243,7 @@ export function SwapReview({
     coinAAmount,
     coinBAmount,
     utxos,
+    poolUtxos,
     address,
     recommendedFeeRate,
   ]);

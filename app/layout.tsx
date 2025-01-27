@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { LaserEyesProvider } from "@omnisat/lasereyes";
 import "./globals.css";
-import "./xy-theme.css";
+
 import { Topbar } from "@/components/topbar";
 import { Footer } from "@/components/footer";
 import { ConnectWalletModal } from "@/components/connect-wallet-modal";

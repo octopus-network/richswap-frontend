@@ -1,7 +1,7 @@
 import { Coin, UnspentOutput } from "@/types";
 import { BITCOIN } from "../constants";
 import { Edict, Runestone } from "runelib";
-import { Transaction } from "bitcoinjs-lib";
+
 import { getRawTx, getTxInfo } from "@/lib/chain-api";
 
 export async function getUtxoByOutpoint(
@@ -40,8 +40,6 @@ export async function getUtxoByOutpoint(
   let edicts: Edict[] = [];
   if (opReturn) {
     const stone = Runestone.decipher(rawTx);
-
-    const tx = Transaction.fromHex(rawTx);
 
     if (stone.isSome()) {
       const value = stone.value();

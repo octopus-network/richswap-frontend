@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Coin, PoolInfo } from "@/types";
+import { PoolInfo } from "@/types";
 
 import { DepositForm } from "./deposit-form";
 import { DepositReview } from "@/components/deposit-review";
@@ -15,8 +15,6 @@ export function DepositContent({
   setOnReview: (onReview: boolean) => void;
   onSuccess: () => void;
 }) {
-  const [coinA] = useState<Coin>(pool.coinA);
-  const [coinB] = useState<Coin>(pool.coinB);
   const [coinAAmount, setCoinAAmount] = useState("");
   const [coinBAmount, setCoinBAmount] = useState("");
   const [nonce, setNonce] = useState("0");
@@ -59,8 +57,8 @@ export function DepositContent({
         {showReview ? (
           <>
             <DepositReview
-              coinA={coinA}
-              coinB={coinB}
+              coinA={pool.coinA}
+              coinB={pool.coinB}
               poolKey={pool.key}
               coinAAmount={coinAAmount}
               coinBAmount={coinBAmount}

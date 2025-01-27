@@ -176,6 +176,11 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
       [IDL.Vec(InvokeLogView)],
       ["query"]
     ),
+    get_last_sent_txs: IDL.Func(
+      [IDL.Opt(IDL.Nat32)],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      ["query"]
+    ),
     get_mempool_tx_fee_rate: IDL.Func([], [MempoolTxFeeRateView], ["query"]),
     get_received_block_basics: IDL.Func(
       [IDL.Opt(IDL.Nat32)],

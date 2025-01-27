@@ -1,5 +1,5 @@
 import { useLaserEyes } from "@omnisat/lasereyes";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { ellipseMiddle } from "@/lib/utils";
@@ -8,7 +8,7 @@ import { WALLETS } from "@/lib/constants";
 import { AccountSheetContent } from "./account-sheet-content";
 
 export function AccountButton() {
-  const { address, disconnect, provider } = useLaserEyes();
+  const { address, provider } = useLaserEyes();
 
   return (
     <Sheet>

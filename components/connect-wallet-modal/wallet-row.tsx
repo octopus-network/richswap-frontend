@@ -59,6 +59,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
     setConnectWalletModalOpen,
     connect,
     wallet,
+    addPopup,
     installed,
   ]);
 
