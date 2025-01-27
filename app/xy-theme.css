@@ -1,0 +1,21 @@
+.dark .react-flow__node {
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  box-shadow: 0px 0px 20px 0px #2f3347;
+  border-radius: 8px;
+  z-index: 1;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.dark .react-flow__node.react-flow__node-group {
+  box-shadow: none;
+  background-color: #105cf222;
+  z-index: 0;
+}
+
+.dark .react-flow__background {
+  background-color: rgb(9 11 11 / .3);
+}

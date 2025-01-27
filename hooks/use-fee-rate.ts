@@ -1,0 +1,35 @@
+import axios from "axios";
+import useSWR from "swr";
+import { useMemo } from "react";
+import Decimal from "decimal.js";
+
+export function useFeeRate() {
+  const { data } = useSWR(
+    `/api/fee-rate`,
+    (url: string) =>
+      axios
+        .get<{
+          data: [{ title: string; desc: string; feeRate: number }];
+        }>(url)
+        .then((res) => res.data.data),
+    { refreshInterval: 10 * 1000 }
+  );
+
+  return data ?? [];
+}
+
+export function useRecommendedFeeRate() {
+  const feeRate = useFeeRate();
+
+  return useMemo(
+    () =>
+      new Decimal(
+        feeRate?.length
+          ? feeRate.sort((a, b) => b.feeRate - a.feeRate)[0].feeRate
+          : 10
+      )
+        .mul(1.2)
+        .toNumber(),
+    [feeRate]
+  );
+}
