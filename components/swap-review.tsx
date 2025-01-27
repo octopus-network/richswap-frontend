@@ -132,6 +132,8 @@ export function SwapReview({
     const userUtxos = [...btcUtxos, ...runeUtxos];
     const _toSignInputs: ToSignInput[] = [];
 
+    console.log(btcUtxos, runeUtxos, "user utxos", userUtxos);
+
     userUtxos.forEach((_, index) => {
       _toSignInputs.push({
         address,
@@ -190,7 +192,7 @@ export function SwapReview({
 
     const runestone = new Runestone(edicts, none(), none(), none());
 
-    const inputUtxos = [...utxos, ...poolUtxos];
+    const inputUtxos = [...userUtxos, ...poolUtxos];
 
     const tx = new Transaction();
     tx.setEnableRBF(false);
@@ -249,7 +251,7 @@ export function SwapReview({
   ]);
 
   const onSubmit = async () => {
-    if (!psbt || !coinA || !coinB) {
+    if (!psbt || !coinA || !coinB || !poolUtxos?.length || !poolKey) {
       return;
     }
 
@@ -257,14 +259,23 @@ export function SwapReview({
       const psbtHex = psbt.toHex();
       setStep(1);
 
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+
       const signedPsbtHex = await window.unisat.signPsbt(psbtHex, {
         toSignInputs: toSignInputs,
       });
 
       setStep(2);
 
+      const isSwapRune = coinA.id === BITCOIN.id;
       const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
       const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
+
+      let poolBtcAmount = BigInt(0);
+
+      poolUtxos.forEach((utxo) => {
+        poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
+      });
 
       const txid = await Orchestrator.invoke({
         instruction_set: {
@@ -274,15 +285,32 @@ export function SwapReview({
               exchange_id: EXCHANGE_ID,
               input_coins: [
                 {
-                  coin_balance: { id: coinA.id, value: coinAAmountBigInt },
-                  owner_address: address,
-                },
-                {
-                  coin_balance: { id: coinB.id, value: coinBAmountBigInt },
+                  coin_balance: {
+                    id: coinA.id,
+                    value: coinAAmountBigInt,
+                  },
                   owner_address: address,
                 },
               ],
-              output_coins: [],
+              output_coins: isSwapRune
+                ? [
+                    {
+                      coin_balance: {
+                        id: coinB.id,
+                        value: coinBAmountBigInt,
+                      },
+                      owner_address: poolAddress!,
+                    },
+                  ]
+                : [
+                    {
+                      coin_balance: {
+                        id: BITCOIN.id,
+                        value: poolBtcAmount - coinBAmountBigInt,
+                      },
+                      owner_address: poolAddress!,
+                    },
+                  ],
               pool_key: [poolKey],
               nonce: [BigInt(nonce)],
             },
@@ -298,14 +326,14 @@ export function SwapReview({
         poolKey,
         coinAAmount,
         coinBAmount,
-        type: TransactionType.ADD_LIQUIDITY,
+        type: TransactionType.SWAP,
         status: TransactionStatus.BROADCASTED,
       });
 
       addPopup(
         "Success",
         PopupStatus.SUCCESS,
-        `Add liduiqity to ${coinA.symbol}/${coinB.symbol} Pool`
+        `Swap ${coinAAmount} ${coinA.symbol} to ${coinBAmount} ${coinB.symbol}`
       );
 
       onSuccess();

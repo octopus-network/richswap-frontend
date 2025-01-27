@@ -1,14 +1,36 @@
 import { TabsContent } from "@radix-ui/react-tabs";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { TransactionInfo, TransactionStatus, TransactionType } from "@/types";
 import { useTransactions } from "@/store/transactions";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TxStatusBadge } from "../tx-status-badge";
 import moment from "moment";
+import { useUpdateTransactionStatus } from "@/store/transactions";
+import { useLatestBlock } from "@/hooks/use-latest-block";
 
 function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
   const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+  const updateTransactionStatus = useUpdateTransactionStatus();
+
+  const { data: latestBlock } = useLatestBlock();
+
+  useEffect(() => {
+    if (transaction.status === TransactionStatus.CONFIRMING && latestBlock) {
+      const diff =
+        Math.max(latestBlock, transaction.blockHeight || 0) -
+        (transaction.blockHeight || 0) +
+        1;
+
+      if (diff > 4) {
+        updateTransactionStatus({
+          txid: transaction.txid,
+          status: TransactionStatus.FINALIZED,
+        });
+      }
+    }
+  }, [transaction, latestBlock, updateTransactionStatus]);
 
   const title = useMemo(() => {
     const { type, coinA, coinB } = transaction;

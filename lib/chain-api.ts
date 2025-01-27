@@ -68,7 +68,6 @@ export async function getAddressUtxos(address: string) {
       }[]
     >(`address/${address}/utxo`)
     .then((res) => res.data ?? []);
-  console.log("data", data);
 
   const utxos = data.length
     ? await Promise.all(
@@ -76,7 +75,13 @@ export async function getAddressUtxos(address: string) {
       )
     : [];
 
-  return utxos.filter((utxo) => !!utxo);
+  return utxos
+    .filter((utxo) => !!utxo)
+    .sort((a, b) =>
+      a.status?.blockHeight && b.status?.blockHeight
+        ? a.status.blockHeight - b.status.blockHeight
+        : 0
+    );
 }
 
 export async function getBtcPrice() {
