@@ -41,6 +41,7 @@ export function SwapReview({
   poolUtxos,
   nonce,
   showCancelButton = false,
+  setIsSubmiting,
 }: {
   coinA: Coin | null;
   coinB: Coin | null;
@@ -52,6 +53,7 @@ export function SwapReview({
   nonce: string;
   poolUtxos?: UnspentOutput[];
   showCancelButton?: boolean;
+  setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
   const { address } = useLaserEyes();
   const [step, setStep] = useState(0);
@@ -257,6 +259,7 @@ export function SwapReview({
       return;
     }
 
+    setIsSubmiting(true);
     try {
       const psbtHex = psbt.toHex();
       setStep(1);
@@ -346,6 +349,7 @@ export function SwapReview({
         setStep(0);
       }
     }
+    setIsSubmiting(false);
   };
 
   return errorMessage ? (

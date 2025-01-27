@@ -1,6 +1,7 @@
 import { BaseModal } from "@/components/base-modal";
 import { SwapReview } from "@/components/swap-review";
 import { Coin, UnspentOutput } from "@/types";
+import { useState } from "react";
 
 export function ReviewModal({
   open,
@@ -23,12 +24,17 @@ export function ReviewModal({
   poolUtxos?: UnspentOutput[];
   setOpen: (open: boolean) => void;
 }) {
+  const [isSubmiting, setIsSubmiting] = useState(false);
   return (
     <BaseModal
       title="You're swapping"
       open={open}
-      setOpen={setOpen}
+      setOpen={(open) => {
+        setIsSubmiting(false);
+        setOpen(open);
+      }}
       className="max-w-md"
+      showCloseButton={!isSubmiting}
     >
       <div className="p-5 pt-2">
         <SwapReview
@@ -37,6 +43,7 @@ export function ReviewModal({
           coinAAmount={coinAAmount}
           coinBAmount={coinBAmount}
           poolKey={poolKey}
+          setIsSubmiting={setIsSubmiting}
           onSuccess={() => setOpen(false)}
           onBack={() => setOpen(false)}
           nonce={nonce}
