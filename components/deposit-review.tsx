@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader2, TriangleAlert } from "lucide-react";
-import { Coin, TransactionStatus, TransactionType } from "@/types";
+import {
+  Coin,
+  TransactionStatus,
+  TransactionType,
+  UnspentOutput,
+} from "@/types";
 import { ToSignInput } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
@@ -29,6 +34,7 @@ export function DepositReview({
   coinAAmount,
   coinBAmount,
   poolKey,
+  poolUtxos,
   onSuccess,
   onBack,
   nonce,
@@ -38,6 +44,7 @@ export function DepositReview({
   coinB: Coin | null;
   coinAAmount: string;
   poolKey: string;
+  poolUtxos?: UnspentOutput[];
   coinBAmount: string;
   onSuccess: () => void;
   onBack: () => void;
@@ -64,7 +71,8 @@ export function DepositReview({
       !coinB ||
       !coinAAmount ||
       !coinBAmount ||
-      !utxos?.length
+      !utxos?.length ||
+      !poolUtxos
     ) {
       return;
     }
@@ -83,7 +91,6 @@ export function DepositReview({
       runeAmount = BigInt(0);
 
     const coinAUtxos = selectUtxos(utxos, coinA, coinAAmountBigInt + txFee);
-
     const coinBUtxos = selectUtxos(utxos, coinB, coinBAmountBigInt);
 
     coinAUtxos.forEach((utxo) => {
@@ -97,7 +104,34 @@ export function DepositReview({
     const changeBtcAmount = btcAmount - (coinAAmountBigInt + txFee);
     const changeRuneAmount = runeAmount - coinBAmountBigInt;
 
+    const userUtxos = [...coinAUtxos, ...coinBUtxos];
+
+    let poolBtcAmount = BigInt(0),
+      poolRuneAmount = BigInt(0);
+
+    poolUtxos.forEach((utxo) => {
+      poolRuneAmount += BigInt(utxo.rune!.amount);
+      poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
+    });
+
+    const _toSignInputs: ToSignInput[] = [];
+
+    userUtxos.forEach((_, index) => {
+      _toSignInputs.push({
+        address,
+        index,
+      });
+    });
+
+    setToSignInputs(_toSignInputs);
+
     const [runeBlock, runeIdx] = coinB.id.split(":");
+
+    const toSendRunesAmount = coinBAmountBigInt;
+
+    const sendBtcAmount = coinAAmountBigInt + poolBtcAmount;
+
+    const sendRuneAmount = coinBAmountBigInt + poolRuneAmount;
 
     const needChange = changeRuneAmount > 0;
 
@@ -110,35 +144,29 @@ export function DepositReview({
           ),
           new Edict(
             new RuneId(Number(runeBlock), Number(runeIdx)),
-            coinBAmountBigInt,
+            sendRuneAmount,
             1
           ),
         ]
       : [
           new Edict(
             new RuneId(Number(runeBlock), Number(runeIdx)),
-            coinBAmountBigInt,
+            sendRuneAmount,
             0
           ),
         ];
 
     const runestone = new Runestone(edicts, none(), none(), none());
+
+    const inputUtxos = [...userUtxos, ...poolUtxos];
+
     const tx = new Transaction();
     tx.setEnableRBF(false);
     tx.setFeeRate(10);
 
-    const userUtxos = [...coinAUtxos, ...coinBUtxos];
-    const _toSignInputs: ToSignInput[] = [];
-
-    userUtxos.forEach((utxo, index) => {
+    inputUtxos.forEach((utxo) => {
       tx.addInput(utxo);
-      _toSignInputs.push({
-        address,
-        index,
-      });
     });
-
-    setToSignInputs(_toSignInputs);
 
     if (needChange) {
       // change runes
@@ -146,7 +174,10 @@ export function DepositReview({
     }
 
     // send runes and BTC
-    tx.addOutput(poolAddress, coinAAmountBigInt);
+    tx.addOutput(
+      poolAddress,
+      poolUtxos.length ? sendBtcAmount + UTXO_DUST : sendBtcAmount
+    );
     // change btc
     tx.addOutput(address, changeBtcAmount);
 
@@ -172,13 +203,15 @@ export function DepositReview({
   ]);
 
   const onSubmit = async () => {
-    if (!psbt || !coinA || !coinB) {
+    if (!psbt || !coinA || !coinB || !poolUtxos) {
       return;
     }
 
     try {
       const psbtHex = psbt.toHex();
       setStep(1);
+
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
 
       const signedPsbtHex = await window.unisat.signPsbt(psbtHex, {
         toSignInputs: toSignInputs,
@@ -188,6 +221,12 @@ export function DepositReview({
 
       const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
       const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
+
+      let poolRuneAmount = BigInt(0);
+
+      poolUtxos.forEach((utxo) => {
+        poolRuneAmount += BigInt(utxo.rune!.amount);
+      });
 
       const txid = await Orchestrator.invoke({
         instruction_set: {
@@ -205,7 +244,15 @@ export function DepositReview({
                   owner_address: address,
                 },
               ],
-              output_coins: [],
+              output_coins: [
+                {
+                  coin_balance: {
+                    id: coinB.id,
+                    value: coinBAmountBigInt + poolRuneAmount,
+                  },
+                  owner_address: poolAddress!,
+                },
+              ],
               pool_key: [poolKey],
               nonce: [BigInt(nonce)],
             },

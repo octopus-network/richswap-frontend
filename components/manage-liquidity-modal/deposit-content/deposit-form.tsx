@@ -1,4 +1,4 @@
-import { PoolInfo, Field, DepositState } from "@/types";
+import { PoolInfo, Field, DepositState, UnspentOutput } from "@/types";
 import { CoinField } from "@/components/coin-field";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,12 @@ export function DepositForm({
   onReview,
 }: {
   pool: PoolInfo;
-  onReview: (coinAAmount: string, coinBAmount: string, nonce: string) => void;
+  onReview: (
+    coinAAmount: string,
+    coinBAmount: string,
+    nonce: string,
+    poolUtxos: UnspentOutput[]
+  ) => void;
 }) {
   const { address } = useLaserEyes();
 
@@ -136,7 +141,8 @@ export function DepositForm({
               onReview(
                 formattedAmounts[Field.INPUT],
                 formattedAmounts[Field.OUTPUT],
-                deposit?.nonce ?? "0"
+                deposit?.nonce ?? "0",
+                deposit?.utxos ?? []
               )
             }
           >

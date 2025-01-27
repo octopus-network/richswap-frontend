@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PoolInfo } from "@/types";
+import { PoolInfo, UnspentOutput } from "@/types";
 
 import { DepositForm } from "./deposit-form";
 import { DepositReview } from "@/components/deposit-review";
@@ -18,17 +18,20 @@ export function DepositContent({
   const [coinAAmount, setCoinAAmount] = useState("");
   const [coinBAmount, setCoinBAmount] = useState("");
   const [nonce, setNonce] = useState("0");
+  const [poolUtxos, setPoolUtxos] = useState<UnspentOutput[]>();
 
   const [showReview, setShowReview] = useState(false);
 
   const onReview = (
     coinAAmount: string,
     coinBAmount: string,
-    nonce: string
+    nonce: string,
+    poolUtxos: UnspentOutput[]
   ) => {
     setCoinAAmount(coinAAmount);
     setCoinBAmount(coinBAmount);
     setNonce(nonce);
+    setPoolUtxos(poolUtxos);
     setShowReview(true);
     setOnReview(true);
   };
@@ -59,6 +62,7 @@ export function DepositContent({
               onSuccess={onSuccess}
               showCancelButton
               nonce={nonce}
+              poolUtxos={poolUtxos}
               onBack={onBack}
             />
           </>
