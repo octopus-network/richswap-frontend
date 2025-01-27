@@ -22,7 +22,7 @@ import {
 
 import { formatCoinAmount } from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
-import { BITCOIN } from "@/lib/constants";
+import { BITCOIN, COIN_LIST } from "@/lib/constants";
 
 export function SwapPanel() {
   const { address } = useLaserEyes();
@@ -97,7 +97,7 @@ export function SwapPanel() {
 
     if (!_coinA && !_coinB) {
       _coinA = BITCOIN;
-      _coinB = null;
+      _coinB = COIN_LIST[1];
     }
     onUpdateCoins(_coinA, _coinB);
   }, [onUpdateCoins, coins]);

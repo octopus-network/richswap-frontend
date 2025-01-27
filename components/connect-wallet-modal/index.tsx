@@ -23,7 +23,7 @@ export function ConnectWalletModal() {
       className="max-w-md"
     >
       <div className="p-5 pt-0">
-        <div className="text-sm font-semibold text-muted-foreground">
+        <div className="text-lg font-semibold">
           Supported Wallets
         </div>
         <div className="flex flex-col mt-3 gap-1">
