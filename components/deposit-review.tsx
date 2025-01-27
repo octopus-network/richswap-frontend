@@ -195,6 +195,7 @@ export function DepositReview({
     poolKey,
     coinA,
     coinB,
+    poolUtxos,
     coinAAmount,
     coinBAmount,
     utxos,
