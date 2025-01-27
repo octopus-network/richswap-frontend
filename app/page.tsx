@@ -9,7 +9,8 @@ export default function Home() {
 
   useEffect(() => {
     router.replace("/swap");
-  }, []);
+  }, [router]);
+  
   return (
     <div className="flex items-center flex-col justify-center h-[30vh] md:pt-12">
       <Loader2 className="animate-spin size-16 text-muted-foreground" />

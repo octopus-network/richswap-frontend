@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PoolInfo } from "@/types";
 
 import { DepositForm } from "./deposit-form";
@@ -20,12 +20,6 @@ export function DepositContent({
   const [nonce, setNonce] = useState("0");
 
   const [showReview, setShowReview] = useState(false);
-
-  useEffect(() => {
-    if (!open) {
-      setShowReview(false);
-    }
-  }, [open]);
 
   const onReview = (
     coinAAmount: string,

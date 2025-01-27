@@ -3,7 +3,7 @@
 import { CoinField } from "@/components/coin-field";
 import { Button } from "@/components/ui/button";
 import { ArrowDownUp } from "lucide-react";
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Field, Coin, SwapState } from "@/types";
 import { ReviewModal } from "./review-modal";
 import { useSearchParams } from "next/navigation";
@@ -165,10 +165,8 @@ export function SwapPanel() {
     window.history.replaceState(null, "", newUrl);
   };
 
-  console.log("swap", swap);
-
   return (
-    <Suspense>
+    <>
       <div className="mt-4">
         <CoinField
           label="You're selling"
@@ -261,6 +259,6 @@ export function SwapPanel() {
         open={reviewModalOpen}
         setOpen={setReviewModalOpen}
       />
-    </Suspense>
+    </>
   );
 }
