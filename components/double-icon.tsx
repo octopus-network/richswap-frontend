@@ -14,14 +14,14 @@ export function DoubleIcon({
       <CoinIcon
         coin={coins[0]}
         className={cn(
-          "w-4 overflow-hidden object-cover rounded-none rounded-l-full object-left-top",
+          "w-4 overflow-hidden object-cover rounded-none rounded-l-full object-left-top opacity-60",
           size === "md" ? "size-8 w-4" : size === "lg" ? "size-10 w-5" : "size-12 w-6"
         )}
       />
       <CoinIcon
         coin={coins[1]}
         className={cn(
-          "w-4 overflow-hidden object-cover rounded-none rounded-r-full object-right-bottom opacity-60",
+          "w-4 overflow-hidden object-cover rounded-none rounded-r-full object-right-bottom",
           size === "md" ? "size-8 w-4" : size === "lg" ? "size-10 w-5" : "size-12 w-6"
         )}
       />
