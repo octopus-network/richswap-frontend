@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAddressUtxos } from "@/lib/chain-api";
+import { getBtcUtxos, getRuneUtxos } from "@/lib/chain-api";
+import { BITCOIN, COIN_LIST } from "@/lib/constants";
 
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get("address");
@@ -8,11 +9,19 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const utxos = await getAddressUtxos(address);
+    const promises = [];
+    promises.push(getBtcUtxos(address));
+    COIN_LIST.forEach((coin) => {
+      if (coin !== BITCOIN) {
+        promises.push(getRuneUtxos(address, coin.runeId!));
+      }
+    });
+
+    const res = await Promise.all(promises);
 
     return NextResponse.json({
       success: true,
-      data: utxos,
+      data: res.flat(1),
     });
   } catch (error) {
     return NextResponse.json({

@@ -60,6 +60,7 @@ export function SwapReview({
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [insufficientUtxos, setInsufficientUtxos] = useState(false);
   const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
 
   const recommendedFeeRate = useRecommendedFeeRate();
@@ -137,6 +138,7 @@ export function SwapReview({
     const _toSignInputs: ToSignInput[] = [];
 
     console.log(btcUtxos, runeUtxos, "user utxos", userUtxos);
+    console.log(poolUtxos, "pool utxos");
 
     userUtxos.forEach((_, index) => {
       _toSignInputs.push({
@@ -239,8 +241,10 @@ export function SwapReview({
       const _psbt = tx.toPsbt();
       setPsbt(_psbt);
       console.log("psbt", _psbt);
+      setInsufficientUtxos(false);
     } catch (error) {
-      console.log("error", error);
+      setInsufficientUtxos(true);
+      console.log("psbt error", error);
     }
   }, [
     poolKey,
@@ -420,8 +424,10 @@ export function SwapReview({
               onClick={onSubmit}
               disabled={!psbt}
             >
-              {!psbt && <Loader2 className="animate-spin" />}
-              Sign Transaction
+              {!psbt && !insufficientUtxos && (
+                <Loader2 className="animate-spin" />
+              )}
+              {insufficientUtxos ? "Insufficient Utxos" : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button

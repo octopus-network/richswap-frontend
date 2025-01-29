@@ -183,6 +183,7 @@ export class Exchange {
           value: BigInt(inputAmount),
         })
         .then((data: any) => {
+          console.log("preswap", data);
           if (data.Ok) {
             return data.Ok;
           } else {

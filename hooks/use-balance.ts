@@ -10,8 +10,7 @@ function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
   const filteredUtxos = utxos.filter((utxo) =>
     isBitcoin
       ? !utxo.runes.length
-      : utxo.runes.length &&
-        utxo.runes.findIndex((rune) => rune.id === coin.id) >= 0
+      : utxo.runes.findIndex((rune) => rune.id === coin.id) >= 0
   );
 
   if (!filteredUtxos.length) {

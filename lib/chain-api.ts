@@ -1,9 +1,4 @@
 import axios from "axios";
-import { getTxScript } from "./utils";
-import { UnspentOutput } from "@/types";
-import { COIN_LIST } from "./constants";
-
-const ORD_SCAN_API_KEY = process.env.ORD_SCAN_API_KEY;
 
 const unisatApi = axios.create({
   baseURL: `https://wallet-api.unisat.io/v5`,
@@ -18,14 +13,6 @@ const unisatQueryApi = axios.create({
   baseURL: `https://api.unisat.space/query-v4`,
   headers: {
     "Content-Type": "application/json",
-  },
-});
-
-const ordScanApi = axios.create({
-  baseURL: `https://api.ordiscan.com/v1`,
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${ORD_SCAN_API_KEY}`,
   },
 });
 
@@ -81,68 +68,126 @@ export async function getAddressBalance(address: string) {
 //     >(`address/${address}/utxo`)
 //     .then((res) => res.data ?? []);
 
+//   const url = `https://api.hiro.so/ordinals/v1/inscriptions?${data
+//     .map(({ vout, txid }) => `id=${txid}i${vout}`)
+//     .join("&")}`;
+
+//   const utxoInscriptions = data.length
+//     ? await axios.get(url).then((res) => res.data.results)
+//     : [];
+
+//   console.log("utxoInscriptions", utxoInscriptions);
+
 //   const utxos = data.length
 //     ? await Promise.all(
 //         data.map(({ txid, vout }) => getUtxoByOutpoint(txid, vout))
 //       )
 //     : [];
 
-//   return utxos
-//     .filter((utxo) => !!utxo)
-//     .sort((a, b) =>
-//       a.status?.blockHeight && b.status?.blockHeight
-//         ? a.status.blockHeight - b.status.blockHeight
-//         : 0
-//     );
+//   return utxos.filter((utxo) => !!utxo);
 // }
 
-export async function getAddressUtxos(address: string) {
-  const data = await ordScanApi
+export async function getBtcUtxos(address: string) {
+  const utxos = await unisatApi
     .get<{
       data: {
-        outpoint: string;
-        value: number;
-        runes: {
-          name: string;
-          balance: string;
-        }[];
-        inscriptions: string[];
+        txid: string;
+        scriptPk: string;
+        vout: number;
+        satoshis: number;
+        runes: any[];
       }[];
-    }>(`address/${address}/utxos`)
-    .then((res) => res.data.data ?? []);
+    }>(`/address/btc-utxo?address=${address}`)
+    .then((res) => res.data?.data || []);
 
-  const scripts = data.length
-    ? await Promise.all(data.map(({ outpoint }) => getTxScript(outpoint)))
-    : [];
-
-  const validUtxos: UnspentOutput[] = [];
-
-  data.forEach(({ outpoint, runes, value, inscriptions }, idx) => {
-    const [txid, vout] = outpoint.split(":");
-    if (inscriptions.length) {
-      return;
-    }
-    const utxo: UnspentOutput = {
-      txid,
-      vout: Number(vout),
-      satoshis: String(value),
-      scriptPk: scripts[idx].scriptPk,
-      address: scripts[idx].address,
-      runes: runes.map(({ name, balance }) => {
-        const runeId =
-          COIN_LIST.find((coin) => coin.runeId === name)?.id ?? "UNKNOWN";
-        return {
-          id: runeId,
-          amount: balance,
-        };
-      }),
-    };
-
-    validUtxos.push(utxo);
-  });
-
-  return validUtxos;
+  return utxos.map((utxo) => ({
+    txid: utxo.txid,
+    vout: utxo.vout,
+    satoshis: utxo.satoshis.toString(),
+    scriptPk: utxo.scriptPk,
+    address,
+    runes: utxo.runes.map((rune) => ({
+      id: rune.runeid,
+      amount: rune.amount,
+    })),
+  }));
 }
+
+export async function getRuneUtxos(address: string, runeId: string) {
+  const utxos = await unisatApi
+    .get<{
+      data: {
+        txid: string;
+        scriptPk: string;
+        vout: number;
+        satoshis: number;
+        runes: any[];
+      }[];
+    }>(`/runes/utxos?address=${address}&runeid=${runeId}`)
+    .then((res) => res.data?.data || []);
+
+  return utxos.map((utxo) => ({
+    txid: utxo.txid,
+    vout: utxo.vout,
+    satoshis: utxo.satoshis.toString(),
+    scriptPk: utxo.scriptPk,
+    address,
+    runes: utxo.runes.map((rune) => ({
+      id: rune.runeid,
+      amount: rune.amount,
+    })),
+  }));
+}
+// export async function getAddressUtxos(address: string) {
+//   const data = await ordScanApi
+//     .get<{
+//       data: {
+//         outpoint: string;
+//         value: number;
+//         runes: {
+//           name: string;
+//           balance: string;
+//         }[];
+//         inscriptions: string[];
+//       }[];
+//     }>(`address/${address}/utxos`)
+//     .then((res) => res.data.data ?? []);
+
+//   console.log("utxos", data);
+
+//   const scripts = data.length
+//     ? await Promise.all(data.map(({ outpoint }) => getTxScript(outpoint)))
+//     : [];
+
+//   console.log("scripts", scripts);
+//   const validUtxos: UnspentOutput[] = [];
+
+//   data.forEach(({ outpoint, runes, value, inscriptions }, idx) => {
+//     const [txid, vout] = outpoint.split(":");
+//     if (inscriptions.length) {
+//       return;
+//     }
+//     const utxo: UnspentOutput = {
+//       txid,
+//       vout: Number(vout),
+//       satoshis: String(value),
+//       scriptPk: scripts[idx]?.scriptPk,
+//       address: scripts[idx]?.address,
+//       runes: runes.map(({ name, balance }) => {
+//         const runeId =
+//           COIN_LIST.find((coin) => coin.runeId === name)?.id ?? "UNKNOWN";
+//         return {
+//           id: runeId,
+//           amount: balance,
+//         };
+//       }),
+//     };
+
+//     validUtxos.push(utxo);
+//   });
+
+//   return validUtxos;
+// }
 
 export async function getBtcPrice() {
   const { price } = await unisatApi
