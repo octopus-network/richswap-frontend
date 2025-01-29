@@ -46,11 +46,11 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
   const description = useMemo(() => {
     const { type, coinA, coinAAmount, coinB, coinBAmount } = transaction;
     if (type === TransactionType.ADD_LIQUIDITY) {
-      return `With ${coinAAmount} ${coinA.symbol}/${coinB.symbol} and ${coinBAmount} ${coinB.symbol}`;
+      return `With ${coinAAmount} ${coinA.symbol} and ${coinBAmount} ${coinB.symbol}`;
     } else if (type === TransactionType.SWAP) {
       return `Convert ${coinAAmount} ${coinA.symbol} to ${coinBAmount} ${coinB.symbol}`;
     } else if (type === TransactionType.WITHDRAW_LIQUIDITY) {
-      return `Removed ${coinAAmount} ${coinA.symbol} and ${coinBAmount} ${coinB.symbol}`;
+      return `Widthdraw ${coinAAmount} ${coinA.symbol} and ${coinBAmount} ${coinB.symbol}`;
     }
   }, [transaction]);
 
