@@ -9,7 +9,18 @@ import { useDefaultCoins } from "./use-coins";
 
 export function usePoolList() {
   const [poolList, setPoolList] = useState<PoolInfo[]>([]);
+  const [timer, setTimer] = useState<number>();
   const coins = useDefaultCoins();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimer(Date.now());
+    }, 15 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     Exchange.getPoolList().then((res) => {
@@ -25,7 +36,7 @@ export function usePoolList() {
 
       setPoolList(pools);
     });
-  }, [coins]);
+  }, [coins, timer]);
 
   return poolList;
 }

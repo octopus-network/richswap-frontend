@@ -150,6 +150,8 @@ export function DepositReview({
           ),
         ];
 
+    console.log("edicts", edicts);
+
     const runestone = new Runestone(edicts, none(), none(), none());
 
     const inputUtxos = [..._userUtxos, ...poolUtxos];
