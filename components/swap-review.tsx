@@ -8,6 +8,7 @@ import {
 } from "@/types";
 import { ToSignInput } from "@/types";
 
+import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "@/components/coin-icon";
 import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
@@ -61,13 +62,16 @@ export function SwapReview({
 
   const [errorMessage, setErrorMessage] = useState("");
   const [insufficientUtxos, setInsufficientUtxos] = useState(false);
-  const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
 
+  const [userUtxos, setUserUtxos] = useState<UnspentOutput[]>([]);
+
+  const addSpentUtxos = useAddSpentUtxos();
+  const removeSpentUtxos = useRemoveSpentUtxos();
   const recommendedFeeRate = useRecommendedFeeRate();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 
-  const { data: utxos } = useUtxos(address);
+  const utxos = useUtxos(address);
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinAFiatValue = useMemo(
@@ -134,20 +138,9 @@ export function SwapReview({
     let changeBtcAmount =
       btcAmount - (isSwapRune ? coinAAmountBigInt + txFee + UTXO_DUST : txFee);
 
-    const userUtxos = [...btcUtxos, ...runeUtxos];
-    const _toSignInputs: ToSignInput[] = [];
+    const _userUtxos = [...btcUtxos, ...runeUtxos];
 
-    console.log(btcUtxos, runeUtxos, "user utxos", userUtxos);
-    console.log(poolUtxos, "pool utxos");
-
-    userUtxos.forEach((_, index) => {
-      _toSignInputs.push({
-        address,
-        index,
-      });
-    });
-
-    setToSignInputs(_toSignInputs);
+    setUserUtxos(_userUtxos);
 
     let poolBtcAmount = BigInt(0),
       poolRunesAmount = BigInt(0);
@@ -198,7 +191,7 @@ export function SwapReview({
 
     const runestone = new Runestone(edicts, none(), none(), none());
 
-    const inputUtxos = [...userUtxos, ...poolUtxos];
+    const inputUtxos = [..._userUtxos, ...poolUtxos];
 
     const tx = new Transaction();
     tx.setEnableRBF(false);
@@ -270,9 +263,16 @@ export function SwapReview({
 
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
 
+      const toSignInputs: ToSignInput[] = userUtxos.map((_, index) => ({
+        address,
+        index,
+      }));
+
       const signedPsbtHex = await window.unisat.signPsbt(psbtHex, {
-        toSignInputs: toSignInputs,
+        toSignInputs,
       });
+
+      addSpentUtxos(userUtxos);
 
       setStep(2);
 
@@ -349,6 +349,7 @@ export function SwapReview({
     } catch (error: any) {
       if (error.code !== 4001) {
         setErrorMessage(error.message || "Unknown Error");
+        removeSpentUtxos(userUtxos);
       } else {
         setStep(0);
       }

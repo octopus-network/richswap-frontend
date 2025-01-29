@@ -44,4 +44,11 @@ export class Orchestrator {
       return undefined;
     });
   }
+
+  static async getUnconfirmedOutpoints(address: string): Promise<string[]> {
+    const res = (await actor.get_zero_confirmed_utxos_of_address(
+      address
+    )) as string[];
+    return res;
+  }
 }

@@ -6,6 +6,8 @@ import {
   TransactionType,
   UnspentOutput,
 } from "@/types";
+
+import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { ToSignInput } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
@@ -56,13 +58,15 @@ export function DepositReview({
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
+  const [userUtxos, setUserUtxos] = useState<UnspentOutput[]>([]);
 
+  const addSpentUtxos = useAddSpentUtxos();
+  const removeSpentUtxos = useRemoveSpentUtxos();
   const recommendedFeeRate = useRecommendedFeeRate();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 
-  const { data: utxos } = useUtxos(address);
+  const utxos = useUtxos(address);
 
   useEffect(() => {
     if (
@@ -105,7 +109,8 @@ export function DepositReview({
     const changeBtcAmount = btcAmount - (coinAAmountBigInt + txFee);
     const changeRuneAmount = runeAmount - coinBAmountBigInt;
 
-    const userUtxos = [...coinAUtxos, ...coinBUtxos];
+    const _userUtxos = [...coinAUtxos, ...coinBUtxos];
+    setUserUtxos(_userUtxos);
 
     let poolBtcAmount = BigInt(0),
       poolRuneAmount = BigInt(0);
@@ -115,17 +120,6 @@ export function DepositReview({
       poolRuneAmount += BigInt(rune!.amount);
       poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
     });
-
-    const _toSignInputs: ToSignInput[] = [];
-
-    userUtxos.forEach((_, index) => {
-      _toSignInputs.push({
-        address,
-        index,
-      });
-    });
-
-    setToSignInputs(_toSignInputs);
 
     const [runeBlock, runeIdx] = coinB.id.split(":");
 
@@ -158,7 +152,7 @@ export function DepositReview({
 
     const runestone = new Runestone(edicts, none(), none(), none());
 
-    const inputUtxos = [...userUtxos, ...poolUtxos];
+    const inputUtxos = [..._userUtxos, ...poolUtxos];
 
     const tx = new Transaction();
     tx.setEnableRBF(false);
@@ -214,9 +208,16 @@ export function DepositReview({
 
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
 
+      const toSignInputs: ToSignInput[] = userUtxos.map((_, index) => ({
+        address,
+        index,
+      }));
+
       const signedPsbtHex = await window.unisat.signPsbt(psbtHex, {
-        toSignInputs: toSignInputs,
+        toSignInputs,
       });
+
+      addSpentUtxos(userUtxos);
 
       setStep(2);
 
@@ -284,6 +285,7 @@ export function DepositReview({
     } catch (error: any) {
       if (error.code !== 4001) {
         setErrorMessage(error.message || "Unknown Error");
+        removeSpentUtxos(userUtxos);
       } else {
         setStep(0);
       }

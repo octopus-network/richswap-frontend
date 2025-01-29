@@ -1,9 +1,53 @@
 import { UnspentOutput } from "@/types";
+import { useState, useEffect, useMemo } from "react";
+import { getUtxoByOutpoint } from "@/lib/utils";
+import { Orchestrator } from "@/lib/orchestrator";
+import { useAtomValue } from "jotai";
+import { spentUtxosAtom } from "@/store/spent-utxos";
 import axios from "axios";
 import useSWR from "swr";
 
+export function usePendingUtxos(address: string | undefined) {
+  const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
+
+  const [timer, setTimer] = useState<number>();
+
+  useEffect(() => {
+    if (!address) {
+      return;
+    }
+    Orchestrator.getUnconfirmedOutpoints(address)
+      .then((outpoints: string[]) =>
+        Promise.all(
+          outpoints.map((outpoint) => {
+            const [txid, vout] = outpoint.split(":");
+            return getUtxoByOutpoint(txid, Number(vout));
+          })
+        )
+      )
+      .then((utxos) => {
+        const filteredUtxos = utxos.filter((utxo) => !!utxo);
+        setUtxos(filteredUtxos);
+      });
+  }, [address, timer]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimer(Date.now());
+    }, 15 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  return utxos;
+}
+
 export function useUtxos(address: string | undefined) {
-  const { data } = useSWR(
+  const pendingUtxos = usePendingUtxos(address);
+  const spentUtxos = useAtomValue(spentUtxosAtom);
+  const { data: apiUtxos } = useSWR(
     address ? `/api/utxos?address=${address}` : undefined,
     (url: string) =>
       axios.get<{ data?: UnspentOutput[]; error: string }>(url).then((res) => {
@@ -15,7 +59,25 @@ export function useUtxos(address: string | undefined) {
     { refreshInterval: 10 * 1000 }
   );
 
-  return {
-    data,
-  };
+  return useMemo(
+    () =>
+      apiUtxos
+        ? apiUtxos
+            .filter(
+              (c) =>
+                spentUtxos.findIndex(
+                  (s) => s.txid === c.txid && s.vout === c.vout
+                ) < 0
+            )
+            .concat(
+              pendingUtxos.filter(
+                (p) =>
+                  apiUtxos.findIndex(
+                    (c) => c.txid === p.txid && c.vout === p.vout
+                  ) < 0
+              )
+            )
+        : pendingUtxos,
+    [apiUtxos, pendingUtxos, spentUtxos]
+  );
 }

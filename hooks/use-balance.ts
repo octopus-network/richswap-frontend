@@ -31,7 +31,7 @@ function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
 
 export function useCoinBalances(address: string | undefined) {
   const coins = useDefaultCoins();
-  const { data: utxos } = useUtxos(address);
+  const utxos = useUtxos(address);
 
   const balances = useMemo(() => {
     const tmpObj: Record<string, string> = {};
