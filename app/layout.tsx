@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
-import { LaserEyesProvider } from "@omnisat/lasereyes";
+
 import "./globals.css";
 
+import { Providers } from "@/components/providers";
 import { Topbar } from "@/components/topbar";
 import { Footer } from "@/components/footer";
 import { ConnectWalletModal } from "@/components/connect-wallet-modal";
@@ -22,11 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${GeistSans.className} antialiased`}>
-        <LaserEyesProvider
-          config={{
-            network: "mainnet",
-          }}
-        >
+        <Providers>
           <div className="flex min-h-screen w-screen flex-col">
             <Topbar />
             <div className="flex flex-1 flex-col p-6 overflow-y-auto">
@@ -37,7 +34,7 @@ export default function RootLayout({
           </div>
           <ConnectWalletModal />
           <TransactionUpdater />
-        </LaserEyesProvider>
+        </Providers>
       </body>
     </html>
   );
