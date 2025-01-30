@@ -21,6 +21,9 @@ export function Topbar() {
     }
   }, [isInitializing]);
 
+  console.log("isInitializing", isInitializing);
+  console.log("isInitialize", initialized);
+
   return (
     <div className="flex justify-between items-cetner p-4">
       <div className="items-center flex space-x-3 flex-1 justify-start">
