@@ -43,3 +43,13 @@ export type PoolInfo = {
   coinAAmount: string;
   coinBAmount: string;
 };
+
+export interface Position {
+  poolKey: string;
+  coinA: Coin | undefined;
+  coinAAmount: string;
+  coinB: Coin | undefined;
+  coinBAmount: string;
+  nonce: string;
+  utxos: UnspentOutput[];
+}

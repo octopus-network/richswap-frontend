@@ -7,8 +7,8 @@ import {
   DepositQuote,
   UnspentOutput,
 } from "@/types";
-import { BITCOIN, UTXO_DUST } from "../constants";
-import { getP2trAressAndScript } from "../utils";
+import { BITCOIN, UTXO_DUST, COIN_LIST } from "../constants";
+import { getP2trAressAndScript, formatCoinAmount } from "../utils";
 
 export class Exchange {
   public static async getPoolKey(inputCoinId: string, outputCoinId: string) {
@@ -151,6 +151,79 @@ export class Exchange {
         inputAmount: coinAmount,
         errorMessage: error instanceof Error ? error.message : "Unknown Error",
       };
+    }
+  }
+
+  public static async preWithdrawLiquidity(poolKey: string, userKey: string) {
+    try {
+      const res = await actor
+        .pre_withdraw_liquidity(poolKey, userKey)
+        .then((data: any) => {
+          console.log("pre_withdraw_liquidity", data);
+          if (data.Ok) {
+            const { user_outputs, nonce, input } = data.Ok;
+            if (user_outputs?.length) {
+              const [_coinA, _coinB] = data.Ok.user_outputs;
+              const coinA = COIN_LIST.find((coin) => coin.id === _coinA.id);
+              const coinB = COIN_LIST.find((coin) => coin.id === _coinB.id);
+              if (!coinA || !coinB) {
+                throw new Error("Unknown coin");
+              }
+              const coinAAmount = formatCoinAmount(
+                (
+                  _coinA.value -
+                  (_coinA.id === BITCOIN.id ? UTXO_DUST : BigInt(0))
+                ).toString(),
+                coinA
+              );
+
+              const coinBAmount = formatCoinAmount(
+                (
+                  _coinB.value -
+                  (_coinB.id === BITCOIN.id ? UTXO_DUST : BigInt(0))
+                ).toString(),
+                coinB
+              );
+
+              const { address, output } = getP2trAressAndScript(poolKey);
+
+              const utxo: UnspentOutput = {
+                txid: input.txid,
+                vout: input.vout,
+                satoshis: input.satoshis.toString(),
+                address: address!,
+                scriptPk: output,
+                runes: [
+                  {
+                    id: input.balance.id,
+                    amount: input.balance.value.toString(),
+                  },
+                ],
+              };
+
+              return {
+                poolKey,
+                coinA,
+                coinAAmount,
+                coinB,
+                coinBAmount,
+                nonce: nonce.toString(),
+                utxos: [utxo],
+              };
+            } else {
+              throw new Error("No Outputs");
+            }
+          } else {
+            throw new Error(
+              data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+            );
+          }
+        });
+
+      return res;
+    } catch (err: any) {
+      console.log("prewidthdraw error", err);
+      return null;
     }
   }
 

@@ -152,7 +152,7 @@ export function DepositForm({
               ? `Inssuficient ${pool.coinA.symbol} Balance`
               : insufficientCoinBBalance
               ? `Inssuficient ${pool.coinB.symbol} Balance`
-              : "Review"}
+              : "Deposit"}
           </Button>
         )}
       </div>

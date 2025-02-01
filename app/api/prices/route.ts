@@ -7,7 +7,7 @@ import { Exchange } from "@/lib/exchange";
 import { SwapState } from "@/types";
 import { COIN_LIST, BITCOIN } from "@/lib/constants";
 
-const INPUT_BTC_AMOUNT = "0.00005";
+const INPUT_BTC_AMOUNT = "0.0001";
 
 async function getPriceInBtc(coinId: string) {
   const coin = COIN_LIST.find((c) => c.id === coinId);
