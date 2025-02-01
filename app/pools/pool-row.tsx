@@ -44,6 +44,16 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
       : undefined;
   }, [position, coinAPrice, coinBPrice]);
 
+  const positionPercentage = useMemo(
+    () =>
+      positionValue && poolTvl
+        ? new Decimal(positionValue * 100).div(poolTvl).toFixed(2)
+        : positionValue === null
+        ? null
+        : undefined,
+    [positionValue, poolTvl]
+  );
+
   return (
     <>
       <div
@@ -66,17 +76,24 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
         </div>
         <div className="col-span-3 flex-col flex items-center justify-center space-y-1">
           <span className="text-muted-foreground text-sm">Your share</span>
-          <span>
-            {positionValue === undefined ? (
+          <>
+            {positionPercentage === undefined ? (
               <Skeleton className="h-[18px] w-12 bg-slate-500/40" />
             ) : (
-              <span className="font-semibold">
-                {positionValue === null
-                  ? "-"
-                  : `$${formatNumber(positionValue)}`}
-              </span>
+              <div className="flex items-center">
+                {positionPercentage ? (
+                  <>
+                    <span className="font-semibold">{positionPercentage}%</span>
+                    <span className="text-primary/80 text-xs ml-1">
+                      ${formatNumber(positionValue ?? "0")}
+                    </span>
+                  </>
+                ) : (
+                  "-"
+                )}
+              </div>
             )}
-          </span>
+          </>
         </div>
         <div className="col-span-1 flex justify-end">
           <ChevronRight className="size-5 text-muted-foreground" />
