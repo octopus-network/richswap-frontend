@@ -11,7 +11,7 @@ import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { ToSignInput } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
-import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
+import { getP2trAressAndScript } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import * as bitcoin from "bitcoinjs-lib";
