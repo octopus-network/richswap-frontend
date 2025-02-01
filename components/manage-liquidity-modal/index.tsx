@@ -42,11 +42,17 @@ export function ManageLiquidityModal({
           <DepositContent
             pool={pool}
             setOnReview={setOnReview}
-            onSuccess={() => setOpen(false)}
+            onSuccess={() => {
+              setOpen(false);
+              setOnReview(false);
+            }}
           />
           <WithdrawContent
             setOnReview={setOnReview}
-            onSuccess={() => setOpen(false)}
+            onSuccess={() => {
+              setOpen(false);
+              setOnReview(false);
+            }}
             position={position}
           />
         </Tabs>
