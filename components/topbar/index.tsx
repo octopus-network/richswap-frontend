@@ -9,6 +9,7 @@ import { useSetAtom } from "jotai";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { Skeleton } from "../ui/skeleton";
 import { useEffect, useState } from "react";
+import { MenuButton } from "./menu-button";
 
 export function Topbar() {
   const { address, isInitializing } = useLaserEyes();
@@ -20,9 +21,6 @@ export function Topbar() {
       setInitialized(true);
     }
   }, [isInitializing]);
-
-  console.log("isInitializing", isInitializing);
-  console.log("isInitialize", initialized);
 
   return (
     <div className="flex justify-between items-cetner p-4">
@@ -39,7 +37,7 @@ export function Topbar() {
       <div className="flex-none">
         <Nav />
       </div>
-      <div className="flex-1 flex justify-end">
+      <div className="flex-1 flex justify-end space-x-2">
         {!initialized ? (
           <Skeleton className="h-9 w-24 rounded-full" />
         ) : !address ? (
@@ -53,6 +51,7 @@ export function Topbar() {
         ) : (
           <AccountButton />
         )}
+        <MenuButton />
       </div>
     </div>
   );

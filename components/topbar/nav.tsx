@@ -14,7 +14,7 @@ type NavItem = {
   icon: ReactNode;
 };
 
-const navItems: NavItem[] = [
+export const navItems: NavItem[] = [
   {
     title: "Swap",
     href: "/swap",

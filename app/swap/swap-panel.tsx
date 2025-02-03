@@ -225,6 +225,8 @@ export function SwapPanel() {
                 !coinA ||
                 !coinB ||
                 !swap ||
+                !Number(formattedAmounts[Field.INPUT]) ||
+                !Number(formattedAmounts[Field.OUTPUT]) ||
                 swap.state === SwapState.INVALID ||
                 swap.state === SwapState.LOADING ||
                 insufficientBalance ||

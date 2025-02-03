@@ -52,6 +52,7 @@ export function CreatePoolModal({
               coinA={coinA}
               coinB={coinB}
               poolKey={poolKey}
+              poolUtxos={[]}
               coinAAmount={coinAAmount}
               coinBAmount={coinBAmount}
               onBack={onBack}

@@ -64,7 +64,7 @@ export function useUtxos(address: string | undefined) {
 
   useEffect(() => {
     mutateApiUtxos();
-  }, [transactions]);
+  }, [transactions, mutateApiUtxos]);
 
   return useMemo(
     () =>
@@ -84,7 +84,7 @@ export function useUtxos(address: string | undefined) {
                   ) < 0
               )
             )
-        : pendingUtxos,
+        : undefined,
     [apiUtxos, pendingUtxos, spentUtxos]
   );
 }

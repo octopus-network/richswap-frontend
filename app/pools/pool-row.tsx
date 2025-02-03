@@ -57,19 +57,24 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
   return (
     <>
       <div
-        className="grid grid-cols-12 items-center gap-2 bg-secondary/80 hover:bg-secondary cursor-pointer px-4 py-3 rounded-2xl"
+        className="grid grid-cols-12 items-center gap-1 bg-secondary/80 hover:bg-secondary cursor-pointer px-4 py-3 rounded-2xl"
         onClick={() => setManageLiquidityModalOpen(true)}
       >
         <div className="col-span-4 flex items-center space-x-3">
-          <DoubleIcon size="lg" coins={[pool.coinA, pool.coinB]} />
-          <span className="font-semibold text-lg">
+          <div className="hidden sm:block">
+            <DoubleIcon size="lg" coins={[pool.coinA, pool.coinB]} />
+          </div>
+          <span className="font-semibold text-lg hidden md:inline">
             {pool.coinA.symbol}/{pool.coinB.symbol}
           </span>
+          <span className="font-semibold md:hidden">{pool.coinB.symbol}</span>
         </div>
         <div className="col-span-4 flex-col flex items-center justify-center space-y-1">
-          <span className="text-muted-foreground text-sm">TVL</span>
+          <span className="text-muted-foreground text-xs md:text-sm">TVL</span>
           {poolTvl ? (
-            <span className="font-semibold">${formatNumber(poolTvl)}</span>
+            <span className="font-semibold text-sm md:text-md">
+              ${formatNumber(poolTvl)}
+            </span>
           ) : (
             <Skeleton className="h-[18px] w-12 bg-slate-500/40" />
           )}

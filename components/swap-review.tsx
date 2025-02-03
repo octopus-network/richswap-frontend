@@ -30,6 +30,7 @@ import { EXCHANGE_ID } from "@/lib/constants/canister";
 import { useAddTransaction } from "@/store/transactions";
 import { RuneId, Runestone, none, Edict } from "runelib";
 import { useCoinPrice } from "@/hooks/use-prices";
+import Decimal from "decimal.js";
 
 export function SwapReview({
   coinA,
@@ -85,6 +86,20 @@ export function SwapReview({
     () =>
       coinBAmount && coinBPrice ? Number(coinBAmount) * coinBPrice : undefined,
     [coinBAmount, coinBPrice]
+  );
+
+  const [rune, , runeAmount, btcAmount] = useMemo(
+    () =>
+      coinA?.id === BITCOIN.id
+        ? [coinB, coinA, coinBAmount, coinAAmount]
+        : [coinA, coinB, coinAAmount, coinBAmount],
+    [coinA, coinB, coinAAmount, coinBAmount]
+  );
+
+  const runePriceInSats = useMemo(
+    () =>
+      new Decimal(btcAmount).mul(Math.pow(10, 9)).div(runeAmount).toFixed(2),
+    [runeAmount, btcAmount]
   );
 
   useEffect(() => {
@@ -406,6 +421,13 @@ export function SwapReview({
       {step === 0 ? (
         <>
           <div className="space-y-1 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Price</span>
+              <span>
+                {runePriceInSats}{" "}
+                <em className="text-muted-foreground">sats/{rune?.symbol}</em>
+              </span>
+            </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Fee rate</span>
               <span>

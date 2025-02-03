@@ -69,6 +69,15 @@ export function DepositReview({
   const utxos = useUtxos(address);
 
   useEffect(() => {
+    console.log(
+      poolKey,
+      coinA,
+      coinB,
+      coinAAmount,
+      coinBAmount,
+      utxos,
+      poolUtxos
+    );
     if (
       !poolKey ||
       !coinA ||
