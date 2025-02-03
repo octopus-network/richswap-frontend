@@ -88,7 +88,7 @@ export function SwapReview({
     [coinBAmount, coinBPrice]
   );
 
-  const [rune, , runeAmount, btcAmount] = useMemo(
+  const [rune, btc, runeAmount, btcAmount] = useMemo(
     () =>
       coinA?.id === BITCOIN.id
         ? [coinB, coinA, coinBAmount, coinAAmount]
@@ -101,6 +101,8 @@ export function SwapReview({
       new Decimal(btcAmount).mul(Math.pow(10, 9)).div(runeAmount).toFixed(2),
     [runeAmount, btcAmount]
   );
+
+  const btcPrice = useCoinPrice(btc?.id);
 
   useEffect(() => {
     if (
@@ -421,12 +423,24 @@ export function SwapReview({
       {step === 0 ? (
         <>
           <div className="space-y-1 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Price</span>
-              <span>
-                {runePriceInSats}{" "}
-                <em className="text-muted-foreground">sats/{rune?.symbol}</em>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">
+                {rune?.symbol} Price
               </span>
+              <div className="flex flex-col items-end">
+                <span>
+                  {runePriceInSats}{" "}
+                  <em className="text-muted-foreground">sats</em>
+                </span>
+                <span className="text-muted-foreground text-xs">
+                  {btcPrice
+                    ? `$${new Decimal(runePriceInSats)
+                        .mul(btcPrice)
+                        .div(Math.pow(10, 9))
+                        .toFixed(4)}`
+                    : ""}
+                </span>
+              </div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Fee rate</span>

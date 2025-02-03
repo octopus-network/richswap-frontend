@@ -7,7 +7,7 @@ import { PopupItem } from "./popup-item";
 export function Popups() {
   const popups = usePopups();
   return (
-    <div className="flex fixed flex-col-reverse auto-rows-auto gap-4 shadow-md left-4 bottom-12 max-w-[348px] w-full z-[999] transition-all ease-in-out duration-500">
+    <div className="flex fixed flex-col-reverse auto-rows-auto gap-4 shadow-md right-4 top-16 max-w-[348px] w-full z-[999] transition-all ease-in-out duration-500">
       {popups.map((popup) => (
         <motion.div
           initial={{
