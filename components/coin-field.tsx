@@ -15,7 +15,7 @@ import { useCoinBalance } from "@/hooks/use-balance";
 import { Wallet } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import Decimal from "decimal.js";
-import { BITCOIN } from "@/lib/constants";
+
 import { getCoinSymbol, getCoinName } from "@/lib/utils";
 
 const CoinButton = ({
@@ -107,8 +107,9 @@ export function CoinField({
   };
 
   const onSetMax = () => {
-    const minimumReserveAmount =
-      coin === BITCOIN ? new Decimal(0.0001) : new Decimal(0);
+    // const minimumReserveAmount =
+    //   coin === BITCOIN ? new Decimal(0.0001) : new Decimal(0);
+    const minimumReserveAmount = new Decimal(0);
     onUserInput(
       Decimal.max(
         new Decimal(balance!).sub(minimumReserveAmount),
