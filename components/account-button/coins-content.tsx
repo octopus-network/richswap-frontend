@@ -4,7 +4,7 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { CoinIcon } from "../coin-icon";
-import { formatNumber, cn } from "@/lib/utils";
+import { formatNumber, cn, getCoinSymbol, getCoinName } from "@/lib/utils";
 
 function CoinRow({ coin }: { coin: Coin }) {
   const { address } = useLaserEyes();
@@ -17,15 +17,17 @@ function CoinRow({ coin }: { coin: Coin }) {
       )}
     >
       <div className="flex items-center">
-        <CoinIcon coin={coin} className="size-8" />
+        <CoinIcon coin={coin} className="size-7" />
         <div className="flex-col flex ml-3">
-          <span className="font-semibold">{coin.symbol}</span>
-          <span className="text-muted-foreground text-sm">{coin.name}</span>
+          <span className="font-semibold text-sm">{getCoinSymbol(coin)}</span>
+          <span className="text-muted-foreground text-xs">
+            {getCoinName(coin)}
+          </span>
         </div>
       </div>
       <div className="flex flex-col items-end">
-        <span>{balance ? formatNumber(balance) : "-"}</span>
-        <span className="text-sm text-muted-foreground">-</span>
+        <span className="text-sm">{balance ? formatNumber(balance) : "-"}</span>
+        <span className="text-xs text-muted-foreground">-</span>
       </div>
     </div>
   );

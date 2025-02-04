@@ -1,4 +1,3 @@
-import { DoubleIcon } from "@/components/double-icon";
 import { Position, PoolInfo } from "@/types";
 import { Exchange } from "@/lib/exchange";
 import { useEffect, useState, useMemo } from "react";
@@ -10,6 +9,7 @@ import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
+import { CoinIcon } from "@/components/coin-icon";
 
 export function PoolRow({ pool }: { pool: PoolInfo }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
@@ -57,20 +57,22 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
   return (
     <>
       <div
-        className="grid grid-cols-12 items-center gap-1 bg-secondary/80 hover:bg-secondary cursor-pointer px-4 py-3 rounded-2xl"
+        className="grid md:grid-cols-12 grid-cols-8 items-center gap-1 bg-secondary/80 hover:bg-secondary cursor-pointer px-4 py-3 rounded-xl"
         onClick={() => setManageLiquidityModalOpen(true)}
       >
         <div className="col-span-4 flex items-center space-x-3">
           <div className="hidden sm:block">
-            <DoubleIcon size="lg" coins={[pool.coinA, pool.coinB]} />
+            <CoinIcon size="lg" coin={pool.coinB} />
           </div>
-          <span className="font-semibold text-lg hidden md:inline">
-            {pool.coinA.symbol}/{pool.coinB.symbol}
-          </span>
-          <span className="font-semibold md:hidden">{pool.coinB.symbol}</span>
+          <div className="flex flex-col space-y-1">
+            <span className="font-semibold text-sm">{pool.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {pool.coinB.id}
+            </span>
+          </div>
         </div>
-        <div className="col-span-4 flex-col flex items-center justify-center space-y-1">
-          <span className="text-muted-foreground text-xs md:text-sm">TVL</span>
+        <div className="col-span-4 hidden flex-col md:flex items-center justify-center space-y-1">
+          <span className="text-muted-foreground text-xs">TVL</span>
           {poolTvl ? (
             <span className="font-semibold text-sm md:text-md">
               ${formatNumber(poolTvl)}
@@ -80,7 +82,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
           )}
         </div>
         <div className="col-span-3 flex-col flex items-center justify-center space-y-1">
-          <span className="text-muted-foreground text-sm">Your share</span>
+          <span className="text-muted-foreground text-xs">Your share</span>
           <>
             {positionPercentage === undefined ? (
               <Skeleton className="h-[18px] w-12 bg-slate-500/40" />
@@ -101,7 +103,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
           </>
         </div>
         <div className="col-span-1 flex justify-end">
-          <ChevronRight className="size-5 text-muted-foreground" />
+          <ChevronRight className="size-4 md:size-5 text-muted-foreground" />
         </div>
       </div>
       <ManageLiquidityModal

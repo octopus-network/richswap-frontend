@@ -5,6 +5,8 @@ import { CoinIcon } from "../coin-icon";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { Skeleton } from "../ui/skeleton";
 
+import { getCoinSymbol, getCoinName } from "@/lib/utils";
+
 export function CoinRow({
   coin,
   onSelect,
@@ -23,16 +25,13 @@ export function CoinRow({
       onClick={() => onSelect(coin)}
     >
       <div className="flex items-center">
-        <CoinIcon coin={coin} className="size-10" />
+        <CoinIcon coin={coin} className="size-9" />
         <div className="flex-col flex ml-3">
           <div className="flex items-center h-full">
-            <span className="font-semibold">{coin.symbol}</span>
+            <span className="font-semibold text-sm">{getCoinSymbol(coin)}</span>
           </div>
           <span className="text-muted-foreground text-xs h-full">
-            {coin.name}
-          </span>
-          <span className="text-muted-foreground/70 font-semibold text-xs h-full">
-            {coin.id}
+            {getCoinName(coin)}
           </span>
         </div>
       </div>

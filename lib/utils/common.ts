@@ -1,7 +1,10 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as bitcoin from "bitcoinjs-lib";
+import { BITCOIN } from "../constants";
 import * as ecc from "@bitcoinerlab/secp256k1";
+import { Coin } from "@/types";
+
 bitcoin.initEccLib(ecc);
 
 export function cn(...inputs: ClassValue[]) {
@@ -10,8 +13,8 @@ export function cn(...inputs: ClassValue[]) {
 
 export function ellipseMiddle(
   target: string | null,
-  charsStart = 4,
-  charsEnd = 4
+  charsStart = 5,
+  charsEnd = 5
 ): string {
   if (!target) {
     return "";
@@ -55,4 +58,12 @@ export function getP2trAressAndScript(pubkey: string) {
   });
 
   return { address, output: output ? bytesToHex(output) : "" };
+}
+
+export function getCoinSymbol(coin: Coin) {
+  return coin.id === BITCOIN.id ? coin.symbol : coin.name;
+}
+
+export function getCoinName(coin: Coin) {
+  return coin.id === BITCOIN.id ? coin.name : coin.id;
 }

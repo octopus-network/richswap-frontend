@@ -11,7 +11,7 @@ export default function Pools() {
   const { address } = useLaserEyes();
   return (
     <div className="md:pt-12 w-full flex flex-col items-center">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-3xl">
         <div className="flex justify-between items-center h-9">
           <span className="text-2xl font-semibold">Pools</span>
           {address && <CreateButton />}

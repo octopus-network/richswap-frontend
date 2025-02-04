@@ -16,6 +16,7 @@ import { Wallet } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import Decimal from "decimal.js";
 import { BITCOIN } from "@/lib/constants";
+import { getCoinSymbol, getCoinName } from "@/lib/utils";
 
 const CoinButton = ({
   coin,
@@ -33,17 +34,19 @@ const CoinButton = ({
   return isMounted ? (
     <Button
       variant="secondary"
-      className="group font-bold h-11 px-2 border border-transparent hover:border-primary/80 hover:bg-primary/10"
+      className="group h-11 px-2 border border-transparent hover:border-primary/80 hover:bg-primary/10"
       onClick={onClick}
     >
-      <div className="flex items-center gap-2 w-28 sm:w-36 justify-between">
+      <div className="flex items-center gap-2 w-36 sm:w-40 justify-between">
         {coin ? (
           <div className="flex gap-2 items-center w-[calc(100%_-_24px)]">
             <CoinIcon coin={coin} />
             <div className="flex flex-col text-left w-[calc(100%_-_32px)]">
-              <span className="truncate">{coin.symbol}</span>
+              <span className="truncate font-semibold">
+                {getCoinSymbol(coin)}
+              </span>
               <span className="text-xs w-full text-muted-foreground font-normal truncate">
-                {coin.name}
+                {getCoinName(coin)}
               </span>
             </div>
           </div>
@@ -161,7 +164,7 @@ export function CoinField({
             </div>
           )}
         </div>
-        <div className="flex mt-2 mb-2 h-[41px] items-center">
+        <div className="flex mt-2 mb-2 h-[41px] gap-2 items-center">
           {onSelectCoin ? (
             <CoinButton
               coin={coin}

@@ -28,7 +28,7 @@ export function useRecommendedFeeRate() {
           ? feeRate.sort((a, b) => b.feeRate - a.feeRate)[0].feeRate
           : 10
       )
-        .mul(1.2)
+        .mul(1)
         .toNumber(),
     [feeRate]
   );

@@ -27,12 +27,14 @@ export class Exchange {
       coinAId: string;
       coinBId: string;
       coinAAmount: string;
+      name: string;
       coinBAmount: string;
     }[]
   > {
     try {
       const res = (await actor.list_pools()) as {
         id: string;
+        name: string;
       }[];
 
       if (res?.length) {
@@ -40,7 +42,16 @@ export class Exchange {
 
         const poolInfos = await Promise.all(promises);
 
-        return poolInfos.filter((info) => !!info);
+        const filteredInfos = poolInfos.filter((info) => !!info);
+
+        return filteredInfos.map((info, idx) => {
+          const { name } = res[idx];
+
+          return {
+            ...info,
+            name,
+          };
+        });
       }
     } catch (error) {
       console.log(error);

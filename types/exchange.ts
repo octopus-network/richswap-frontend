@@ -38,6 +38,7 @@ export type DepositQuote = {
 
 export type PoolInfo = {
   key: string;
+  name: string;
   coinA: Coin;
   coinB: Coin;
   coinAAmount: string;
