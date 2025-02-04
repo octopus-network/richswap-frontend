@@ -94,9 +94,10 @@ export function SwapPanel() {
       searchParams.get("coinA") ?? "",
       searchParams.get("coinB") ?? "",
     ];
+
     let [_coinA, _coinB] = [
-      Object.values(coins).find((c) => c.symbol === symbolA) ?? null,
-      Object.values(coins).find((c) => c.symbol === symbolB) ?? null,
+      Object.values(coins).find((c) => getCoinSymbol(c) === symbolA) ?? null,
+      Object.values(coins).find((c) => getCoinSymbol(c) === symbolB) ?? null,
     ];
 
     if (!_coinA && !_coinB) {
@@ -121,6 +122,7 @@ export function SwapPanel() {
 
   const handleSelectCoin = (field: Field, coin: Coin) => {
     onSelectCoin(field, coin);
+
     const params = new URLSearchParams(searchParams?.toString() || "");
 
     const coinSymbol = getCoinSymbol(coin);
