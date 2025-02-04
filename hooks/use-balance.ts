@@ -62,7 +62,7 @@ export function useCoinBalance(
     () =>
       address
         ? coinId
-          ? Object.keys(balances)
+          ? Object.keys(balances).length
             ? balances[coinId] ?? "0"
             : undefined
           : undefined

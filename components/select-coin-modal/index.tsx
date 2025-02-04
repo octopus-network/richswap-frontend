@@ -40,10 +40,11 @@ function coinFilter(query: string) {
     );
   };
 
-  return ({ name, symbol, runeSymbol }: Coin) =>
+  return ({ name, symbol, runeSymbol, runeId }: Coin) =>
     Boolean(
       (symbol && match(symbol)) ||
         (name && match(name)) ||
+        (runeId && match(runeId)) ||
         (runeSymbol && match(runeSymbol))
     );
 }
@@ -145,6 +146,9 @@ export function SelectCoinModal({
           height: "calc(70vh - 80px)",
         }}
       >
+        {sortedCoins.map((coin, idx) => {
+          return <CoinRow coin={coin} key={idx} onSelect={handleCoinSelect} />;
+        })}
         {searchCoins?.length
           ? searchCoins.map((coin, idx) => (
               <CoinRow
@@ -154,9 +158,6 @@ export function SelectCoinModal({
               />
             ))
           : null}
-        {sortedCoins.map((coin, idx) => {
-          return <CoinRow coin={coin} key={idx} onSelect={handleCoinSelect} />;
-        })}
       </div>
       <CoinWarningModal
         open={coinWarningModalOpen}

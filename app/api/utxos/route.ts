@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBtcUtxos, getRuneUtxos } from "@/lib/chain-api";
-import { BITCOIN, COIN_LIST } from "@/lib/constants";
+import { getBtcUtxos, getRuneList, getRuneUtxos } from "@/lib/chain-api";
+import { BITCOIN } from "@/lib/constants";
 
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get("address");
@@ -11,9 +11,12 @@ export async function GET(req: NextRequest) {
 
     const promises = [];
     promises.push(getBtcUtxos(address));
-    COIN_LIST.forEach((coin) => {
-      if (coin !== BITCOIN) {
-        promises.push(getRuneUtxos(address, coin.runeId!));
+
+    const runeList = await getRuneList(address);
+
+    runeList.forEach((rune) => {
+      if (rune.runeid !== BITCOIN.id) {
+        promises.push(getRuneUtxos(address, rune.runeid));
       }
     });
 
