@@ -1,7 +1,7 @@
 export interface Coin {
   id: string;
   icon?: string;
-  symbol: string;
+  symbol?: string;
   name: string;
   runeId?: string;
   runeSymbol?: string;

@@ -59,7 +59,14 @@ export function useCoinBalance(
   const balances = useCoinBalances(address);
 
   return useMemo(
-    () => (coinId ? balances[coinId] : undefined),
-    [balances, coinId]
+    () =>
+      address
+        ? coinId
+          ? Object.keys(balances)
+            ? balances[coinId] ?? "0"
+            : undefined
+          : undefined
+        : undefined,
+    [balances, coinId, address]
   );
 }

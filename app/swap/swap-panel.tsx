@@ -20,7 +20,7 @@ import {
   useDerivedSwapInfo,
 } from "@/store/swap/hooks";
 
-import { formatCoinAmount } from "@/lib/utils";
+import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN, COIN_LIST } from "@/lib/constants";
 
@@ -77,10 +77,14 @@ export function SwapPanel() {
   );
 
   const coinABalance = useCoinBalance(address, coinA?.id);
+  const coinBBalance = useCoinBalance(address, coinB?.id);
 
   const insufficientBalance = useMemo(
-    () => new Decimal(coinABalance || "0").lt(typedValue || "0"),
-    [typedValue, coinABalance]
+    () =>
+      new Decimal(
+        (independentField === Field.INPUT ? coinABalance : coinBBalance) || "0"
+      ).lt(typedValue || "0"),
+    [typedValue, coinABalance, independentField, coinBBalance]
   );
 
   useEffect(() => {
@@ -119,18 +123,21 @@ export function SwapPanel() {
     onSelectCoin(field, coin);
     const params = new URLSearchParams(searchParams?.toString() || "");
 
+    const coinSymbol = getCoinSymbol(coin);
     if (field === Field.INPUT && coin === coinB) {
       if (coinA) {
-        params.set("coinB", coinA.symbol);
+        const coinASymbol = getCoinSymbol(coinA);
+        params.set("coinB", coinASymbol);
       }
-      params.set("coinA", coin.symbol);
+      params.set("coinA", coinSymbol);
     } else if (field === Field.INPUT && coin === coinA) {
       if (coinB) {
-        params.set("coinA", coinB.symbol);
+        const coinBSymbol = getCoinSymbol(coinB);
+        params.set("coinA", coinBSymbol);
       }
-      params.set("coinB", coin.symbol);
+      params.set("coinB", coinSymbol);
     } else {
-      params.set(field === Field.INPUT ? "coinA" : "coinB", coin.symbol);
+      params.set(field === Field.INPUT ? "coinA" : "coinB", coinSymbol);
     }
 
     const newQueryString = params.toString();
@@ -145,13 +152,15 @@ export function SwapPanel() {
     onSwitchCoins();
     const params = new URLSearchParams(searchParams?.toString() || "");
     if (coinA) {
-      params.set("coinB", coinA.symbol);
+      const coinASymbol = getCoinSymbol(coinA);
+      params.set("coinB", coinASymbol);
       if (!coinB) {
         params.delete("coinA");
       }
     }
     if (coinB) {
-      params.set("coinA", coinB.symbol);
+      const coinBSymbol = getCoinSymbol(coinB);
+      params.set("coinA", coinBSymbol);
       if (!coinA) {
         params.delete("coinB");
       }

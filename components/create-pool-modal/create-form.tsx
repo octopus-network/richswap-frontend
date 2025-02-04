@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import Decimal from "decimal.js";
 import { Exchange } from "@/lib/exchange";
 import { PopupStatus, useAddPopup } from "@/store/popups";
+import { getCoinSymbol } from "@/lib/utils";
 
 export function CreateForm({
   coinA,
@@ -122,11 +123,11 @@ export function CreateForm({
               : !Number(coinAAmount)
               ? "Input BTC Amount"
               : !Number(coinBAmount)
-              ? `Input ${coinB.symbol} Amount`
+              ? `Input ${getCoinSymbol(coinB)} Amount`
               : insufficientCoinABalance
-              ? `Insufficient ${coinA.symbol} Balance`
+              ? `Insufficient ${getCoinSymbol(coinA)} Balance`
               : insufficientCoinBBalance
-              ? `Insufficient ${coinB.symbol} Balance`
+              ? `Insufficient ${getCoinSymbol(coinB)} Balance`
               : "Create"}
           </Button>
         )}

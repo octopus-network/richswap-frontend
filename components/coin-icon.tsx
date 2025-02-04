@@ -31,8 +31,13 @@ export function CoinIcon({
         className
       )}
     >
-      <span className="absolute">
-        {coin.runeSymbol ?? coin.symbol.slice(0, 2)}
+      <span
+        className={cn(
+          "absolute",
+          size === "md" ? "text-md" : size === "lg" ? "text-lg" : "text-xl"
+        )}
+      >
+        {coin.runeSymbol ?? coin.symbol?.slice(0, 2)}
       </span>
     </div>
   );

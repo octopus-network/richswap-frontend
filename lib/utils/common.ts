@@ -61,7 +61,7 @@ export function getP2trAressAndScript(pubkey: string) {
 }
 
 export function getCoinSymbol(coin: Coin) {
-  return coin.id === BITCOIN.id ? coin.symbol : coin.name;
+  return coin.id === BITCOIN.id ? coin.symbol! : coin.name;
 }
 
 export function getCoinName(coin: Coin) {

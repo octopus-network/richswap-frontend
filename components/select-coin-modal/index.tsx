@@ -1,17 +1,19 @@
 "use client";
 
 import { Coin } from "@/types";
-import { useState, useMemo, ChangeEvent, useCallback } from "react";
+import { useState, useMemo, ChangeEvent, useCallback, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
-
+import { CoinWarningModal } from "./coin-warning-modal";
 import { BaseModal } from "../base-modal";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CoinRow } from "./coin-row";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import Decimal from "decimal.js";
+import { useSearchCoins } from "@/hooks/use-coins";
 import { useCoinBalances } from "@/hooks/use-balance";
+import { useAddUserCoin } from "@/store/user/hooks";
 
 function coinFilter(query: string) {
   const searchingId = /^\d+:\d+$/.test(query);
@@ -59,8 +61,17 @@ export function SelectCoinModal({
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const debouncedQuery = useDebounce(searchQuery, 200);
+  const [coinWarningModalOpen, setCoinWarningModalOpen] = useState(false);
+  const [toWarningCoin, setToWarningCoin] = useState<Coin>();
+  const searchCoins = useSearchCoins(debouncedQuery);
+
+  const userCoinAdder = useAddUserCoin();
 
   const { address } = useLaserEyes();
+
+  useEffect(() => {
+    setSearchQuery("");
+  }, [open]);
 
   const coinBalances = useCoinBalances(address);
   const sortedCoins: Coin[] = useMemo(() => {
@@ -88,15 +99,30 @@ export function SelectCoinModal({
     });
   }, [defaultCoins, coinBalances, debouncedQuery]);
 
-  const handleCoinSelect = (coin: Coin) => {
-    onSelectCoin?.(coin);
-    setOpen(false);
+  const handleCoinSelect = (coin: Coin, hasWarning?: boolean) => {
+    if (!hasWarning) {
+      onSelectCoin?.(coin);
+      setOpen(false);
+    } else {
+      setToWarningCoin(coin);
+      setCoinWarningModalOpen(true);
+    }
   };
 
   const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const input = event.target.value;
     setSearchQuery(input);
   }, []);
+
+  const handleConfirmCoin = () => {
+    if (!toWarningCoin) {
+      return;
+    }
+    onSelectCoin?.(toWarningCoin);
+    userCoinAdder(toWarningCoin);
+    setCoinWarningModalOpen(false);
+    setOpen(false);
+  };
 
   return (
     <BaseModal open={open} setOpen={setOpen} className="max-w-md">
@@ -119,10 +145,27 @@ export function SelectCoinModal({
           height: "calc(70vh - 80px)",
         }}
       >
+        {searchCoins?.length
+          ? searchCoins.map((coin, idx) => (
+              <CoinRow
+                coin={coin}
+                key={idx}
+                onSelect={(coin) => handleCoinSelect(coin, true)}
+              />
+            ))
+          : null}
         {sortedCoins.map((coin, idx) => {
           return <CoinRow coin={coin} key={idx} onSelect={handleCoinSelect} />;
         })}
       </div>
+      <CoinWarningModal
+        open={coinWarningModalOpen}
+        coin={toWarningCoin}
+        onCancel={() => {
+          setCoinWarningModalOpen(false);
+        }}
+        onConfirm={handleConfirmCoin}
+      />
     </BaseModal>
   );
 }

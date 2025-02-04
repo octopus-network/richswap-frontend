@@ -5,7 +5,7 @@ import { userStateAtom } from "./reducer";
 import { addCoin } from "./actions";
 import { useCallback, useMemo } from "react";
 
-export function useAddUserToken(): (coin: Coin) => void {
+export function useAddUserCoin(): (coin: Coin) => void {
   const dispatch = useSetAtom(userStateAtom);
   return useCallback(
     (coin: Coin) => {
