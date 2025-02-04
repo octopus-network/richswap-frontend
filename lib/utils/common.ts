@@ -60,8 +60,8 @@ export function getP2trAressAndScript(pubkey: string) {
   return { address, output: output ? bytesToHex(output) : "" };
 }
 
-export function getCoinSymbol(coin: Coin) {
-  return coin.id === BITCOIN.id ? coin.symbol! : coin.name;
+export function getCoinSymbol(coin: Coin | null) {
+  return coin ? (coin.id === BITCOIN.id ? coin.symbol! : coin.name) : "";
 }
 
 export function getCoinName(coin: Coin) {

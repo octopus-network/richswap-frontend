@@ -11,7 +11,11 @@ import { ToSignInput } from "@/types";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "@/components/coin-icon";
-import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
+import {
+  formatNumber,
+  getCoinSymbol,
+  getP2trAressAndScript,
+} from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
@@ -359,7 +363,9 @@ export function SwapReview({
       addPopup(
         "Success",
         PopupStatus.SUCCESS,
-        `Swap ${coinAAmount} ${coinA.symbol} to ${coinBAmount} ${coinB.symbol}`
+        `Swap ${coinAAmount} ${getCoinSymbol(
+          coinA
+        )} to ${coinBAmount} ${getCoinSymbol(coinB)}`
       );
 
       onSuccess();
@@ -396,7 +402,7 @@ export function SwapReview({
         <div className="flex justify-between">
           <div className="flex flex-col">
             <span className="font-semibold">
-              {formatNumber(coinAAmount)} {coinA?.symbol}
+              {formatNumber(coinAAmount)} {getCoinSymbol(coinA)}
             </span>
             <span className="text-sm text-muted-foreground">
               {coinAFiatValue ? `$${formatNumber(coinAFiatValue)}` : "-"}
@@ -410,7 +416,7 @@ export function SwapReview({
         <div className="flex justify-between">
           <div className="flex flex-col">
             <span className="font-semibold">
-              {formatNumber(coinBAmount)} {coinB?.symbol}
+              {formatNumber(coinBAmount)} {getCoinSymbol(coinB)}
             </span>
             <span className="text-sm text-muted-foreground">
               {coinBFiatValue ? `$${formatNumber(coinBFiatValue)}` : "-"}

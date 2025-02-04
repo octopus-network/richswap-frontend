@@ -11,7 +11,11 @@ import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { ToSignInput } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
-import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
+import {
+  formatNumber,
+  getCoinSymbol,
+  getP2trAressAndScript,
+} from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import * as bitcoin from "bitcoinjs-lib";
@@ -289,7 +293,7 @@ export function DepositReview({
       addPopup(
         "Success",
         PopupStatus.SUCCESS,
-        `Add liduiqity to ${coinA.symbol}/${coinB.symbol} Pool`
+        `Add liduiqity to ${getCoinSymbol(coinB)} Pool`
       );
 
       onSuccess();
@@ -339,7 +343,7 @@ export function DepositReview({
         {coinA && coinB && (
           <>
             <span className="font-bold text-xl">
-              {coinA.symbol}/{coinB.symbol}
+              {coinA.symbol}/{getCoinSymbol(coinB)}
             </span>
             <DoubleIcon size="lg" coins={[coinA, coinB]} />
           </>
@@ -350,7 +354,7 @@ export function DepositReview({
         <div className="flex justify-between">
           <div className="flex flex-col">
             <span className="font-semibold">
-              {formatNumber(coinAAmount)} {coinA?.symbol}
+              {formatNumber(coinAAmount)} {coinA && getCoinSymbol(coinA)}
             </span>
             <span className="text-muted-foreground">-</span>
           </div>
@@ -359,7 +363,7 @@ export function DepositReview({
         <div className="flex justify-between">
           <div className="flex flex-col">
             <span className="font-semibold">
-              {formatNumber(coinBAmount)} {coinB?.symbol}
+              {formatNumber(coinBAmount)} {coinB && getCoinSymbol(coinB)}
             </span>
             <span className="text-muted-foreground">-</span>
           </div>
