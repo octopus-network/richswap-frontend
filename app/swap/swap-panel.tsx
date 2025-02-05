@@ -218,10 +218,10 @@ export function SwapPanel() {
           <span className="text-muted-foreground">Exchange Rate</span>
           <span className="text-muted-foreground">
             {formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
-              ? `1 ${getCoinSymbol(coinA)} = ${formatNumber(
-                  (1 / Number(formattedAmounts[Field.INPUT])) *
-                    Number(formattedAmounts[Field.OUTPUT])
-                )} ${getCoinSymbol(coinB)}`
+              ? `1 ${getCoinSymbol(coinB)} = ${formatNumber(
+                  (1 / Number(formattedAmounts[Field.OUTPUT])) *
+                    Number(formattedAmounts[Field.INPUT])
+                )} ${getCoinSymbol(coinA)} ($${formatNumber(coinBPrice)})`
               : "-"}
           </span>
         </div>

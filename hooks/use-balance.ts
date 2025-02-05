@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { BITCOIN } from "@/lib/constants";
 import { useDefaultCoins } from "./use-coins";
 import { useUtxos } from "./use-utxos";
@@ -29,7 +29,7 @@ function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
   return formatCoinAmount(amount.toString(), coin);
 }
 
-export function useCoinBalances(address: string | undefined) {
+export function useCoinBalances(address: string | undefined, coin?: Coin) {
   const coins = useDefaultCoins();
   const utxos = useUtxos(address);
 
