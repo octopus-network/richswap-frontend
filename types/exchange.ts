@@ -51,6 +51,8 @@ export interface Position {
   coinAAmount: string;
   coinB: Coin | undefined;
   coinBAmount: string;
-  nonce: string;
-  utxos: UnspentOutput[];
+  btcSupply: string;
+  userAddress: string;
+  userShare: string;
+  sqrtK: string;
 }

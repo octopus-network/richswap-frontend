@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Loader2, TriangleAlert } from "lucide-react";
+import { ChevronLeft, TriangleAlert } from "lucide-react";
 import {
   Coin,
   TransactionStatus,
@@ -7,13 +7,15 @@ import {
   UnspentOutput,
 } from "@/types";
 
+import { formatNumber } from "@/lib/utils";
+import { useCoinPrice } from "@/hooks/use-prices";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { ToSignInput } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
 import { getCoinSymbol, getP2trAressAndScript } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
@@ -67,6 +69,20 @@ export function WithdrawReview({
   const addTransaction = useAddTransaction();
 
   const utxos = useUtxos(address);
+
+  const coinAPrice = useCoinPrice(coinA?.id);
+  const coinAFiatValue = useMemo(
+    () =>
+      coinAAmount && coinAPrice ? Number(coinAAmount) * coinAPrice : undefined,
+    [coinAAmount, coinAPrice]
+  );
+
+  const coinBPrice = useCoinPrice(coinB?.id);
+  const coinBFiatValue = useMemo(
+    () =>
+      coinBAmount && coinBPrice ? Number(coinBAmount) * coinBPrice : undefined,
+    [coinBAmount, coinBPrice]
+  );
 
   useEffect(() => {
     if (
@@ -140,8 +156,6 @@ export function WithdrawReview({
             0
           ),
         ];
-
-    console.log("edicts", edicts);
 
     const runestone = new Runestone(edicts, none(), none(), none());
 
@@ -223,11 +237,6 @@ export function WithdrawReview({
         poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
       });
 
-      const poolChangeRuneAmount = poolRuneAmount - coinBAmountBigInt,
-        poolChangeBtcAmount = poolBtcAmount - coinAAmountBigInt;
-
-      const needChangeRune = poolChangeRuneAmount > 0;
-
       const txid = await Orchestrator.invoke({
         instruction_set: {
           steps: [
@@ -237,31 +246,29 @@ export function WithdrawReview({
               input_coins: [
                 {
                   coin_balance: { id: coinA.id, value: poolBtcAmount },
-                  owner_address: address,
+                  owner_address: poolAddress!,
                 },
                 {
                   coin_balance: { id: coinB.id, value: poolRuneAmount },
+                  owner_address: poolAddress!,
+                },
+              ],
+              output_coins: [
+                {
+                  coin_balance: {
+                    id: BITCOIN.id,
+                    value: coinAAmountBigInt,
+                  },
+                  owner_address: address,
+                },
+                {
+                  coin_balance: {
+                    id: coinB.id,
+                    value: coinBAmountBigInt,
+                  },
                   owner_address: address,
                 },
               ],
-              output_coins: needChangeRune
-                ? [
-                    {
-                      coin_balance: {
-                        id: BITCOIN.id,
-                        value: poolChangeBtcAmount,
-                      },
-                      owner_address: poolAddress!,
-                    },
-                    {
-                      coin_balance: {
-                        id: coinB.id,
-                        value: poolChangeRuneAmount,
-                      },
-                      owner_address: poolAddress!,
-                    },
-                  ]
-                : [],
               pool_key: [poolKey],
               nonce: [BigInt(nonce)],
             },
@@ -349,7 +356,9 @@ export function WithdrawReview({
             <span className="font-semibold">
               {coinAAmount} {getCoinSymbol(coinA)}
             </span>
-            <span className="text-muted-foreground">-</span>
+            <span className="text-muted-foreground">
+              {coinAFiatValue ? `$${formatNumber(coinAFiatValue)}` : "-"}
+            </span>
           </div>
           {coinA && <CoinIcon size="lg" coin={coinA} />}
         </div>
@@ -358,7 +367,9 @@ export function WithdrawReview({
             <span className="font-semibold">
               {coinBAmount} {getCoinSymbol(coinB)}
             </span>
-            <span className="text-muted-foreground">-</span>
+            <span className="text-muted-foreground">
+              {coinBFiatValue ? `$${formatNumber(coinBFiatValue)}` : "-"}
+            </span>
           </div>
           {coinB && <CoinIcon size="lg" coin={coinB} />}
         </div>
@@ -386,8 +397,7 @@ export function WithdrawReview({
               onClick={onSubmit}
               disabled={!psbt}
             >
-              {!psbt && <Loader2 className="animate-spin" />}
-              Sign Transaction
+              {!psbt ? "Insufficient UTXO(s)" : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button

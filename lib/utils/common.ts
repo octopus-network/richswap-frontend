@@ -1,9 +1,10 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as bitcoin from "bitcoinjs-lib";
-import { BITCOIN } from "../constants";
+import { BITCOIN, UNKNOWN_COIN } from "../constants";
 import * as ecc from "@bitcoinerlab/secp256k1";
 import { Coin } from "@/types";
+import axios from "axios";
 
 bitcoin.initEccLib(ecc);
 
@@ -66,4 +67,12 @@ export function getCoinSymbol(coin: Coin | null) {
 
 export function getCoinName(coin: Coin | null) {
   return coin ? (coin.id === BITCOIN.id ? coin.name : coin.id) : "";
+}
+
+export async function fetchCoinById(coinId: string): Promise<Coin> {
+  const queryRes = await axios
+    .get(`/api/runes/search?keyword=${coinId}`)
+    .then((res) => res.data.data ?? []);
+
+  return queryRes.length ? queryRes[0] : UNKNOWN_COIN;
 }

@@ -6,9 +6,15 @@ import {
   DepositState,
   DepositQuote,
   UnspentOutput,
+  PoolInfo,
 } from "@/types";
-import { BITCOIN, UTXO_DUST, COIN_LIST } from "../constants";
-import { getP2trAressAndScript, formatCoinAmount } from "../utils";
+import { BITCOIN, UTXO_DUST } from "../constants";
+import {
+  getP2trAressAndScript,
+  formatCoinAmount,
+  fetchCoinById,
+} from "../utils";
+import Decimal from "decimal.js";
 
 export class Exchange {
   public static async getPoolKey(inputCoinId: string, outputCoinId: string) {
@@ -104,6 +110,59 @@ export class Exchange {
     return undefined;
   }
 
+  public static async getPosition(pool: PoolInfo, userAddress: string) {
+    try {
+      const res = await actor
+        .get_lp(pool.key, userAddress)
+        .then((data: any) => {
+          if (data.Ok) {
+            return data.Ok;
+          } else {
+            throw new Error(
+              data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+            );
+          }
+        });
+
+      const { btc_supply, sqrt_k, user_share } = res as {
+        btc_supply: bigint;
+        sqrt_k: bigint;
+        user_share: bigint;
+      };
+
+      if (!Number(user_share) || !Number(btc_supply)) {
+        return null;
+      }
+
+      const userSharePercentageDecimal = new Decimal(user_share.toString()).div(
+        sqrt_k.toString()
+      );
+
+      const coinAAmount = formatCoinAmount(
+        userSharePercentageDecimal.mul(pool.coinAAmount).toFixed(0),
+        pool.coinA
+      );
+      const coinBAmount = formatCoinAmount(
+        userSharePercentageDecimal.mul(pool.coinBAmount).toFixed(0),
+        pool.coinB
+      );
+
+      return {
+        poolKey: pool.key,
+        coinA: pool.coinA,
+        coinB: pool.coinB,
+        userAddress,
+        userShare: user_share.toString(),
+        coinAAmount,
+        coinBAmount,
+        btcSupply: btc_supply.toString(),
+        sqrtK: sqrt_k.toString(),
+      };
+    } catch {
+      return null;
+    }
+  }
+
   public static async preAddLiquidity(
     poolKey: string,
     coin: Coin,
@@ -165,65 +224,50 @@ export class Exchange {
     }
   }
 
-  public static async preWithdrawLiquidity(poolKey: string, userKey: string) {
+  public static async preWithdrawLiquidity(
+    poolKey: string,
+    userAddress: string,
+    coinBalance: {
+      id: string;
+      value: bigint;
+    }
+  ): Promise<{
+    utxos: UnspentOutput[];
+    nonce: string;
+    output: {
+      coinA: Coin;
+      coinB: Coin;
+      coinAAmount: string;
+      coinBAmount: string;
+    };
+  } | null> {
     try {
       const res = await actor
-        .pre_withdraw_liquidity(poolKey, userKey)
+        .pre_withdraw_liquidity(poolKey, userAddress, coinBalance)
         .then((data: any) => {
-          console.log("pre_withdraw_liquidity", data);
           if (data.Ok) {
-            const { user_outputs, nonce, input } = data.Ok;
-            if (user_outputs?.length) {
-              const [_coinA, _coinB] = data.Ok.user_outputs;
-              const coinA = COIN_LIST.find((coin) => coin.id === _coinA.id);
-              const coinB = COIN_LIST.find((coin) => coin.id === _coinB.id);
-              if (!coinA || !coinB) {
-                throw new Error("Unknown coin");
-              }
-              const coinAAmount = formatCoinAmount(
-                (
-                  _coinA.value -
-                  (_coinA.id === BITCOIN.id ? UTXO_DUST : BigInt(0))
-                ).toString(),
-                coinA
-              );
-
-              const coinBAmount = formatCoinAmount(
-                (
-                  _coinB.value -
-                  (_coinB.id === BITCOIN.id ? UTXO_DUST : BigInt(0))
-                ).toString(),
-                coinB
-              );
-
-              const { address, output } = getP2trAressAndScript(poolKey);
-
-              const utxo: UnspentOutput = {
-                txid: input.txid,
-                vout: input.vout,
-                satoshis: input.satoshis.toString(),
-                address: address!,
-                scriptPk: output,
-                runes: [
-                  {
-                    id: input.balance.id,
-                    amount: input.balance.value.toString(),
-                  },
-                ],
+            return data.Ok as {
+              input: {
+                balance: {
+                  id: string;
+                  value: bigint;
+                };
+                satoshis: bigint;
+                txid: string;
+                vout: number;
               };
-
-              return {
-                poolKey,
-                coinA,
-                coinAAmount,
-                coinB,
-                coinBAmount,
-                nonce: nonce.toString(),
-                utxos: [utxo],
-              };
-            } else {
-              throw new Error("No Outputs");
-            }
+              nonce: bigint;
+              user_outputs: [
+                {
+                  id: string;
+                  value: bigint;
+                },
+                {
+                  id: string;
+                  value: bigint;
+                }
+              ];
+            };
           } else {
             throw new Error(
               data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
@@ -231,9 +275,38 @@ export class Exchange {
           }
         });
 
-      return res;
-    } catch (err: any) {
-      console.log("prewidthdraw error", err);
+      const coinA = BITCOIN;
+      const [_coinA, _coinB] = res.user_outputs;
+
+      const coinB = await fetchCoinById(_coinB.id);
+
+      const { address, output } = getP2trAressAndScript(poolKey);
+
+      const utxo: UnspentOutput = {
+        txid: res.input.txid,
+        vout: res.input.vout,
+        satoshis: res.input.satoshis.toString(),
+        address: address!,
+        scriptPk: output,
+        runes: [
+          {
+            id: res.input.balance.id,
+            amount: res.input.balance.value.toString(),
+          },
+        ],
+      };
+
+      return {
+        utxos: [utxo],
+        nonce: res.nonce.toString(),
+        output: {
+          coinA,
+          coinB,
+          coinAAmount: formatCoinAmount(_coinA.value.toString(), coinA),
+          coinBAmount: formatCoinAmount(_coinB.value.toString(), coinB),
+        },
+      };
+    } catch {
       return null;
     }
   }

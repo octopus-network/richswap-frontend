@@ -7,6 +7,7 @@ import { formatCoinAmount } from "@/lib/utils";
 import axios from "axios";
 import { useDefaultCoins } from "./use-coins";
 import { UNKNOWN_COIN } from "@/lib/constants";
+import { fetchCoinById } from "@/lib/utils";
 
 export function usePoolList() {
   const [poolList, setPoolList] = useState<PoolInfo[]>([]);
@@ -33,14 +34,7 @@ export function usePoolList() {
         let coinA = coins[coinAId];
         let coinB = coins[coinBId];
         if (!coinB) {
-          const queryRes = await axios
-            .get(`/api/runes/search?keyword=${coinBId}`)
-            .then((res) => res.data.data ?? []);
-          if (queryRes.length) {
-            coinB = queryRes[0];
-          } else {
-            coinB = UNKNOWN_COIN;
-          }
+          coinB = await fetchCoinById(coinBId);
         }
 
         pools.push({

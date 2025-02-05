@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 import { useLaserEyes } from "@omnisat/lasereyes";
-import { useCoinPrice } from "@/hooks/use-prices";
+
 import Decimal from "decimal.js";
 import { CoinIcon } from "@/components/coin-icon";
 
@@ -25,34 +25,31 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
     if (!address) {
       setPosition(undefined);
     }
-    Exchange.preWithdrawLiquidity(pool.key, address).then(setPosition);
+    Exchange.getPosition(pool, address).then(setPosition);
   }, [pool, address]);
-
-  const coinAPrice = useCoinPrice(position?.coinA?.id);
-  const coinBPrice = useCoinPrice(position?.coinB?.id);
-
-  const positionValue = useMemo(() => {
-    return position === undefined
-      ? undefined
-      : position === null
-      ? null
-      : coinAPrice && coinBPrice
-      ? new Decimal(coinAPrice)
-          .mul(position.coinAAmount)
-          .plus(new Decimal(coinBPrice).mul(position.coinBAmount))
-          .toNumber()
-      : undefined;
-  }, [position, coinAPrice, coinBPrice]);
 
   const positionPercentage = useMemo(
     () =>
-      positionValue && poolTvl
-        ? new Decimal(positionValue * 100).div(poolTvl).toFixed(2)
-        : positionValue === null
+      position
+        ? new Decimal(position.userShare)
+            .mul(100)
+            .div(position.sqrtK)
+            .toFixed(2)
+        : position === null
         ? null
         : undefined,
-    [positionValue, poolTvl]
+    [position]
   );
+
+  const positionValue = useMemo(() => {
+    return positionPercentage === undefined
+      ? undefined
+      : positionPercentage === null
+      ? null
+      : poolTvl
+      ? new Decimal(poolTvl).mul(positionPercentage).div(100).toNumber()
+      : undefined;
+  }, [poolTvl, positionPercentage]);
 
   return (
     <>
@@ -91,9 +88,11 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                 {positionPercentage ? (
                   <>
                     <span className="font-semibold">{positionPercentage}%</span>
-                    <span className="text-primary/80 text-xs ml-1">
-                      ${formatNumber(positionValue ?? "0")}
-                    </span>
+                    {positionValue && (
+                      <span className="text-primary/80 text-xs ml-1">
+                        ${formatNumber(positionValue ?? "0")}
+                      </span>
+                    )}
                   </>
                 ) : (
                   "-"

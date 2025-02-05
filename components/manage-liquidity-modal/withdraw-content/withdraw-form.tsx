@@ -1,11 +1,16 @@
-import { Position } from "@/types";
+import { Coin, Position } from "@/types";
 import { CoinIcon } from "@/components/coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, getCoinSymbol } from "@/lib/utils";
 import Decimal from "decimal.js";
+import { useEffect, useState } from "react";
 import { UnspentOutput } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Waves } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Exchange } from "@/lib/exchange";
+
+import { useDebounce } from "@/hooks/use-debounce";
 
 export function WithdrawForm({
   position,
@@ -21,6 +26,43 @@ export function WithdrawForm({
 }) {
   const coinAPrice = useCoinPrice(position?.coinA?.id);
   const coinBPrice = useCoinPrice(position?.coinB?.id);
+
+  const [withdrawPercentage, setWithdrawPercentage] = useState(0);
+  const [nonce, setNonce] = useState("0");
+  const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
+  const [output, setOutput] = useState<{
+    coinA: Coin;
+    coinB: Coin;
+    coinAAmount: string;
+    coinBAmount: string;
+  }>();
+
+  const debouncedPercentage = useDebounce(withdrawPercentage, 200);
+
+  useEffect(() => {
+    if (!debouncedPercentage || !position) {
+      setNonce("0");
+      setUtxos([]);
+      setOutput(undefined);
+      return;
+    }
+    const btc =
+      (BigInt(debouncedPercentage) *
+        BigInt(position.userShare) *
+        BigInt(position.btcSupply)) /
+      (BigInt(position.sqrtK) * BigInt(100));
+
+    Exchange.preWithdrawLiquidity(position.poolKey, position.userAddress, {
+      id: "0:0",
+      value: btc,
+    }).then((res) => {
+      if (res) {
+        setNonce(res.nonce);
+        setUtxos(res.utxos);
+        setOutput(res.output);
+      }
+    });
+  }, [debouncedPercentage, position]);
 
   return (
     <div>
@@ -47,7 +89,6 @@ export function WithdrawForm({
                 <CoinIcon coin={position.coinA} className="size-9" />
               )}
             </div>
-
             <div className="flex-1 bg-secondary rounded-lg px-3 py-2 flex justify-between items-center">
               <div className="flex flex-col space-y-0">
                 <span className="font-semibold text-lg">
@@ -68,21 +109,47 @@ export function WithdrawForm({
               )}
             </div>
           </div>
+          <div className="mt-4 flex flex-col gap-2">
+            <span className="text-muted-foreground">Withdraw percentage</span>
+            <div className="flex gap-2">
+              <Slider
+                defaultValue={[0]}
+                max={100}
+                step={1}
+                onValueChange={([value]) => setWithdrawPercentage(value)}
+              />
+              <span>{withdrawPercentage}%</span>
+            </div>
+          </div>
           <Button
             className="mt-4 w-full"
             size="xl"
-            disabled={!position}
+            disabled={!position || !Number(nonce) || !output || !utxos.length}
             onClick={() =>
-              onReview(
-                position.coinAAmount,
-                position.coinBAmount,
-                position.nonce,
-                position.utxos
-              )
+              output
+                ? onReview(output.coinAAmount, output.coinBAmount, nonce, utxos)
+                : null
             }
           >
             Withdraw
           </Button>
+          <div className="mt-4">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">You will receive</span>
+              {output ? (
+                <div className="flex flex-col items-end">
+                  <span>
+                    {output.coinAAmount} {getCoinSymbol(output.coinA)}
+                  </span>
+                  <span>
+                    {output.coinBAmount} {getCoinSymbol(output.coinB)}
+                  </span>
+                </div>
+              ) : (
+                "-"
+              )}
+            </div>
+          </div>
         </>
       ) : (
         <div className="p-4 flex items-center justify-center flex-col h-64">
