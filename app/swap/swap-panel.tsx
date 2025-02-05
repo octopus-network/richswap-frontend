@@ -20,7 +20,7 @@ import {
   useDerivedSwapInfo,
 } from "@/store/swap/hooks";
 
-import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
+import { formatCoinAmount, formatNumber, getCoinSymbol } from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN, COIN_LIST } from "@/lib/constants";
 
@@ -216,7 +216,14 @@ export function SwapPanel() {
         />
         <div className="mt-4 text-sm justify-between flex">
           <span className="text-muted-foreground">Exchange Rate</span>
-          <span className="text-muted-foreground">-</span>
+          <span className="text-muted-foreground">
+            {formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
+              ? `1 ${getCoinSymbol(coinA)} = ${formatNumber(
+                  (1 / Number(formattedAmounts[Field.INPUT])) *
+                    Number(formattedAmounts[Field.OUTPUT])
+                )} ${getCoinSymbol(coinB)}`
+              : "-"}
+          </span>
         </div>
         <div className="mt-6">
           {!address ? (
