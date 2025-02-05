@@ -11,7 +11,15 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: res,
+      data: res?.length
+        ? res.map(({ runeid, spacedRune, rune, symbol, divisibility }) => ({
+            id: runeid,
+            name: spacedRune,
+            runeId: rune,
+            runeSymbol: symbol,
+            decimals: divisibility,
+          }))
+        : [],
     });
   } catch (error) {
     return NextResponse.json({

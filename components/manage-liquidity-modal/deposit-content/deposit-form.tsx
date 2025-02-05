@@ -7,8 +7,9 @@ import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { useMemo } from "react";
+import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
-import { formatCoinAmount } from "@/lib/utils";
+import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 
 import {
   useDerivedDepositInfo,
@@ -73,6 +74,19 @@ export function DepositForm({
     [parsedAmounts, typedValue, dependentField, independentField, dependentCoin]
   );
 
+  const coinAPrice = useCoinPrice(pool.coinA?.id);
+  const coinBPrice = useCoinPrice(pool.coinB?.id);
+
+  const coinAFiatValue = useMemo(
+    () => Number(formattedAmounts[Field.INPUT]) * coinAPrice,
+    [coinAPrice, formattedAmounts]
+  );
+
+  const coinBFiatValue = useMemo(
+    () => Number(formattedAmounts[Field.OUTPUT]) * coinBPrice,
+    [coinBPrice, formattedAmounts]
+  );
+
   const insufficientCoinABalance = useMemo(
     () =>
       new Decimal(coinABalance || "0").lt(formattedAmounts[Field.INPUT] || "0"),
@@ -96,6 +110,7 @@ export function DepositForm({
           independentField === Field.OUTPUT &&
           deposit?.state === DepositState.LOADING
         }
+        fiatValue={coinAFiatValue}
         onUserInput={(value) => onUserInput(Field.INPUT, value)}
         value={formattedAmounts[Field.INPUT]}
         className="border-border mt-4 px-3 pt-1 pb-2 !shadow-none bg-transparent"
@@ -113,6 +128,7 @@ export function DepositForm({
           independentField === Field.INPUT &&
           deposit?.state === DepositState.LOADING
         }
+        fiatValue={coinBFiatValue}
         onUserInput={(value) => onUserInput(Field.OUTPUT, value)}
         value={formattedAmounts[Field.OUTPUT]}
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
@@ -149,12 +165,27 @@ export function DepositForm({
             {deposit?.state === DepositState.INVALID
               ? deposit?.errorMessage ?? "Review"
               : insufficientCoinABalance
-              ? `Inssuficient ${pool.coinA.symbol} Balance`
+              ? `Inssuficient ${getCoinSymbol(pool.coinA)} Balance`
               : insufficientCoinBBalance
-              ? `Inssuficient ${pool.coinB.symbol} Balance`
+              ? `Inssuficient ${getCoinSymbol(pool.coinB)} Balance`
               : "Deposit"}
           </Button>
         )}
+      </div>
+      <div className="mt-4">
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">Currency Reserves</span>
+          <div className="flex flex-col items-end text-muted-foreground">
+            <span>
+              {formatCoinAmount(pool.coinAAmount, pool.coinA)}{" "}
+              {getCoinSymbol(pool.coinA)}
+            </span>
+            <span>
+              {formatCoinAmount(pool.coinBAmount, pool.coinB)}{" "}
+              {getCoinSymbol(pool.coinB)}
+            </span>
+          </div>
+        </div>
       </div>
     </>
   );

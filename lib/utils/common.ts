@@ -64,6 +64,6 @@ export function getCoinSymbol(coin: Coin | null) {
   return coin ? (coin.id === BITCOIN.id ? coin.symbol! : coin.name) : "";
 }
 
-export function getCoinName(coin: Coin) {
-  return coin.id === BITCOIN.id ? coin.name : coin.id;
+export function getCoinName(coin: Coin | null) {
+  return coin ? (coin.id === BITCOIN.id ? coin.name : coin.id) : "";
 }

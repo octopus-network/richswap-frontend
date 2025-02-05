@@ -38,11 +38,11 @@ export function useSearchCoins(searchQuery: string) {
       .get<{
         success: boolean;
         data?: {
-          runeid: string;
-          divisibility: number;
-          rune: string;
-          symbol: string;
-          spacedRune: string;
+          id: string;
+          name: string;
+          runeId: string;
+          runeSymbol: string;
+          decimals: number;
         }[];
       }>(`/api/runes/search?keyword=${searchQuery}`)
       .then((res) => res.data.data)
@@ -53,20 +53,10 @@ export function useSearchCoins(searchQuery: string) {
         const defaultCoinsArray = Object.values(defaultCoins);
         const filteredData = data.filter(
           (item) =>
-            defaultCoinsArray.findIndex((coin) => coin.id === item.runeid) < 0
+            defaultCoinsArray.findIndex((coin) => coin.id === item.id) < 0
         );
 
-        const coins = filteredData.map(
-          ({ runeid, spacedRune, rune, symbol, divisibility }) => ({
-            id: runeid,
-            name: spacedRune,
-            runeId: rune,
-            runeSymbol: symbol,
-            decimals: divisibility,
-          })
-        );
-
-        setSearchCoins(coins);
+        setSearchCoins(filteredData);
       });
   }, [searchQuery, defaultCoins]);
 

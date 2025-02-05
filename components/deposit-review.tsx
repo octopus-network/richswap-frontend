@@ -11,13 +11,15 @@ import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { ToSignInput } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
+import { useCoinPrice } from "@/hooks/use-prices";
+
 import {
   formatNumber,
   getCoinSymbol,
   getP2trAressAndScript,
 } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
@@ -71,6 +73,20 @@ export function DepositReview({
   const addTransaction = useAddTransaction();
 
   const utxos = useUtxos(address);
+
+  const coinAPrice = useCoinPrice(coinA?.id);
+  const coinAFiatValue = useMemo(
+    () =>
+      coinAAmount && coinAPrice ? Number(coinAAmount) * coinAPrice : undefined,
+    [coinAAmount, coinAPrice]
+  );
+
+  const coinBPrice = useCoinPrice(coinB?.id);
+  const coinBFiatValue = useMemo(
+    () =>
+      coinBAmount && coinBPrice ? Number(coinBAmount) * coinBPrice : undefined,
+    [coinBAmount, coinBPrice]
+  );
 
   useEffect(() => {
     console.log(
@@ -356,7 +372,9 @@ export function DepositReview({
             <span className="font-semibold">
               {formatNumber(coinAAmount)} {coinA && getCoinSymbol(coinA)}
             </span>
-            <span className="text-muted-foreground">-</span>
+            <span className="text-muted-foreground">
+              {coinAFiatValue ? `$${formatNumber(coinAFiatValue)}` : "-"}
+            </span>
           </div>
           {coinA && <CoinIcon size="lg" coin={coinA} />}
         </div>
@@ -365,7 +383,9 @@ export function DepositReview({
             <span className="font-semibold">
               {formatNumber(coinBAmount)} {coinB && getCoinSymbol(coinB)}
             </span>
-            <span className="text-muted-foreground">-</span>
+            <span className="text-muted-foreground">
+              {coinBFiatValue ? `$${formatNumber(coinBFiatValue)}` : "-"}
+            </span>
           </div>
           {coinB && <CoinIcon size="lg" coin={coinB} />}
         </div>

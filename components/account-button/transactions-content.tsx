@@ -66,7 +66,6 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
       transaction.status === TransactionStatus.FINALIZED ||
       transaction.status === TransactionStatus.BROADCASTED
     ) {
-      console.log(transaction);
       window.open(`https://mempool.space/tx/${transaction.txid}`, "_blank");
     } else if (transaction.status === TransactionStatus.REJECTED) {
       setShowErrorMessage((prev) => !prev);

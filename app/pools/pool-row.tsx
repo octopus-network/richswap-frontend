@@ -57,7 +57,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
   return (
     <>
       <div
-        className="grid md:grid-cols-12 grid-cols-8 items-center gap-1 bg-secondary/80 hover:bg-secondary cursor-pointer px-4 py-3 rounded-xl"
+        className="grid md:grid-cols-12 grid-cols-8 h-[68px] items-center gap-1 bg-secondary/80 hover:bg-secondary cursor-pointer px-4 py-3 rounded-xl"
         onClick={() => setManageLiquidityModalOpen(true)}
       >
         <div className="col-span-4 flex items-center space-x-3">

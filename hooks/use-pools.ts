@@ -4,8 +4,9 @@ import { useCoinPrices } from "./use-prices";
 import { PoolInfo } from "@/types";
 import Decimal from "decimal.js";
 import { formatCoinAmount } from "@/lib/utils";
-
+import axios from "axios";
 import { useDefaultCoins } from "./use-coins";
+import { UNKNOWN_COIN } from "@/lib/constants";
 
 export function usePoolList() {
   const [poolList, setPoolList] = useState<PoolInfo[]>([]);
@@ -23,16 +24,31 @@ export function usePoolList() {
   }, []);
 
   useEffect(() => {
-    Exchange.getPoolList().then((res) => {
-      const pools = res.map(({ coinAId, coinBId, ...rest }) => {
-        const coinA = coins[coinAId];
-        const coinB = coins[coinBId];
-        return {
+    Exchange.getPoolList().then(async (res) => {
+      const pools = [];
+
+      for (let i = 0; i < res.length; i++) {
+        const { coinAId, coinBId, ...rest } = res[i];
+
+        let coinA = coins[coinAId];
+        let coinB = coins[coinBId];
+        if (!coinB) {
+          const queryRes = await axios
+            .get(`/api/runes/search?keyword=${coinBId}`)
+            .then((res) => res.data.data ?? []);
+          if (queryRes.length) {
+            coinB = queryRes[0];
+          } else {
+            coinB = UNKNOWN_COIN;
+          }
+        }
+
+        pools.push({
           ...rest,
           coinA,
           coinB,
-        };
-      });
+        });
+      }
 
       setPoolList(pools);
     });

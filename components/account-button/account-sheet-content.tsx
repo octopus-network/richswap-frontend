@@ -60,14 +60,14 @@ export function AccountSheetContent() {
             </Button>
           </Link>
         </div>
-        <Tabs defaultValue="coins" className="h-[calc(100%_-_69px)] mt-4">
+        <Tabs defaultValue="coins" className="h-[calc(100%_-_182px)] mt-4">
           <TabsList className="bg-transparent p-0 h-auto w-full rounded-none justify-start px-2">
             <TabsTrigger value="coins" className="px-2 h-8">Coins</TabsTrigger>
             <TabsTrigger value="transactions" className="px-2 h-8">
               Transactions
             </TabsTrigger>
           </TabsList>
-          <div className="overflow-y-scroll h-[calc(100%_-_47px)]">
+          <div className="overflow-y-scroll h-[calc(100%_-_32px)]">
             <CoinsContent />
             <TransactionsContent />
           </div>

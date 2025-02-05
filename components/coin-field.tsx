@@ -175,9 +175,9 @@ export function CoinField({
             <div className="flex gap-2 items-center w-[calc(100%_-_24px)]">
               <CoinIcon coin={coin!} />
               <div className="flex flex-col text-left w-[calc(100%_-_32px)]">
-                <span className="truncate">{coin!.symbol}</span>
+                <span className="truncate">{getCoinSymbol(coin)}</span>
                 <span className="text-xs w-full text-muted-foreground font-normal truncate">
-                  {coin!.name}
+                  {getCoinName(coin)}
                 </span>
               </div>
             </div>

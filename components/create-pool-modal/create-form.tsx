@@ -8,6 +8,7 @@ import { useCoinBalance } from "@/hooks/use-balance";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { useMemo, useState } from "react";
 import Decimal from "decimal.js";
+import { useCoinPrice } from "@/hooks/use-prices";
 import { Exchange } from "@/lib/exchange";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { getCoinSymbol } from "@/lib/utils";
@@ -38,6 +39,20 @@ export function CreateForm({
 
   const addPopup = useAddPopup();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
+
+  const coinAPrice = useCoinPrice(coinA?.id);
+  const coinAFiatValue = useMemo(
+    () =>
+      coinAAmount && coinAPrice ? Number(coinAAmount) * coinAPrice : undefined,
+    [coinAAmount, coinAPrice]
+  );
+
+  const coinBPrice = useCoinPrice(coinB?.id);
+  const coinBFiatValue = useMemo(
+    () =>
+      coinBAmount && coinBPrice ? Number(coinBAmount) * coinBPrice : undefined,
+    [coinBAmount, coinBPrice]
+  );
 
   const insufficientCoinABalance = useMemo(
     () => new Decimal(coinABalance || "0").lt(coinAAmount || "0"),
@@ -77,6 +92,7 @@ export function CreateForm({
         label="Bitcoin"
         autoFocus
         value={coinAAmount}
+        fiatValue={coinAFiatValue}
         onUserInput={setCoinAAmount}
         className="border-border mt-4 px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
@@ -91,6 +107,7 @@ export function CreateForm({
         label="Rune"
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
         value={coinBAmount}
+        fiatValue={coinBFiatValue}
         onSelectCoin={setCoinB}
         onUserInput={setCoinBAmount}
       />
