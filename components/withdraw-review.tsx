@@ -126,7 +126,7 @@ export function WithdrawReview({
     poolUtxos.forEach((utxo) => {
       const rune = utxo.runes.find((rune) => rune.id === coinB.id);
       poolRuneAmount += BigInt(rune!.amount);
-      poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
+      poolBtcAmount += BigInt(utxo.satoshis);
     });
 
     const [runeBlock, runeIdx] = coinB.id.split(":");
@@ -210,8 +210,6 @@ export function WithdrawReview({
       const psbtHex = psbt.toHex();
       setStep(1);
 
-      const { address: poolAddress } = getP2trAressAndScript(poolKey);
-
       const toSignInputs: ToSignInput[] = userUtxos.map((_, index) => ({
         address,
         index,
@@ -228,31 +226,13 @@ export function WithdrawReview({
       const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
       const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
 
-      let poolBtcAmount = BigInt(0),
-        poolRuneAmount = BigInt(0);
-
-      poolUtxos.forEach((utxo) => {
-        const rune = utxo.runes.find((rune) => rune.id === coinB.id);
-        poolRuneAmount += BigInt(rune!.amount);
-        poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
-      });
-
       const txid = await Orchestrator.invoke({
         instruction_set: {
           steps: [
             {
               method: "withdraw_liquidity",
               exchange_id: EXCHANGE_ID,
-              input_coins: [
-                {
-                  coin_balance: { id: coinA.id, value: poolBtcAmount },
-                  owner_address: poolAddress!,
-                },
-                {
-                  coin_balance: { id: coinB.id, value: poolRuneAmount },
-                  owner_address: poolAddress!,
-                },
-              ],
+              input_coins: [],
               output_coins: [
                 {
                   coin_balance: {
@@ -284,14 +264,14 @@ export function WithdrawReview({
         poolKey,
         coinAAmount,
         coinBAmount,
-        type: TransactionType.ADD_LIQUIDITY,
+        type: TransactionType.WITHDRAW_LIQUIDITY,
         status: TransactionStatus.BROADCASTED,
       });
 
       addPopup(
         "Success",
         PopupStatus.SUCCESS,
-        `Add liduiqity to ${getCoinSymbol(coinB)} Pool`
+        `Withdraw liduiqity from ${getCoinSymbol(coinB)} Pool`
       );
 
       onSuccess();

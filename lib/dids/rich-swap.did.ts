@@ -137,6 +137,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     ),
     get_fee_collector: IDL.Func([], [IDL.Text], ["query"]),
     get_lp: IDL.Func([IDL.Text, IDL.Text], [Result_1], ["query"]),
+    get_min_tx_value: IDL.Func([], [IDL.Nat64], ["query"]),
     list_pools: IDL.Func(
       [IDL.Opt(IDL.Text), IDL.Nat32],
       [IDL.Vec(PoolMeta)],

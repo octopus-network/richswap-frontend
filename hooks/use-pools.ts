@@ -4,9 +4,7 @@ import { useCoinPrices } from "./use-prices";
 import { PoolInfo } from "@/types";
 import Decimal from "decimal.js";
 import { formatCoinAmount } from "@/lib/utils";
-import axios from "axios";
 import { useDefaultCoins } from "./use-coins";
-import { UNKNOWN_COIN } from "@/lib/constants";
 import { fetchCoinById } from "@/lib/utils";
 
 export function usePoolList() {
