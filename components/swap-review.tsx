@@ -295,6 +295,7 @@ export function SwapReview({
 
       setStep(2);
 
+      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
       const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
 
       const txid = await Orchestrator.invoke({
@@ -303,7 +304,15 @@ export function SwapReview({
             {
               method: "swap",
               exchange_id: EXCHANGE_ID,
-              input_coins: [],
+              input_coins: [
+                {
+                  coin_balance: {
+                    id: coinA.id,
+                    value: coinAAmountBigInt,
+                  },
+                  owner_address: address,
+                },
+              ],
               output_coins: [
                 {
                   coin_balance: {
