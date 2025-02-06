@@ -70,7 +70,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
         </div>
         <div className="col-span-4 hidden flex-col md:flex items-center justify-center space-y-1">
           <span className="text-muted-foreground text-xs">TVL</span>
-          {poolTvl ? (
+          {poolTvl !== undefined ? (
             <span className="font-semibold text-sm md:text-md">
               ${formatNumber(poolTvl)}
             </span>

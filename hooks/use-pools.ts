@@ -29,7 +29,7 @@ export function usePoolList() {
       for (let i = 0; i < res.length; i++) {
         const { coinAId, coinBId, ...rest } = res[i];
 
-        let coinA = coins[coinAId];
+        const coinA = coins[coinAId];
         let coinB = coins[coinBId];
         if (!coinB) {
           coinB = await fetchCoinById(coinBId);

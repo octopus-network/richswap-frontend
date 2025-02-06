@@ -8,7 +8,7 @@ import {
   UnspentOutput,
   PoolInfo,
 } from "@/types";
-import { BITCOIN, UTXO_DUST } from "../constants";
+import { BITCOIN } from "../constants";
 import {
   getP2trAressAndScript,
   formatCoinAmount,
@@ -99,7 +99,7 @@ export class Exchange {
           key: poolKey,
           coinAId: BITCOIN.id,
           coinBId: meta.id,
-          coinAAmount: (utxo[0]?.satoshis ?? BigInt(0) - UTXO_DUST).toString(),
+          coinAAmount: (utxo[0]?.satoshis ?? BigInt(0)).toString(),
           coinBAmount: utxo[0]?.balance.value.toString() ?? "0",
         };
       }

@@ -8,6 +8,7 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 
 export default function Pools() {
   const poolList = usePoolList();
+
   const { address } = useLaserEyes();
   return (
     <div className="md:pt-12 w-full flex flex-col items-center">
