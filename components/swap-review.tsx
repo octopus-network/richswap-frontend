@@ -282,8 +282,6 @@ export function SwapReview({
       const psbtHex = psbt.toHex();
       setStep(1);
 
-      const { address: poolAddress } = getP2trAressAndScript(poolKey);
-
       const toSignInputs: ToSignInput[] = userUtxos.map((_, index) => ({
         address,
         index,
@@ -297,15 +295,7 @@ export function SwapReview({
 
       setStep(2);
 
-      const isSwapRune = coinA.id === BITCOIN.id;
-      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
       const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
-
-      let poolBtcAmount = BigInt(0);
-
-      poolUtxos.forEach((utxo) => {
-        poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
-      });
 
       const txid = await Orchestrator.invoke({
         instruction_set: {
@@ -313,34 +303,16 @@ export function SwapReview({
             {
               method: "swap",
               exchange_id: EXCHANGE_ID,
-              input_coins: [
+              input_coins: [],
+              output_coins: [
                 {
                   coin_balance: {
-                    id: coinA.id,
-                    value: coinAAmountBigInt,
+                    id: coinB.id,
+                    value: coinBAmountBigInt,
                   },
                   owner_address: address,
                 },
               ],
-              output_coins: isSwapRune
-                ? [
-                    {
-                      coin_balance: {
-                        id: coinB.id,
-                        value: coinBAmountBigInt,
-                      },
-                      owner_address: poolAddress!,
-                    },
-                  ]
-                : [
-                    {
-                      coin_balance: {
-                        id: BITCOIN.id,
-                        value: poolBtcAmount - coinBAmountBigInt,
-                      },
-                      owner_address: poolAddress!,
-                    },
-                  ],
               pool_key: [poolKey],
               nonce: [BigInt(nonce)],
             },
