@@ -3,6 +3,7 @@ import { atom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
 import { TransactionInfo, TransactionStatus } from "@/types";
+import { useMemo } from "react";
 
 export const transactionsAtom = atomWithStorage<TransactionInfo[]>(
   "transactions",
@@ -83,4 +84,16 @@ export function useUpdateTransactionStatus() {
 export function useTransactions() {
   const transactions = useAtomValue(transactionsAtom);
   return transactions;
+}
+
+export function usePendingTransactions() {
+  const pendingTransactions = useTransactions();
+
+  return useMemo(
+    () =>
+      pendingTransactions.filter(
+        (tx) => tx.status === TransactionStatus.BROADCASTED
+      ),
+    [pendingTransactions]
+  );
 }

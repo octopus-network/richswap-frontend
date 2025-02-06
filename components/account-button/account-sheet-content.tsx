@@ -10,12 +10,14 @@ import { useClipboard } from "@/hooks/use-clipboard";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CoinsContent } from "./coins-content";
+import { usePendingTransactions } from "@/store/transactions";
 import { TransactionsContent } from "./transactions-content";
 
 export function AccountSheetContent() {
   const { provider, address, disconnect } = useLaserEyes();
   const { hasCopied, onCopy } = useClipboard(address);
   const btcBalacne = useCoinBalance(address, BITCOIN.id);
+  const pendingTransactions = usePendingTransactions();
   return (
     <SheetContent className="p-0" hideCloseButton>
       <div className="flex flex-col h-full">
@@ -62,9 +64,19 @@ export function AccountSheetContent() {
         </div>
         <Tabs defaultValue="coins" className="h-[calc(100%_-_182px)] mt-4">
           <TabsList className="bg-transparent p-0 h-auto w-full rounded-none justify-start px-2">
-            <TabsTrigger value="coins" className="px-2 h-8">Coins</TabsTrigger>
-            <TabsTrigger value="transactions" className="px-2 h-8">
+            <TabsTrigger value="coins" className="px-2 h-8">
+              Coins
+            </TabsTrigger>
+            <TabsTrigger value="transactions" className="px-2 h-8 relative">
+              {pendingTransactions.length > 0 && (
+                <div className="absolute size-2 rounded-full bg-primary/60 left-0.5 top-0.5">
+                  <span className="animate-ping -left-0.5 -top-0.5 absolute inline-flex size-3 rounded-full bg-yellow-300 opacity-75" />
+                </div>
+              )}
               Transactions
+              {pendingTransactions.length > 0
+                ? ` (${pendingTransactions.length} pending)`
+                : ""}
             </TabsTrigger>
           </TabsList>
           <div className="overflow-y-scroll h-[calc(100%_-_32px)]">

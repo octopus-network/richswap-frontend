@@ -137,7 +137,11 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     ),
     get_fee_collector: IDL.Func([], [IDL.Text], ["query"]),
     get_lp: IDL.Func([IDL.Text, IDL.Text], [Result_1], ["query"]),
-    list_pools: IDL.Func([], [IDL.Vec(PoolMeta)], ["query"]),
+    list_pools: IDL.Func(
+      [IDL.Opt(IDL.Text), IDL.Nat32],
+      [IDL.Vec(PoolMeta)],
+      ["query"]
+    ),
     manually_transfer: IDL.Func(
       [IDL.Text, IDL.Nat32, IDL.Nat64],
       [IDL.Opt(IDL.Text)],

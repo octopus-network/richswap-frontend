@@ -38,7 +38,7 @@ export class Exchange {
     }[]
   > {
     try {
-      const res = (await actor.list_pools()) as {
+      const res = (await actor.list_pools([], 20)) as {
         id: string;
         name: string;
       }[];
@@ -306,7 +306,8 @@ export class Exchange {
           coinBAmount: formatCoinAmount(_coinB.value.toString(), coinB),
         },
       };
-    } catch {
+    } catch (err: any) {
+      console.log("pre_withdraw error", err);
       return null;
     }
   }

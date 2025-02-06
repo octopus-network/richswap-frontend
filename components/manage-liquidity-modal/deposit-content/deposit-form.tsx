@@ -165,9 +165,9 @@ export function DepositForm({
             {deposit?.state === DepositState.INVALID
               ? deposit?.errorMessage ?? "Review"
               : insufficientCoinABalance
-              ? `Inssuficient ${getCoinSymbol(pool.coinA)} Balance`
+              ? `Insufficient ${getCoinSymbol(pool.coinA)} Balance`
               : insufficientCoinBBalance
-              ? `Inssuficient ${getCoinSymbol(pool.coinB)} Balance`
+              ? `Insufficient ${getCoinSymbol(pool.coinB)} Balance`
               : "Deposit"}
           </Button>
         )}

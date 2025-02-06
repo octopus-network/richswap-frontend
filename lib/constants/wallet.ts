@@ -1,4 +1,4 @@
-import { UNISAT, OKX, PHANTOM, XVERSE } from "@omnisat/lasereyes";
+import { UNISAT, OKX, XVERSE, MAGIC_EDEN } from "@omnisat/lasereyes";
 
 export const WALLETS: Record<
   string,
@@ -18,11 +18,16 @@ export const WALLETS: Record<
     icon: "/static/icons/okx.png",
     url: "https://www.okx.com",
   },
-  [PHANTOM]: {
-    name: "Phantom",
-    icon: "/static/icons/phantom.png",
-    url: "https://phantom.com",
+  [MAGIC_EDEN]: {
+    name: "Magic Eden Wallet",
+    icon: "/static/icons/magic_eden.png",
+    url: "https://wallet.magiceden.io/download",
   },
+  // [PHANTOM]: {
+  //   name: "Phantom",
+  //   icon: "/static/icons/phantom.png",
+  //   url: "https://phantom.com",
+  // },
   [XVERSE]: {
     name: "Xverse",
     icon: "/static/icons/xverse.png",
