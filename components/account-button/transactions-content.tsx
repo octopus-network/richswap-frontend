@@ -79,7 +79,7 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
       onClick={onClick}
     >
       <div className="flex justify-between items-center">
-        <span className="text-sm">{title}</span>
+        <span className="text-sm truncate gap-4">{title}</span>
         <div className="flex items-center space-x-1">
           <TxStatusBadge transaction={transaction} />
           {transaction.status === TransactionStatus.REJECTED ? (
@@ -96,9 +96,9 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
           {transaction.message || "Unknown Error"}
         </div>
       )}
-      <div className="flex justify-between items-ceneter">
-        <span className="text-xs text-muted-foreground">{description}</span>
-        <span className="text-xs text-muted-foreground">
+      <div className="flex justify-between gap-4">
+        <span className="text-xs text-muted-foreground truncate">{description}</span>
+        <span className="text-xs text-muted-foreground truncate">
           {moment(transaction.timestamp).fromNow()}
         </span>
       </div>
