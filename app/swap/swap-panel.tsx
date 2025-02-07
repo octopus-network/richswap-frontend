@@ -152,12 +152,14 @@ export function SwapPanel() {
 
   const tooSmallFunds = useMemo(
     () =>
-      coinA &&
-      new Decimal(
-        coinA.id === BITCOIN.id
-          ? formattedAmounts[Field.INPUT]
-          : formattedAmounts[Field.OUTPUT]
-      ).lt(0.0001),
+      Boolean(
+        coinA &&
+          new Decimal(
+            coinA.id === BITCOIN.id
+              ? formattedAmounts[Field.INPUT]
+              : formattedAmounts[Field.OUTPUT]
+          ).lt(0.0001)
+      ),
     [coinA, formattedAmounts]
   );
 

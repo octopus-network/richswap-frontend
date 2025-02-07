@@ -102,7 +102,7 @@ export function WithdrawReview({
       return;
     }
 
-    const txFee = BigInt(Math.ceil(271 * (recommendedFeeRate ?? 10)));
+    const txFee = BigInt(Math.ceil(322 * (recommendedFeeRate ?? 10)));
 
     const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
     const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
