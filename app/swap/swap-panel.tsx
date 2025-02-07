@@ -156,8 +156,8 @@ export function SwapPanel() {
         coinA &&
           new Decimal(
             coinA.id === BITCOIN.id
-              ? formattedAmounts[Field.INPUT]
-              : formattedAmounts[Field.OUTPUT]
+              ? formattedAmounts[Field.INPUT] || 0
+              : formattedAmounts[Field.OUTPUT] || 0
           ).lt(0.0001)
       ),
     [coinA, formattedAmounts]

@@ -9,6 +9,7 @@ import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
+import { BITCOIN } from "@/lib/constants";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 
 import {
@@ -110,6 +111,19 @@ export function DepositForm({
     [formattedAmounts, coinBBalance, outputAmount]
   );
 
+  const tooSmallFunds = useMemo(
+    () =>
+      Boolean(
+        pool.coinA &&
+          new Decimal(
+            pool.coinA.id === BITCOIN.id
+              ? formattedAmounts[Field.INPUT] || 0
+              : formattedAmounts[Field.OUTPUT] || 0
+          ).lt(0.0001)
+      ),
+    [pool, formattedAmounts]
+  );
+
   return (
     <>
       <CoinField
@@ -127,6 +141,7 @@ export function DepositForm({
             : onUserInput(Field.INPUT, value)
         }
         value={
+          independentField === Field.OUTPUT &&
           Number(formattedAmounts[Field.INPUT]) === 0
             ? inputAmount
             : formattedAmounts[Field.INPUT]
@@ -154,6 +169,7 @@ export function DepositForm({
             : onUserInput(Field.OUTPUT, value)
         }
         value={
+          independentField === Field.INPUT &&
           Number(formattedAmounts[Field.OUTPUT]) === 0
             ? outputAmount
             : formattedAmounts[Field.OUTPUT]
@@ -178,7 +194,8 @@ export function DepositForm({
               deposit.state === DepositState.INVALID ||
               deposit.state === DepositState.LOADING ||
               insufficientCoinABalance ||
-              insufficientCoinBBalance
+              insufficientCoinBBalance ||
+              tooSmallFunds
             }
             onClick={() =>
               onReview(
@@ -187,7 +204,7 @@ export function DepositForm({
                   : formattedAmounts[Field.INPUT],
                 Number(formattedAmounts[Field.OUTPUT]) === 0
                   ? outputAmount
-                  : formattedAmounts[Field.INPUT],
+                  : formattedAmounts[Field.OUTPUT],
                 deposit?.nonce ?? "0",
                 deposit?.utxos ?? []
               )
@@ -199,6 +216,8 @@ export function DepositForm({
               ? `Insufficient ${getCoinSymbol(pool.coinA)} Balance`
               : insufficientCoinBBalance
               ? `Insufficient ${getCoinSymbol(pool.coinB)} Balance`
+              : tooSmallFunds
+              ? "Too Small Funds"
               : "Deposit"}
           </Button>
         )}
