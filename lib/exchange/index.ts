@@ -48,16 +48,17 @@ export class Exchange {
 
         const poolInfos = await Promise.all(promises);
 
-        const filteredInfos = poolInfos.filter((info) => !!info);
+        const poolList = [];
 
-        return filteredInfos.map((info, idx) => {
-          const { name } = res[idx];
+        for (let i = 0; i < poolInfos.length; i++) {
+          const info = poolInfos[i];
+          const { name } = res[i];
+          if (info) {
+            poolList.push({ ...info, name });
+          }
+        }
 
-          return {
-            ...info,
-            name,
-          };
-        });
+        return poolList;
       }
     } catch (error) {
       console.log(error);

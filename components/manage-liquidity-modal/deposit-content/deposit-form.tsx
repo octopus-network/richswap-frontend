@@ -6,7 +6,7 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
@@ -37,6 +37,9 @@ export function DepositForm({
   const { independentField, typedValue } = depositState;
 
   const { deposit, parsedAmount } = useDerivedDepositInfo(pool);
+
+  const [inputAmount, setInputAmount] = useState("");
+  const [outputAmount, setOutputAmount] = useState("");
 
   const coinABalance = useCoinBalance(address, pool.coinA?.id);
   const coinBBalance = useCoinBalance(address, pool.coinB?.id);
@@ -89,16 +92,22 @@ export function DepositForm({
 
   const insufficientCoinABalance = useMemo(
     () =>
-      new Decimal(coinABalance || "0").lt(formattedAmounts[Field.INPUT] || "0"),
-    [formattedAmounts, coinABalance]
+      new Decimal(coinABalance || "0").lt(
+        (Number(formattedAmounts[Field.INPUT]) === 0
+          ? inputAmount
+          : formattedAmounts[Field.INPUT]) || "0"
+      ),
+    [formattedAmounts, coinABalance, inputAmount]
   );
 
   const insufficientCoinBBalance = useMemo(
     () =>
       new Decimal(coinBBalance || "0").lt(
-        formattedAmounts[Field.OUTPUT] || "0"
+        (Number(formattedAmounts[Field.OUTPUT]) === 0
+          ? outputAmount
+          : formattedAmounts[Field.OUTPUT]) || "0"
       ),
-    [formattedAmounts, coinBBalance]
+    [formattedAmounts, coinBBalance, outputAmount]
   );
 
   return (
@@ -111,8 +120,17 @@ export function DepositForm({
           deposit?.state === DepositState.LOADING
         }
         fiatValue={coinAFiatValue}
-        onUserInput={(value) => onUserInput(Field.INPUT, value)}
-        value={formattedAmounts[Field.INPUT]}
+        onUserInput={(value) =>
+          independentField === Field.OUTPUT &&
+          Number(formattedAmounts[Field.INPUT]) === 0
+            ? setInputAmount(value)
+            : onUserInput(Field.INPUT, value)
+        }
+        value={
+          Number(formattedAmounts[Field.INPUT]) === 0
+            ? inputAmount
+            : formattedAmounts[Field.INPUT]
+        }
         className="border-border mt-4 px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
       <div className="flex items-center justify-center h-10 relative">
@@ -129,8 +147,17 @@ export function DepositForm({
           deposit?.state === DepositState.LOADING
         }
         fiatValue={coinBFiatValue}
-        onUserInput={(value) => onUserInput(Field.OUTPUT, value)}
-        value={formattedAmounts[Field.OUTPUT]}
+        onUserInput={(value) =>
+          independentField === Field.INPUT &&
+          Number(formattedAmounts[Field.OUTPUT]) === 0
+            ? setOutputAmount(value)
+            : onUserInput(Field.OUTPUT, value)
+        }
+        value={
+          Number(formattedAmounts[Field.OUTPUT]) === 0
+            ? outputAmount
+            : formattedAmounts[Field.OUTPUT]
+        }
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
       <div className="mt-6">
@@ -155,8 +182,12 @@ export function DepositForm({
             }
             onClick={() =>
               onReview(
-                formattedAmounts[Field.INPUT],
-                formattedAmounts[Field.OUTPUT],
+                Number(formattedAmounts[Field.INPUT]) === 0
+                  ? inputAmount
+                  : formattedAmounts[Field.INPUT],
+                Number(formattedAmounts[Field.OUTPUT]) === 0
+                  ? outputAmount
+                  : formattedAmounts[Field.INPUT],
                 deposit?.nonce ?? "0",
                 deposit?.utxos ?? []
               )
