@@ -4,7 +4,13 @@ import { usePathname } from "next/navigation";
 import { useRef, useState, useMemo } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import { FaXTwitter } from "react-icons/fa6";
-import { ArrowLeftRight, Waves, Ellipsis, BookOpen } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Waves,
+  Ellipsis,
+  BookOpen,
+  MessageSquare,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -122,6 +128,15 @@ export const Nav = () => {
             <DropdownMenuItem>
               <BookOpen />
               <span className="ml-2 mr-1">FAQ</span>
+            </DropdownMenuItem>
+          </Link>
+          <Link
+            href="https://oc.app/community/o5uz6-dqaaa-aaaar-bhnia-cai/channel/1529837122/?ref=g6b5s-jqaaa-aaaar-bfbjq-cai"
+            target="_blank"
+          >
+            <DropdownMenuItem>
+              <MessageSquare />
+              <span className="ml-2 mr-1">Support</span>
             </DropdownMenuItem>
           </Link>
         </DropdownMenuContent>

@@ -9,6 +9,7 @@ import {
   UNISAT,
   PHANTOM,
   XVERSE,
+  MAGIC_EDEN,
 } from "@omnisat/lasereyes";
 import { useCallback, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
@@ -16,8 +17,15 @@ import { PopupStatus, useAddPopup } from "@/store/popups";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 
 export function WalletRow({ wallet }: { wallet: string }) {
-  const { connect, isConnecting, hasOkx, hasUnisat, hasPhantom, hasXverse } =
-    useLaserEyes();
+  const {
+    connect,
+    isConnecting,
+    hasOkx,
+    hasUnisat,
+    hasPhantom,
+    hasXverse,
+    hasMagicEden,
+  } = useLaserEyes();
 
   const [connectingWallet, setConnectingWallet] = useState<string>();
 
@@ -29,6 +37,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
       [UNISAT]: hasUnisat,
       [OKX]: hasOkx,
       [PHANTOM]: hasPhantom,
+      [MAGIC_EDEN]: hasMagicEden,
       [XVERSE]: hasXverse,
     };
 

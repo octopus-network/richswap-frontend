@@ -26,8 +26,12 @@ export function useDebouncedSwap(
   const skipRoutingFetch = isDebouncing;
 
   useEffect(() => {
-    if (skipRoutingFetch || !inputCoin || !outputCoin || !inputAmount) {
+    if (skipRoutingFetch) {
       return;
+    }
+
+    if (!inputCoin || !outputCoin || !inputAmount) {
+      return setSwapQuote(undefined);
     }
 
     if (Number(formatCoinAmount(inputAmount, inputCoin)) < 0.00001) {

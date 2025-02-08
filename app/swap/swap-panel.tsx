@@ -162,6 +162,7 @@ export function SwapPanel() {
 
   const handleSwitchCoins = () => {
     onSwitchCoins();
+    onUserInput(Field.INPUT, "");
     const params = new URLSearchParams(searchParams?.toString() || "");
     if (coinA) {
       const coinASymbol = getCoinSymbol(coinA);

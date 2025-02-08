@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "../coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -32,14 +33,6 @@ export function Footer() {
             `${feeRate} sats/vb`
           )}
         </div>
-        <a
-          className="px-4 py-2 cursor-pointer hover:bg-secondary flex items-center"
-          href="https://oc.app/community/o5uz6-dqaaa-aaaar-bhnia-cai/channel/1529837122/?ref=g6b5s-jqaaa-aaaar-bfbjq-cai"
-          target="_blank"
-        >
-          <MessageSquare className="size-4" />
-          <span className="ml-2">Support</span>
-        </a>
       </div>
     </div>
   );
