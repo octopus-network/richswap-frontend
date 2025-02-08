@@ -77,14 +77,11 @@ export function SwapPanel() {
   );
 
   const coinABalance = useCoinBalance(address, coinA?.id);
-  const coinBBalance = useCoinBalance(address, coinB?.id);
 
   const insufficientBalance = useMemo(
     () =>
-      new Decimal(
-        (independentField === Field.INPUT ? coinABalance : coinBBalance) || "0"
-      ).lt(typedValue || "0"),
-    [typedValue, coinABalance, independentField, coinBBalance]
+      new Decimal(formattedAmounts[Field.INPUT] || "0").gt(coinABalance || "0"),
+    [formattedAmounts, coinABalance]
   );
 
   useEffect(() => {
