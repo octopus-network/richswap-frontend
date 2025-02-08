@@ -102,7 +102,7 @@ export function SwapReview({
 
   const runePriceInSats = useMemo(
     () =>
-      new Decimal(btcAmount).mul(Math.pow(10, 9)).div(runeAmount).toFixed(2),
+      new Decimal(btcAmount).mul(Math.pow(10, 8)).div(runeAmount).toFixed(2),
     [runeAmount, btcAmount]
   );
 
@@ -423,7 +423,7 @@ export function SwapReview({
                   {btcPrice
                     ? `$${new Decimal(runePriceInSats)
                         .mul(btcPrice)
-                        .div(Math.pow(10, 9))
+                        .div(Math.pow(10, 8))
                         .toFixed(4)}`
                     : ""}
                 </span>

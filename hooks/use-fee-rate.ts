@@ -23,13 +23,15 @@ export function useRecommendedFeeRate() {
 
   return useMemo(
     () =>
-      new Decimal(
-        feeRate?.length
-          ? feeRate.sort((a, b) => b.feeRate - a.feeRate)[0].feeRate
-          : 10
-      )
-        .mul(1)
-        .toNumber(),
+      feeRate?.length
+        ? new Decimal(
+            feeRate?.length
+              ? feeRate.sort((a, b) => b.feeRate - a.feeRate)[0].feeRate
+              : 10
+          )
+            .mul(1)
+            .toNumber()
+        : undefined,
     [feeRate]
   );
 }

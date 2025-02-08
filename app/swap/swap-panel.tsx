@@ -150,6 +150,19 @@ export function SwapPanel() {
     window.history.replaceState(null, "", newUrl);
   };
 
+  const tooSmallFunds = useMemo(
+    () =>
+      Boolean(
+        coinA &&
+          new Decimal(
+            coinA.id === BITCOIN.id
+              ? formattedAmounts[Field.INPUT] || 0
+              : formattedAmounts[Field.OUTPUT] || 0
+          ).lt(0.0001)
+      ),
+    [coinA, formattedAmounts]
+  );
+
   const handleSwitchCoins = () => {
     onSwitchCoins();
     const params = new URLSearchParams(searchParams?.toString() || "");
@@ -248,7 +261,8 @@ export function SwapPanel() {
                 swap.state === SwapState.INVALID ||
                 swap.state === SwapState.LOADING ||
                 insufficientBalance ||
-                !formattedAmounts[Field.OUTPUT]
+                !formattedAmounts[Field.OUTPUT] ||
+                tooSmallFunds
               }
             >
               {insufficientBalance
@@ -262,6 +276,8 @@ export function SwapPanel() {
                   ? "No Pool"
                   : swap.state === SwapState.INVALID
                   ? swap.errorMessage
+                  : tooSmallFunds
+                  ? "Too Small Funds"
                   : "Review"
                 : "Review"}
             </Button>

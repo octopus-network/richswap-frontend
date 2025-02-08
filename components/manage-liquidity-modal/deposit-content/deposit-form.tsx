@@ -6,9 +6,10 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
+import { BITCOIN } from "@/lib/constants";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 
 import {
@@ -37,6 +38,9 @@ export function DepositForm({
   const { independentField, typedValue } = depositState;
 
   const { deposit, parsedAmount } = useDerivedDepositInfo(pool);
+
+  const [inputAmount, setInputAmount] = useState("");
+  const [outputAmount, setOutputAmount] = useState("");
 
   const coinABalance = useCoinBalance(address, pool.coinA?.id);
   const coinBBalance = useCoinBalance(address, pool.coinB?.id);
@@ -89,16 +93,35 @@ export function DepositForm({
 
   const insufficientCoinABalance = useMemo(
     () =>
-      new Decimal(coinABalance || "0").lt(formattedAmounts[Field.INPUT] || "0"),
-    [formattedAmounts, coinABalance]
+      new Decimal(coinABalance || "0").lt(
+        (deposit?.state === DepositState.EMPTY
+          ? inputAmount
+          : formattedAmounts[Field.INPUT]) || "0"
+      ),
+    [formattedAmounts, coinABalance, inputAmount, deposit]
   );
 
   const insufficientCoinBBalance = useMemo(
     () =>
       new Decimal(coinBBalance || "0").lt(
-        formattedAmounts[Field.OUTPUT] || "0"
+        (deposit?.state === DepositState.EMPTY
+          ? outputAmount
+          : formattedAmounts[Field.OUTPUT]) || "0"
       ),
-    [formattedAmounts, coinBBalance]
+    [formattedAmounts, coinBBalance, outputAmount, deposit]
+  );
+
+  const tooSmallFunds = useMemo(
+    () =>
+      Boolean(
+        pool.coinA &&
+          new Decimal(
+            pool.coinA.id === BITCOIN.id
+              ? formattedAmounts[Field.INPUT] || 0
+              : formattedAmounts[Field.OUTPUT] || 0
+          ).lt(0.0001)
+      ),
+    [pool, formattedAmounts]
   );
 
   return (
@@ -111,8 +134,18 @@ export function DepositForm({
           deposit?.state === DepositState.LOADING
         }
         fiatValue={coinAFiatValue}
-        onUserInput={(value) => onUserInput(Field.INPUT, value)}
-        value={formattedAmounts[Field.INPUT]}
+        onUserInput={(value) =>
+          independentField === Field.OUTPUT &&
+          deposit?.state === DepositState.EMPTY
+            ? setInputAmount(value)
+            : onUserInput(Field.INPUT, value)
+        }
+        value={
+          independentField === Field.OUTPUT &&
+          deposit?.state === DepositState.EMPTY
+            ? inputAmount
+            : formattedAmounts[Field.INPUT]
+        }
         className="border-border mt-4 px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
       <div className="flex items-center justify-center h-10 relative">
@@ -129,8 +162,18 @@ export function DepositForm({
           deposit?.state === DepositState.LOADING
         }
         fiatValue={coinBFiatValue}
-        onUserInput={(value) => onUserInput(Field.OUTPUT, value)}
-        value={formattedAmounts[Field.OUTPUT]}
+        onUserInput={(value) =>
+          independentField === Field.INPUT &&
+          deposit?.state === DepositState.EMPTY
+            ? setOutputAmount(value)
+            : onUserInput(Field.OUTPUT, value)
+        }
+        value={
+          independentField === Field.INPUT &&
+          deposit?.state === DepositState.EMPTY
+            ? outputAmount
+            : formattedAmounts[Field.OUTPUT]
+        }
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
       <div className="mt-6">
@@ -151,12 +194,17 @@ export function DepositForm({
               deposit.state === DepositState.INVALID ||
               deposit.state === DepositState.LOADING ||
               insufficientCoinABalance ||
-              insufficientCoinBBalance
+              insufficientCoinBBalance ||
+              tooSmallFunds
             }
             onClick={() =>
               onReview(
-                formattedAmounts[Field.INPUT],
-                formattedAmounts[Field.OUTPUT],
+                deposit?.state === DepositState.EMPTY
+                  ? inputAmount
+                  : formattedAmounts[Field.INPUT],
+                deposit?.state === DepositState.EMPTY
+                  ? outputAmount
+                  : formattedAmounts[Field.OUTPUT],
                 deposit?.nonce ?? "0",
                 deposit?.utxos ?? []
               )
@@ -168,6 +216,8 @@ export function DepositForm({
               ? `Insufficient ${getCoinSymbol(pool.coinA)} Balance`
               : insufficientCoinBBalance
               ? `Insufficient ${getCoinSymbol(pool.coinB)} Balance`
+              : tooSmallFunds
+              ? "Too Small Funds"
               : "Deposit"}
           </Button>
         )}

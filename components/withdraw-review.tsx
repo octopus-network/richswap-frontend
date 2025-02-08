@@ -103,7 +103,7 @@ export function WithdrawReview({
       return;
     }
 
-    const txFee = BigInt(Math.ceil(356 * (recommendedFeeRate ?? 10)));
+    const txFee = BigInt(Math.ceil(322 * (recommendedFeeRate ?? 10)));
 
     const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
     const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
@@ -116,7 +116,7 @@ export function WithdrawReview({
       btcAmount += BigInt(utxo.satoshis);
     });
 
-    const changeBtcAmount = btcAmount - txFee;
+    const changeBtcAmount = btcAmount - txFee - UTXO_DUST;
 
     const _userUtxos = btcUtxos;
     setUserUtxos(_userUtxos);

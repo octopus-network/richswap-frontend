@@ -89,15 +89,6 @@ export function DepositReview({
   );
 
   useEffect(() => {
-    console.log(
-      poolKey,
-      coinA,
-      coinB,
-      coinAAmount,
-      coinBAmount,
-      utxos,
-      poolUtxos
-    );
     if (
       !poolKey ||
       !coinA ||
@@ -115,7 +106,7 @@ export function DepositReview({
       return;
     }
 
-    const txFee = BigInt(Math.ceil(294 * (recommendedFeeRate ?? 10)));
+    const txFee = BigInt(Math.ceil(384 * (recommendedFeeRate ?? 10)));
 
     const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
     const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));

@@ -48,16 +48,17 @@ export class Exchange {
 
         const poolInfos = await Promise.all(promises);
 
-        const filteredInfos = poolInfos.filter((info) => !!info);
+        const poolList = [];
 
-        return filteredInfos.map((info, idx) => {
-          const { name } = res[idx];
+        for (let i = 0; i < poolInfos.length; i++) {
+          const info = poolInfos[i];
+          const { name } = res[i];
+          if (info) {
+            poolList.push({ ...info, name });
+          }
+        }
 
-          return {
-            ...info,
-            name,
-          };
-        });
+        return poolList;
       }
     } catch (error) {
       console.log(error);
@@ -172,7 +173,6 @@ export class Exchange {
       const { output, inputs, nonce } = await actor
         .pre_add_liquidity(poolKey, { id: coin.id, value: BigInt(coinAmount) })
         .then((data: any) => {
-          console.log(coin, coinAmount, data);
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -207,7 +207,8 @@ export class Exchange {
       });
 
       const quote = {
-        state: DepositState.VALID,
+        state:
+          output.value > BigInt(0) ? DepositState.VALID : DepositState.EMPTY,
         inputAmount: coinAmount,
         outputAmount: output.value.toString(),
         utxos,
