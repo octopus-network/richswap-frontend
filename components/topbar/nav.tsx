@@ -4,13 +4,7 @@ import { usePathname } from "next/navigation";
 import { useRef, useState, useMemo } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import { FaXTwitter } from "react-icons/fa6";
-import {
-  ArrowLeftRight,
-  Waves,
-  Ellipsis,
-  BookOpen,
-  ExternalLink,
-} from "lucide-react";
+import { ArrowLeftRight, Waves, Ellipsis, BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
