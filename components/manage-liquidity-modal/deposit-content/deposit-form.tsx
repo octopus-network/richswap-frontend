@@ -201,9 +201,7 @@ export function DepositForm({
             }
             onClick={() =>
               onReview(
-                deposit?.state === DepositState.EMPTY
-                  ? inputAmount
-                  : formattedAmounts[Field.INPUT],
+                formattedAmounts[Field.INPUT],
                 deposit?.state === DepositState.EMPTY
                   ? outputAmount
                   : formattedAmounts[Field.OUTPUT],
