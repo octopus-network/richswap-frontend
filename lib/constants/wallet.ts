@@ -1,4 +1,4 @@
-import { UNISAT, OKX, XVERSE, MAGIC_EDEN } from "@omnisat/lasereyes";
+import { UNISAT, MAGIC_EDEN } from "@omnisat/lasereyes";
 
 export const WALLETS: Record<
   string,
@@ -13,11 +13,11 @@ export const WALLETS: Record<
     icon: "/static/icons/unisat.png",
     url: "https://unisat.io/download",
   },
-  [OKX]: {
-    name: "OKX Wallet",
-    icon: "/static/icons/okx.png",
-    url: "https://www.okx.com",
-  },
+  // [OKX]: {
+  //   name: "OKX Wallet",
+  //   icon: "/static/icons/okx.png",
+  //   url: "https://www.okx.com",
+  // },
   [MAGIC_EDEN]: {
     name: "Magic Eden Wallet",
     icon: "/static/icons/magic_eden.png",
@@ -28,9 +28,9 @@ export const WALLETS: Record<
   //   icon: "/static/icons/phantom.png",
   //   url: "https://phantom.com",
   // },
-  [XVERSE]: {
-    name: "Xverse",
-    icon: "/static/icons/xverse.png",
-    url: "https://www.xverse.app",
-  },
+  // [XVERSE]: {
+  //   name: "Xverse",
+  //   icon: "/static/icons/xverse.png",
+  //   url: "https://www.xverse.app",
+  // },
 };

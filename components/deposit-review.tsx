@@ -25,7 +25,7 @@ import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
 import { useUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
-import { useRecommendedFeeRate } from "@/hooks/use-fee-rate";
+import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { parseCoinAmount, selectUtxos } from "@/lib/utils";
 import { Transaction } from "@/lib/transaction";
 import { UTXO_DUST } from "@/lib/constants";
@@ -68,7 +68,7 @@ export function DepositReview({
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
-  const recommendedFeeRate = useRecommendedFeeRate();
+  const recommendedFeeRate = useRecommendedFeeRateFromOrchestrator();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 

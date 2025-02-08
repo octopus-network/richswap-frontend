@@ -1,6 +1,7 @@
 import { PoolInfo, Field, DepositState, UnspentOutput } from "@/types";
 import { CoinField } from "@/components/coin-field";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeftRight } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useSetAtom } from "jotai";
@@ -10,6 +11,7 @@ import { useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 import { BITCOIN } from "@/lib/constants";
+
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 
 import {
@@ -230,10 +232,21 @@ export function DepositForm({
               {formatCoinAmount(pool.coinAAmount, pool.coinA)}{" "}
               {getCoinSymbol(pool.coinA)}
             </span>
-            <span>
-              {formatCoinAmount(pool.coinBAmount, pool.coinB)}{" "}
-              {getCoinSymbol(pool.coinB)}
-            </span>
+            <div className="flex gap-2">
+              <span>
+                {formatCoinAmount(pool.coinBAmount, pool.coinB)}{" "}
+                {getCoinSymbol(pool.coinB)}
+              </span>
+              <Link
+                href={`/swap?coinA=${getCoinSymbol(
+                  pool.coinA
+                )}&coinB=${getCoinSymbol(pool.coinB)}`}
+                className="text-primary/70 gap-1 flex hover:text-primary"
+              >
+                <ArrowLeftRight className="size-3" />
+                Swap
+              </Link>
+            </div>
           </div>
         </div>
       </div>

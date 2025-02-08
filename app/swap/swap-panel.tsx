@@ -77,14 +77,11 @@ export function SwapPanel() {
   );
 
   const coinABalance = useCoinBalance(address, coinA?.id);
-  const coinBBalance = useCoinBalance(address, coinB?.id);
 
   const insufficientBalance = useMemo(
     () =>
-      new Decimal(
-        (independentField === Field.INPUT ? coinABalance : coinBBalance) || "0"
-      ).lt(typedValue || "0"),
-    [typedValue, coinABalance, independentField, coinBBalance]
+      new Decimal(formattedAmounts[Field.INPUT] || "0").gt(coinABalance || "0"),
+    [formattedAmounts, coinABalance]
   );
 
   useEffect(() => {
@@ -165,6 +162,7 @@ export function SwapPanel() {
 
   const handleSwitchCoins = () => {
     onSwitchCoins();
+    onUserInput(Field.INPUT, "");
     const params = new URLSearchParams(searchParams?.toString() || "");
     if (coinA) {
       const coinASymbol = getCoinSymbol(coinA);
@@ -188,6 +186,28 @@ export function SwapPanel() {
 
     window.history.replaceState(null, "", newUrl);
   };
+
+  const [runeAmount, btcAmount] = useMemo(
+    () =>
+      coinA?.id === BITCOIN.id
+        ? [
+            formattedAmounts[Field.OUTPUT] || "0",
+            formattedAmounts[Field.INPUT] || "0",
+          ]
+        : [
+            formattedAmounts[Field.INPUT] || "0",
+            formattedAmounts[Field.OUTPUT] || "0",
+          ],
+    [coinA, formattedAmounts]
+  );
+
+  const runePriceInSats = useMemo(
+    () =>
+      Number(runeAmount) > 0
+        ? new Decimal(btcAmount).mul(Math.pow(10, 8)).div(runeAmount).toFixed(2)
+        : undefined,
+    [runeAmount, btcAmount]
+  );
 
   return (
     <>
@@ -217,28 +237,21 @@ export function SwapPanel() {
         </div>
         <CoinField
           label="You're buying"
+          placeholder=""
           coin={coinB}
           pulsing={
             independentField === Field.INPUT &&
             swap?.state === SwapState.LOADING
           }
+          disabled
           fiatValue={coinBFiatValue}
           onUserInput={(value) => onUserInput(Field.OUTPUT, value)}
           value={formattedAmounts[Field.OUTPUT]}
+          className="bg-secondary/60"
           onSelectCoin={(coin) => handleSelectCoin(Field.OUTPUT, coin)}
         />
-        <div className="mt-4 text-sm justify-between flex">
-          <span className="text-muted-foreground">Exchange Rate</span>
-          <span className="text-muted-foreground">
-            {formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
-              ? `1 ${getCoinSymbol(coinB)} = ${formatNumber(
-                  (1 / Number(formattedAmounts[Field.OUTPUT])) *
-                    Number(formattedAmounts[Field.INPUT])
-                )} ${getCoinSymbol(coinA)}`
-              : "-"}
-          </span>
-        </div>
-        <div className="mt-6">
+
+        <div className="mt-4">
           {!address ? (
             <Button
               size="xl"
@@ -282,6 +295,32 @@ export function SwapPanel() {
                 : "Review"}
             </Button>
           )}
+        </div>
+        <div className="mt-4 text-xs flex flex-col gap-1">
+          <div className="justify-between flex">
+            <span className="text-muted-foreground">Exchange Rate</span>
+            <span>
+              {formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
+                ? `1 ${getCoinSymbol(coinB)} = ${formatNumber(
+                    (1 / Number(formattedAmounts[Field.OUTPUT])) *
+                      Number(formattedAmounts[Field.INPUT])
+                  )} ${getCoinSymbol(coinA)}`
+                : "-"}
+            </span>
+          </div>
+          <div className="justify-between flex">
+            <span className="text-muted-foreground">Rune Price</span>
+            {runePriceInSats !== undefined ? (
+              <div className="flex flex-col items-end">
+                <span>
+                  {runePriceInSats}{" "}
+                  <em className="text-muted-foreground">sats</em>
+                </span>
+              </div>
+            ) : (
+              "-"
+            )}
+          </div>
         </div>
       </div>
       <ReviewModal

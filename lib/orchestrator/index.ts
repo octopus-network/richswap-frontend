@@ -51,4 +51,9 @@ export class Orchestrator {
     )) as string[];
     return res;
   }
+
+  static async getRecommendedFee() {
+    const res = (await actor.get_recommended_tx_fee_per_vbyte([])) as bigint;
+    return res ? Number(res) : 5;
+  }
 }

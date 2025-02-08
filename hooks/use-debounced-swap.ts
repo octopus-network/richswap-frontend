@@ -26,14 +26,19 @@ export function useDebouncedSwap(
   const skipRoutingFetch = isDebouncing;
 
   useEffect(() => {
-    if (skipRoutingFetch || !inputCoin || !outputCoin || !inputAmount) {
+    if (skipRoutingFetch) {
       return;
+    }
+
+    if (!inputCoin || !outputCoin || !inputAmount) {
+      return setSwapQuote(undefined);
     }
 
     if (Number(formatCoinAmount(inputAmount, inputCoin)) < 0.00001) {
       return setSwapQuote(() => ({
         state: SwapState.INVALID,
         inputAmount,
+        outputAmount: "",
         errorMessage: "Too small amount",
       }));
     }
@@ -41,7 +46,7 @@ export function useDebouncedSwap(
     setSwapQuote((prev) => ({
       state: SwapState.LOADING,
       inputAmount,
-      outputAmount: prev?.outputAmount,
+      outputAmount: inputAmount === "" ? "" : prev?.outputAmount,
     }));
 
     Exchange.preSwap(inputCoin, outputCoin, inputAmount).then((res) => {

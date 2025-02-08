@@ -94,7 +94,7 @@ export class Exchange {
         const data = res[0];
         const meta = data.meta;
         const state = data.state[0];
-        const { utxo } = state;
+        const { utxo } = state ?? { utxo: [] };
 
         return {
           key: poolKey,

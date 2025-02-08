@@ -43,7 +43,7 @@ export function AccountSheetContent() {
               )}
             </Button>
             <Button size="icon" variant="ghost" onClick={disconnect}>
-              <Power className="size-4" />
+              <Power className="size-4 text-destructive" />
             </Button>
           </div>
         </div>

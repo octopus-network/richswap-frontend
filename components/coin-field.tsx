@@ -84,6 +84,8 @@ export function CoinField({
   value,
   coin,
   onUserInput,
+  placeholder,
+  disabled,
 }: {
   label: string;
   coin: Coin | null;
@@ -92,8 +94,10 @@ export function CoinField({
   pulsing?: boolean;
   value: string;
   fiatValue?: number;
+  placeholder?: string;
   onSelectCoin?: (coin: Coin) => void;
   onUserInput: (value: string) => void;
+  disabled?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectCoinModalOpen, setSelectCoinModalOpen] = useState(false);
@@ -122,9 +126,10 @@ export function CoinField({
     <>
       <div
         className={cn(
-          "bg-card hover:bg-card/60 hover:border-primary/30 hover:focus-within:border-primary/60 px-4 py-2 rounded-xl focus-within:border-primary/80 focus-within:shadow-swap-input border border-transparent transition-colors duration-200",
+          "bg-card/80 px-4 py-2 rounded-xl focus-within:border-primary/80 focus-within:shadow-swap-input border border-transparent transition-colors duration-200",
           className,
-          pulsing && "animate-pulse duration-600"
+          !disabled &&
+            "hover:focus-within:border-primary/60 hover:border-primary/30"
         )}
         onClick={() => {
           inputRef?.current?.focus();
@@ -135,7 +140,7 @@ export function CoinField({
           {address && coin && (
             <div className="flex space-x-2 items-center">
               {balance === undefined ? (
-                <Skeleton className="w-24 h-6" />
+                <Skeleton className="w-24 h-6 bg-slate-500/30" />
               ) : (
                 <>
                   <div className="flex items-center text-muted-foreground">
@@ -144,22 +149,26 @@ export function CoinField({
                       {formatNumber(balance)} {coin?.symbol}
                     </span>
                   </div>
-                  <Button
-                    size="xs"
-                    variant="secondary"
-                    onClick={onSetHalf}
-                    className="text-muted-foreground hover:text-foreground uppercase"
-                  >
-                    Half
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="secondary"
-                    onClick={onSetMax}
-                    className="text-muted-foreground hover:text-foreground uppercase"
-                  >
-                    Max
-                  </Button>
+                  {!disabled && (
+                    <>
+                      <Button
+                        size="xs"
+                        variant="secondary"
+                        onClick={onSetHalf}
+                        className="text-muted-foreground hover:text-foreground uppercase"
+                      >
+                        Half
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="secondary"
+                        onClick={onSetMax}
+                        className="text-muted-foreground hover:text-foreground uppercase"
+                      >
+                        Max
+                      </Button>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -183,19 +192,40 @@ export function CoinField({
             </div>
           )}
           <div className="flex h-full text-right flex-col w-full">
-            <Input
-              type="number"
-              placeholder="0.00"
-              ref={inputRef}
-              autoFocus={autoFocus}
-              onChange={(e) => onUserInput(e.target.value)}
-              value={value}
-              className="border-none rounded-none p-0 h-full w-full font-bold text-right text-xl md:text-xl focus:outline-none"
-            />
+            {disabled ? (
+              pulsing ? (
+                <div className="w-full flex justify-end">
+                  <Skeleton className="w-24 h-7 bg-slate-500/30" />
+                </div>
+              ) : (
+                <span className="font-bold text-right text-xl md:text-xl h-full">
+                  {value}
+                </span>
+              )
+            ) : (
+              <Input
+                type="number"
+                ref={inputRef}
+                autoFocus={autoFocus}
+                placeholder={placeholder ?? "0.00"}
+                onChange={(e) => onUserInput(e.target.value)}
+                value={value}
+                disabled={disabled}
+                className={cn(
+                  "border-none rounded-none p-0 h-full w-full font-bold text-right text-xl md:text-xl focus:outline-none"
+                )}
+              />
+            )}
             {fiatValue ? (
-              <span className="text-muted-foreground text-xs">
-                ${formatNumber(fiatValue)}
-              </span>
+              pulsing ? (
+                <div className="w-full flex justify-end">
+                  <Skeleton className="w-12 h-3 mt-1 bg-slate-500/30" />
+                </div>
+              ) : (
+                <span className="text-muted-foreground text-xs">
+                  ${formatNumber(fiatValue)}
+                </span>
+              )
             ) : null}
           </div>
         </div>

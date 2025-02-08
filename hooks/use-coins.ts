@@ -4,27 +4,10 @@ import { Coin } from "@/types";
 import { useUserAddedCoins } from "@/store/user/hooks";
 import axios from "axios";
 
-export function useDefaultCoins() {
-  const userAddedCoins = useUserAddedCoins();
-  return useMemo(
-    () =>
-      userAddedCoins.reduce<{ [id: string]: Coin }>(
-        (coinMap, coin) => {
-          if (!coinMap[coin.id]) {
-            coinMap[coin.id] = coin;
-          }
-          return coinMap;
-        },
-        {
-          ...COIN_LIST.reduce((obj, coin) => {
-            obj[coin.id] = coin;
-            return obj;
-          }, {} as Record<string, Coin>),
-        }
-      ),
-    [userAddedCoins]
-  );
-}
+import { Exchange } from "@/lib/exchange";
+import { fetchCoinById } from "@/lib/utils";
+import { useAtomValue } from "jotai";
+import { poolCoinsAtom } from "@/store/pool-coins";
 
 export function useSearchCoins(searchQuery: string) {
   const [searchCoins, setSearchCoins] = useState<Coin[]>([]);
@@ -61,4 +44,39 @@ export function useSearchCoins(searchQuery: string) {
   }, [searchQuery, defaultCoins]);
 
   return searchCoins;
+}
+
+export function useDefaultCoins() {
+  const userAddedCoins = useUserAddedCoins();
+  const poolCoins = useAtomValue(poolCoinsAtom);
+  return useMemo(
+    () =>
+      userAddedCoins.reduce<{ [id: string]: Coin }>(
+        (coinMap, coin) => {
+          if (!coinMap[coin.id]) {
+            coinMap[coin.id] = coin;
+          }
+          return coinMap;
+        },
+        {
+          ...COIN_LIST.reduce(
+            (obj, coin) => {
+              if (!obj[coin.id]) {
+                obj[coin.id] = coin;
+              }
+              return obj;
+            },
+            {
+              ...poolCoins.reduce((obj, coin) => {
+                if (!obj[coin.id]) {
+                  obj[coin.id] = coin;
+                }
+                return obj;
+              }, {} as Record<string, Coin>),
+            }
+          ),
+        }
+      ),
+    [userAddedCoins, poolCoins]
+  );
 }

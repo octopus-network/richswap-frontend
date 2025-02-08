@@ -96,7 +96,7 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
           {transaction.message || "Unknown Error"}
         </div>
       )}
-      <div className="flex justify-between items-ceneter gap-3">
+      <div className="flex justify-between items-center gap-3">
         <span className="text-xs text-muted-foreground truncate">{description}</span>
         <span className="text-xs text-muted-foreground truncate">
           {moment(transaction.timestamp).fromNow()}

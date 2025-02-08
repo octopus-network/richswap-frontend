@@ -7,7 +7,7 @@ import {
   UnspentOutput,
 } from "@/types";
 import { ToSignInput } from "@/types";
-
+import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "@/components/coin-icon";
@@ -23,7 +23,7 @@ import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
 import { useUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
-import { useRecommendedFeeRate } from "@/hooks/use-fee-rate";
+
 import { parseCoinAmount, selectUtxos } from "@/lib/utils";
 import { Transaction } from "@/lib/transaction";
 import { UTXO_DUST } from "@/lib/constants";
@@ -72,7 +72,7 @@ export function SwapReview({
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
-  const recommendedFeeRate = useRecommendedFeeRate();
+  const recommendedFeeRate = useRecommendedFeeRateFromOrchestrator();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 
@@ -92,7 +92,7 @@ export function SwapReview({
     [coinBAmount, coinBPrice]
   );
 
-  const [rune, btc, runeAmount, btcAmount] = useMemo(
+  const [, btc, runeAmount, btcAmount] = useMemo(
     () =>
       coinA?.id === BITCOIN.id
         ? [coinB, coinA, coinBAmount, coinAAmount]
@@ -126,7 +126,7 @@ export function SwapReview({
       return;
     }
 
-    const txFee = BigInt(Math.ceil(374 * (recommendedFeeRate ?? 10)));
+    const txFee = BigInt(Math.ceil(373 * (recommendedFeeRate ?? 10)));
 
     const isSwapRune = coinA.id === BITCOIN.id;
     const involvedRune = isSwapRune ? coinB : coinA;
@@ -411,15 +411,13 @@ export function SwapReview({
         <>
           <div className="space-y-1 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">
-                {rune?.symbol} Price
-              </span>
+              <span className="text-muted-foreground">Rune Price</span>
               <div className="flex flex-col items-end">
                 <span>
                   {runePriceInSats}{" "}
                   <em className="text-muted-foreground">sats</em>
                 </span>
-                <span className="text-muted-foreground text-xs">
+                <span className="text-primary/80 text-xs">
                   {btcPrice
                     ? `$${new Decimal(runePriceInSats)
                         .mul(btcPrice)
@@ -438,7 +436,7 @@ export function SwapReview({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Network cost</span>
-              <span>$ -</span>
+              <span>-</span>
             </div>
           </div>
           <div className="mt-4 flex flex-col space-y-3">

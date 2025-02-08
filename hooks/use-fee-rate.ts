@@ -1,7 +1,8 @@
 import axios from "axios";
 import useSWR from "swr";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Decimal from "decimal.js";
+import { Orchestrator } from "@/lib/orchestrator";
 
 export function useFeeRate() {
   const { data } = useSWR(
@@ -34,4 +35,15 @@ export function useRecommendedFeeRate() {
         : undefined,
     [feeRate]
   );
+}
+
+export function useRecommendedFeeRateFromOrchestrator() {
+  const [feeRate, setFeeRate] = useState(5);
+  useEffect(() => {
+    Orchestrator.getRecommendedFee().then((fee) => {
+      setFeeRate(fee);
+    });
+  }, []);
+
+  return feeRate;
 }

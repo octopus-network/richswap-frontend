@@ -10,17 +10,33 @@ import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { Skeleton } from "../ui/skeleton";
 import { useEffect, useState } from "react";
 import { MenuButton } from "./menu-button";
+import { Exchange } from "@/lib/exchange";
+import { fetchCoinById } from "@/lib/utils";
+import { poolCoinsAtom } from "@/store/pool-coins";
 
 export function Topbar() {
   const { address, isInitializing } = useLaserEyes();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
   const [initialized, setInitialized] = useState(false);
 
+  const setPoolCoins = useSetAtom(poolCoinsAtom);
+
   useEffect(() => {
     if (!isInitializing) {
       setInitialized(true);
     }
   }, [isInitializing]);
+
+  useEffect(() => {
+    Exchange.getPoolList()
+      .then((res) => {
+        const promises = res.map((item) => fetchCoinById(item.coinBId));
+        return Promise.all(promises);
+      })
+      .then((res) => {
+        setPoolCoins(res);
+      });
+  }, [setPoolCoins]);
 
   return (
     <div className="flex justify-between items-cetner p-4">
