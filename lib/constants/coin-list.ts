@@ -25,20 +25,4 @@ export const COIN_LIST: Coin[] = [
     runeId: "HOPEYOUGETRICH",
     decimals: 2,
   },
-  {
-    id: "840000:142",
-    symbol: "XBITCOIN",
-    runeSymbol: "✖",
-    name: "RUNES•X•BITCOIN",
-    runeId: "RUNESXBITCOIN",
-    decimals: 0,
-  },
-  {
-    id: "840106:129",
-    symbol: "TITAN",
-    runeSymbol: "¤",
-    name: "SATOSHI•RUNE•TITAN",
-    runeId: "SATOSHIRUNETITAN",
-    decimals: 8,
-  },
 ];

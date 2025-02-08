@@ -126,7 +126,7 @@ export function SwapReview({
       return;
     }
 
-    const txFee = BigInt(Math.ceil(323 * (recommendedFeeRate ?? 10)));
+    const txFee = BigInt(Math.ceil(373 * (recommendedFeeRate ?? 10)));
 
     const isSwapRune = coinA.id === BITCOIN.id;
     const involvedRune = isSwapRune ? coinB : coinA;

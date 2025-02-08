@@ -214,14 +214,17 @@ export function SwapPanel() {
         </div>
         <CoinField
           label="You're buying"
+          placeholder=""
           coin={coinB}
           pulsing={
             independentField === Field.INPUT &&
             swap?.state === SwapState.LOADING
           }
+          disabled
           fiatValue={coinBFiatValue}
           onUserInput={(value) => onUserInput(Field.OUTPUT, value)}
           value={formattedAmounts[Field.OUTPUT]}
+          className="bg-secondary/60"
           onSelectCoin={(coin) => handleSelectCoin(Field.OUTPUT, coin)}
         />
         <div className="mt-4 text-sm justify-between flex">
