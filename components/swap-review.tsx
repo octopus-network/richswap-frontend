@@ -92,7 +92,7 @@ export function SwapReview({
     [coinBAmount, coinBPrice]
   );
 
-  const [rune, btc, runeAmount, btcAmount] = useMemo(
+  const [, btc, runeAmount, btcAmount] = useMemo(
     () =>
       coinA?.id === BITCOIN.id
         ? [coinB, coinA, coinBAmount, coinAAmount]
@@ -411,15 +411,13 @@ export function SwapReview({
         <>
           <div className="space-y-1 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">
-                {rune?.symbol} Price
-              </span>
+              <span className="text-muted-foreground">Rune Price</span>
               <div className="flex flex-col items-end">
                 <span>
                   {runePriceInSats}{" "}
                   <em className="text-muted-foreground">sats</em>
                 </span>
-                <span className="text-muted-foreground text-xs">
+                <span className="text-primary/80 text-xs">
                   {btcPrice
                     ? `$${new Decimal(runePriceInSats)
                         .mul(btcPrice)
@@ -438,7 +436,7 @@ export function SwapReview({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Network cost</span>
-              <span>$ -</span>
+              <span>-</span>
             </div>
           </div>
           <div className="mt-4 flex flex-col space-y-3">
