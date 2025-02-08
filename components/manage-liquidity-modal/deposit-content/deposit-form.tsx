@@ -94,21 +94,21 @@ export function DepositForm({
   const insufficientCoinABalance = useMemo(
     () =>
       new Decimal(coinABalance || "0").lt(
-        (Number(formattedAmounts[Field.INPUT]) === 0
+        (deposit?.state === DepositState.EMPTY
           ? inputAmount
           : formattedAmounts[Field.INPUT]) || "0"
       ),
-    [formattedAmounts, coinABalance, inputAmount]
+    [formattedAmounts, coinABalance, inputAmount, deposit]
   );
 
   const insufficientCoinBBalance = useMemo(
     () =>
       new Decimal(coinBBalance || "0").lt(
-        (Number(formattedAmounts[Field.OUTPUT]) === 0
+        (deposit?.state === DepositState.EMPTY
           ? outputAmount
           : formattedAmounts[Field.OUTPUT]) || "0"
       ),
-    [formattedAmounts, coinBBalance, outputAmount]
+    [formattedAmounts, coinBBalance, outputAmount, deposit]
   );
 
   const tooSmallFunds = useMemo(
@@ -136,13 +136,13 @@ export function DepositForm({
         fiatValue={coinAFiatValue}
         onUserInput={(value) =>
           independentField === Field.OUTPUT &&
-          Number(formattedAmounts[Field.INPUT]) === 0
+          deposit?.state === DepositState.EMPTY
             ? setInputAmount(value)
             : onUserInput(Field.INPUT, value)
         }
         value={
           independentField === Field.OUTPUT &&
-          Number(formattedAmounts[Field.INPUT]) === 0
+          deposit?.state === DepositState.EMPTY
             ? inputAmount
             : formattedAmounts[Field.INPUT]
         }
@@ -164,13 +164,13 @@ export function DepositForm({
         fiatValue={coinBFiatValue}
         onUserInput={(value) =>
           independentField === Field.INPUT &&
-          Number(formattedAmounts[Field.OUTPUT]) === 0
+          deposit?.state === DepositState.EMPTY
             ? setOutputAmount(value)
             : onUserInput(Field.OUTPUT, value)
         }
         value={
           independentField === Field.INPUT &&
-          Number(formattedAmounts[Field.OUTPUT]) === 0
+          deposit?.state === DepositState.EMPTY
             ? outputAmount
             : formattedAmounts[Field.OUTPUT]
         }
@@ -199,10 +199,10 @@ export function DepositForm({
             }
             onClick={() =>
               onReview(
-                Number(formattedAmounts[Field.INPUT]) === 0
+                deposit?.state === DepositState.EMPTY
                   ? inputAmount
                   : formattedAmounts[Field.INPUT],
-                Number(formattedAmounts[Field.OUTPUT]) === 0
+                deposit?.state === DepositState.EMPTY
                   ? outputAmount
                   : formattedAmounts[Field.OUTPUT],
                 deposit?.nonce ?? "0",

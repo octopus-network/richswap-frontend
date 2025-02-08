@@ -173,7 +173,6 @@ export class Exchange {
       const { output, inputs, nonce } = await actor
         .pre_add_liquidity(poolKey, { id: coin.id, value: BigInt(coinAmount) })
         .then((data: any) => {
-          console.log(coin, coinAmount, data);
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -208,7 +207,8 @@ export class Exchange {
       });
 
       const quote = {
-        state: DepositState.VALID,
+        state:
+          output.value > BigInt(0) ? DepositState.VALID : DepositState.EMPTY,
         inputAmount: coinAmount,
         outputAmount: output.value.toString(),
         utxos,

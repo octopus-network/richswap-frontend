@@ -34,7 +34,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
         ? new Decimal(position.userShare)
             .mul(100)
             .div(position.sqrtK)
-            .toFixed(2)
+            .toFixed(4)
         : position === null
         ? null
         : undefined,
@@ -87,12 +87,14 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
               <div className="flex items-center">
                 {positionPercentage ? (
                   <>
-                    <span className="font-semibold">{positionPercentage}%</span>
-                    {positionValue && (
+                    <span className="font-semibold">
+                      {formatNumber(positionPercentage)}%
+                    </span>
+                    {positionValue ? (
                       <span className="text-primary/80 text-xs ml-1">
                         ${formatNumber(positionValue ?? "0")}
                       </span>
-                    )}
+                    ) : null}
                   </>
                 ) : (
                   "-"

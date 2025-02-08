@@ -23,7 +23,7 @@ export type SwapQuote = {
 export enum DepositState {
   LOADING = "loading",
   INVALID = "invalid",
-  STALE = "stale",
+  EMPTY = "empty",
   VALID = "valid",
 }
 
