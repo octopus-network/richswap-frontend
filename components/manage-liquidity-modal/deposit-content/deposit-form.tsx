@@ -241,7 +241,7 @@ export function DepositForm({
                 href={`/swap?coinA=${getCoinSymbol(
                   pool.coinA
                 )}&coinB=${getCoinSymbol(pool.coinB)}`}
-                className="text-primary/70 gap-1 flex"
+                className="text-primary/70 gap-1 flex hover:text-primary"
               >
                 <ArrowLeftRight className="size-3" />
                 Swap
