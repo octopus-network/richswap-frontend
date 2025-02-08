@@ -7,7 +7,7 @@ import {
   UnspentOutput,
 } from "@/types";
 import { ToSignInput } from "@/types";
-
+import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "@/components/coin-icon";
@@ -23,7 +23,7 @@ import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
 import { useUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
-import { useRecommendedFeeRate } from "@/hooks/use-fee-rate";
+
 import { parseCoinAmount, selectUtxos } from "@/lib/utils";
 import { Transaction } from "@/lib/transaction";
 import { UTXO_DUST } from "@/lib/constants";
@@ -72,7 +72,7 @@ export function SwapReview({
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
-  const recommendedFeeRate = useRecommendedFeeRate();
+  const recommendedFeeRate = useRecommendedFeeRateFromOrchestrator();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 
@@ -126,7 +126,7 @@ export function SwapReview({
       return;
     }
 
-    const txFee = BigInt(Math.ceil(374 * (recommendedFeeRate ?? 10)));
+    const txFee = BigInt(Math.ceil(323 * (recommendedFeeRate ?? 10)));
 
     const isSwapRune = coinA.id === BITCOIN.id;
     const involvedRune = isSwapRune ? coinB : coinA;
