@@ -305,8 +305,9 @@ export function DepositReview({
 
       onSuccess();
     } catch (error: any) {
+      console.log(error);
       if (error.code !== 4001) {
-        setErrorMessage(error.message || "Unknown Error");
+        setErrorMessage(error.message || error.toString());
         removeSpentUtxos(userUtxos);
       } else {
         setStep(0);
