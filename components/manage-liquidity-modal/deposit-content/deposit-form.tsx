@@ -120,7 +120,9 @@ export function DepositForm({
           new Decimal(
             pool.coinA.id === BITCOIN.id
               ? formattedAmounts[Field.INPUT] || 0
-              : formattedAmounts[Field.OUTPUT] || 0
+              : (deposit?.state === DepositState.EMPTY
+                  ? outputAmount
+                  : formattedAmounts[Field.OUTPUT]) || 0
           ).lt(0.0001)
       ),
     [pool, formattedAmounts]
@@ -197,6 +199,7 @@ export function DepositForm({
               deposit.state === DepositState.LOADING ||
               insufficientCoinABalance ||
               insufficientCoinBBalance ||
+              (deposit.state === DepositState.EMPTY && !Number(outputAmount)) ||
               tooSmallFunds
             }
             onClick={() =>
