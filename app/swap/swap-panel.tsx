@@ -234,7 +234,7 @@ export function SwapPanel() {
               ? `1 ${getCoinSymbol(coinB)} = ${formatNumber(
                   (1 / Number(formattedAmounts[Field.OUTPUT])) *
                     Number(formattedAmounts[Field.INPUT])
-                )} ${getCoinSymbol(coinA)} ($${formatNumber(coinBPrice)})`
+                )} ${getCoinSymbol(coinA)}`
               : "-"}
           </span>
         </div>

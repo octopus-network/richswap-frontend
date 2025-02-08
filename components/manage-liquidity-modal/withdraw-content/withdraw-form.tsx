@@ -21,7 +21,8 @@ export function WithdrawForm({
     coinAAmount: string,
     coinBAmount: string,
     nonce: string,
-    poolUtxos: UnspentOutput[]
+    poolUtxos: UnspentOutput[],
+    outputBtc: bigint
   ) => void;
 }) {
   const coinAPrice = useCoinPrice(position?.coinA?.id);
@@ -30,6 +31,7 @@ export function WithdrawForm({
   const [withdrawPercentage, setWithdrawPercentage] = useState(0);
   const [nonce, setNonce] = useState("0");
   const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
+  const [outputBtc, setOutputBtc] = useState(BigInt(0));
   const [output, setOutput] = useState<{
     coinA: Coin;
     coinB: Coin;
@@ -51,6 +53,8 @@ export function WithdrawForm({
         BigInt(position.userShare) *
         BigInt(position.btcSupply)) /
       (BigInt(position.sqrtK) * BigInt(100));
+
+    setOutputBtc(btc);
 
     Exchange.preWithdrawLiquidity(position.poolKey, position.userAddress, {
       id: "0:0",
@@ -128,7 +132,13 @@ export function WithdrawForm({
             disabled={!position || !Number(nonce) || !output || !utxos.length}
             onClick={() =>
               output
-                ? onReview(output.coinAAmount, output.coinBAmount, nonce, utxos)
+                ? onReview(
+                    output.coinAAmount,
+                    output.coinBAmount,
+                    nonce,
+                    utxos,
+                    outputBtc
+                  )
                 : null
             }
           >

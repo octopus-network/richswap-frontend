@@ -40,6 +40,7 @@ export function Footer() {
           <MessageSquare className="size-4" />
           <span className="ml-2">Support</span>
         </a>
+        <div className="px-4 py-2">{feeRate} sats/vb</div>
       </div>
     </div>
   );
