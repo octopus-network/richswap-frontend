@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "../coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { Skeleton } from "../ui/skeleton";
 import { formatNumber } from "@/lib/utils";
-import { MessageSquare } from "lucide-react";
+
 import { useRecommendedFeeRate } from "@/hooks/use-fee-rate";
 
 export function Footer() {

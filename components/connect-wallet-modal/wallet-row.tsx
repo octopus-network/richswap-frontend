@@ -42,7 +42,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
     };
 
     return hasInstalled[wallet];
-  }, [wallet, hasXverse, hasOkx, hasUnisat, hasPhantom]);
+  }, [wallet, hasXverse, hasOkx, hasUnisat, hasPhantom, hasMagicEden]);
 
   const onConnectWallet = useCallback(async () => {
     if (!installed) {

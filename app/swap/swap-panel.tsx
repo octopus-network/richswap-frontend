@@ -198,7 +198,7 @@ export function SwapPanel() {
             formattedAmounts[Field.INPUT] || "0",
             formattedAmounts[Field.OUTPUT] || "0",
           ],
-    [coinA, coinB, formattedAmounts]
+    [coinA, formattedAmounts]
   );
 
   const runePriceInSats = useMemo(
