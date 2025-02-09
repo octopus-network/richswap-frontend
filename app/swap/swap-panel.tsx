@@ -4,7 +4,7 @@ import { CoinField } from "@/components/coin-field";
 import { Button } from "@/components/ui/button";
 import { ArrowDownUp } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
-import { Field, Coin, SwapState } from "@/types";
+import { Field, Coin, SwapState, PoolData } from "@/types";
 import { ReviewModal } from "./review-modal";
 import { useSearchParams } from "next/navigation";
 import { useLaserEyes } from "@omnisat/lasereyes";
@@ -20,9 +20,15 @@ import {
   useDerivedSwapInfo,
 } from "@/store/swap/hooks";
 
-import { formatCoinAmount, formatNumber, getCoinSymbol } from "@/lib/utils";
+import {
+  formatCoinAmount,
+  formatNumber,
+  getCoinSymbol,
+  getRunePriceInSats,
+} from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN, COIN_LIST } from "@/lib/constants";
+import { Exchange } from "@/lib/exchange";
 
 export function SwapPanel() {
   const { address } = useLaserEyes();
@@ -34,6 +40,7 @@ export function SwapPanel() {
     useSwapActionHandlers();
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [poolData, setPoolData] = useState<PoolData>();
 
   const swapState = useSwapState();
 
@@ -103,6 +110,20 @@ export function SwapPanel() {
     }
     onUpdateCoins(_coinA, _coinB);
   }, [onUpdateCoins, coins]);
+
+  useEffect(() => {
+    if (!coinA || !coinB) {
+      return;
+    }
+    Exchange.getPoolKey(coinA.id, coinB.id)
+      .then((poolKey) => {
+        if (poolKey) {
+          return Exchange.getPoolData(poolKey);
+        }
+        return undefined;
+      })
+      .then(setPoolData);
+  }, [coinA, coinB]);
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinBPrice = useCoinPrice(coinB?.id);
@@ -190,23 +211,46 @@ export function SwapPanel() {
   const [runeAmount, btcAmount] = useMemo(
     () =>
       coinA?.id === BITCOIN.id
-        ? [
-            formattedAmounts[Field.OUTPUT] || "0",
-            formattedAmounts[Field.INPUT] || "0",
-          ]
-        : [
-            formattedAmounts[Field.INPUT] || "0",
-            formattedAmounts[Field.OUTPUT] || "0",
-          ],
+        ? [formattedAmounts[Field.OUTPUT], formattedAmounts[Field.INPUT]]
+        : [formattedAmounts[Field.INPUT], formattedAmounts[Field.OUTPUT]],
     [coinA, formattedAmounts]
   );
 
   const runePriceInSats = useMemo(
     () =>
-      Number(runeAmount) > 0
-        ? new Decimal(btcAmount).mul(Math.pow(10, 8)).div(runeAmount).toFixed(2)
+      Number(runeAmount) && Number(btcAmount)
+        ? getRunePriceInSats(btcAmount, runeAmount)
         : undefined,
     [runeAmount, btcAmount]
+  );
+
+  const runePriceInSatsFromReserves = useMemo(
+    () =>
+      poolData
+        ? getRunePriceInSats(
+            formatCoinAmount(
+              poolData.coinAAmount,
+              coinA?.id === BITCOIN.id ? coinA : coinB
+            ),
+            formatCoinAmount(
+              poolData.coinBAmount,
+              coinA?.id === BITCOIN.id ? coinB : coinA
+            )
+          )
+        : undefined,
+    [poolData, coinA, coinB]
+  );
+
+  const priceImpact = useMemo(
+    () =>
+      Number(runePriceInSatsFromReserves) &&
+      Number(runePriceInSats) &&
+      swap?.state !== SwapState.LOADING
+        ? ((Number(runePriceInSats) - Number(runePriceInSatsFromReserves)) *
+            100) /
+          Number(runePriceInSatsFromReserves)
+        : undefined,
+    [runePriceInSats, runePriceInSatsFromReserves, swap]
   );
 
   return (
@@ -222,6 +266,7 @@ export function SwapPanel() {
             independentField === Field.OUTPUT &&
             swap?.state === SwapState.LOADING
           }
+          className="bg-card/40 border-border"
           onSelectCoin={(coin) => handleSelectCoin(Field.INPUT, coin)}
         />
         <div className="flex items-center justify-center h-11 relative">
@@ -247,7 +292,7 @@ export function SwapPanel() {
           fiatValue={coinBFiatValue}
           onUserInput={(value) => onUserInput(Field.OUTPUT, value)}
           value={formattedAmounts[Field.OUTPUT]}
-          className="bg-secondary/60"
+          className="bg-card"
           onSelectCoin={(coin) => handleSelectCoin(Field.OUTPUT, coin)}
         />
 
@@ -297,23 +342,27 @@ export function SwapPanel() {
           )}
         </div>
         <div className="mt-4 text-xs flex flex-col gap-1">
-          <div className="justify-between flex">
-            <span className="text-muted-foreground">Exchange Rate</span>
-            <span>
-              {formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
-                ? `1 ${getCoinSymbol(coinB)} = ${formatNumber(
-                    (1 / Number(formattedAmounts[Field.OUTPUT])) *
-                      Number(formattedAmounts[Field.INPUT])
-                  )} ${getCoinSymbol(coinA)}`
-                : "-"}
-            </span>
-          </div>
+          {Boolean(
+            formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
+          ) ? (
+            <div className="justify-between flex">
+              <span className="text-muted-foreground">Exchange Rate</span>
+              <span>
+                {formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
+                  ? `1 ${getCoinSymbol(coinB)} = ${formatNumber(
+                      (1 / Number(formattedAmounts[Field.OUTPUT])) *
+                        Number(formattedAmounts[Field.INPUT])
+                    )} ${getCoinSymbol(coinA)}`
+                  : "-"}
+              </span>
+            </div>
+          ) : null}
           <div className="justify-between flex">
             <span className="text-muted-foreground">Rune Price</span>
-            {runePriceInSats !== undefined ? (
+            {runePriceInSatsFromReserves !== undefined ? (
               <div className="flex flex-col items-end">
                 <span>
-                  {runePriceInSats}{" "}
+                  {runePriceInSatsFromReserves}{" "}
                   <em className="text-muted-foreground">sats</em>
                 </span>
               </div>
@@ -321,6 +370,24 @@ export function SwapPanel() {
               "-"
             )}
           </div>
+          {priceImpact !== undefined ? (
+            <div className="justify-between flex">
+              <span className="text-muted-foreground">Price Impact</span>
+              <div className="flex items-end">
+                <span
+                  className={
+                    priceImpact < 0 ? "text-red-400" : "text-green-400"
+                  }
+                >
+                  {priceImpact > 0 && "+"}
+                  {priceImpact.toFixed(2)}%
+                </span>
+                <span className="ml-1 text-muted-foreground">
+                  ({runePriceInSats} <em>sats</em>)
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
       <ReviewModal
@@ -328,7 +395,7 @@ export function SwapPanel() {
         coinB={coinB}
         coinAAmount={formattedAmounts[Field.INPUT]}
         coinBAmount={formattedAmounts[Field.OUTPUT]}
-        poolKey={swap?.poolKey ?? ""}
+        poolKey={swap?.pool?.key ?? ""}
         poolUtxos={swap?.utxos ?? []}
         nonce={swap?.nonce ?? "0"}
         open={reviewModalOpen}

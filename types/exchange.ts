@@ -17,7 +17,7 @@ export type SwapQuote = {
   outputAmount?: string;
   errorMessage?: string;
   utxos?: UnspentOutput[];
-  poolKey?: string;
+  pool?: PoolData;
 };
 
 export enum DepositState {
@@ -34,6 +34,14 @@ export type DepositQuote = {
   outputAmount?: string;
   errorMessage?: string;
   utxos?: UnspentOutput[];
+};
+
+export type PoolData = {
+  key: string;
+  coinAId: string;
+  coinBId: string;
+  coinAAmount: string;
+  coinBAmount: string;
 };
 
 export type PoolInfo = {

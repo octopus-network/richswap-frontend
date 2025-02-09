@@ -1,18 +1,21 @@
 import { PoolInfo, Field, DepositState, UnspentOutput } from "@/types";
 import { CoinField } from "@/components/coin-field";
-import { Plus, ArrowLeftRight } from "lucide-react";
-import Link from "next/link";
+import { Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
-import { BITCOIN } from "@/lib/constants";
 
-import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
+import {
+  formatCoinAmount,
+  getCoinSymbol,
+  getRunePriceInSats,
+} from "@/lib/utils";
 
 import {
   useDerivedDepositInfo,
@@ -43,11 +46,18 @@ export function DepositForm({
 
   const [inputAmount, setInputAmount] = useState("");
   const [outputAmount, setOutputAmount] = useState("");
+  const [isEmptyPool, setIsEmptyPool] = useState(false);
 
   const coinABalance = useCoinBalance(address, pool.coinA?.id);
   const coinBBalance = useCoinBalance(address, pool.coinB?.id);
 
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
+
+  useEffect(() => {
+    return () => {
+      onUserInput(Field.INPUT, "");
+    };
+  }, []);
 
   const parsedAmounts = useMemo(
     () => ({
@@ -118,15 +128,35 @@ export function DepositForm({
       Boolean(
         pool.coinA &&
           new Decimal(
-            pool.coinA.id === BITCOIN.id
-              ? formattedAmounts[Field.INPUT] || 0
-              : (deposit?.state === DepositState.EMPTY
-                  ? outputAmount
-                  : formattedAmounts[Field.OUTPUT]) || 0
+            isEmptyPool
+              ? inputAmount || "0"
+              : formattedAmounts[Field.INPUT] || "0"
           ).lt(0.0001)
       ),
     [pool, formattedAmounts]
   );
+
+  useEffect(() => {
+    if (deposit?.state === DepositState.EMPTY && !isEmptyPool) {
+      if (formattedAmounts[Field.INPUT] && !inputAmount) {
+        setInputAmount(formattedAmounts[Field.INPUT]);
+      } else if (formattedAmounts[Field.OUTPUT]) {
+        setOutputAmount(formattedAmounts[Field.OUTPUT]);
+      }
+      setIsEmptyPool(true);
+    }
+  }, [deposit, formattedAmounts, isEmptyPool]);
+
+  const runePriceInSats = useMemo(
+    () =>
+      getRunePriceInSats(
+        formatCoinAmount(pool.coinAAmount, pool.coinA),
+        formatCoinAmount(pool.coinBAmount, pool.coinB)
+      ),
+    [pool]
+  );
+
+  const btcPrice = useCoinPrice(pool.coinA.id);
 
   return (
     <>
@@ -139,17 +169,9 @@ export function DepositForm({
         }
         fiatValue={coinAFiatValue}
         onUserInput={(value) =>
-          independentField === Field.OUTPUT &&
-          deposit?.state === DepositState.EMPTY
-            ? setInputAmount(value)
-            : onUserInput(Field.INPUT, value)
+          isEmptyPool ? setInputAmount(value) : onUserInput(Field.INPUT, value)
         }
-        value={
-          independentField === Field.OUTPUT &&
-          deposit?.state === DepositState.EMPTY
-            ? inputAmount
-            : formattedAmounts[Field.INPUT]
-        }
+        value={isEmptyPool ? inputAmount : formattedAmounts[Field.INPUT]}
         className="border-border mt-4 px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
       <div className="flex items-center justify-center h-10 relative">
@@ -167,17 +189,11 @@ export function DepositForm({
         }
         fiatValue={coinBFiatValue}
         onUserInput={(value) =>
-          independentField === Field.INPUT &&
-          deposit?.state === DepositState.EMPTY
+          isEmptyPool
             ? setOutputAmount(value)
             : onUserInput(Field.OUTPUT, value)
         }
-        value={
-          independentField === Field.INPUT &&
-          deposit?.state === DepositState.EMPTY
-            ? outputAmount
-            : formattedAmounts[Field.OUTPUT]
-        }
+        value={isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT]}
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
       <div className="mt-6">
@@ -199,7 +215,8 @@ export function DepositForm({
               deposit.state === DepositState.LOADING ||
               insufficientCoinABalance ||
               insufficientCoinBBalance ||
-              (deposit.state === DepositState.EMPTY && !Number(outputAmount)) ||
+              (isEmptyPool &&
+                (!Number(outputAmount) || !Number(inputAmount))) ||
               tooSmallFunds
             }
             onClick={() =>
@@ -225,7 +242,7 @@ export function DepositForm({
           </Button>
         )}
       </div>
-      <div className="mt-4">
+      <div className="mt-4 flex flex-col gap-1">
         <div className="flex justify-between text-xs">
           <span className="text-muted-foreground">Currency Reserves</span>
           <div className="flex flex-col items-end text-muted-foreground">
@@ -233,23 +250,28 @@ export function DepositForm({
               {formatCoinAmount(pool.coinAAmount, pool.coinA)}{" "}
               {getCoinSymbol(pool.coinA)}
             </span>
-            <div className="flex gap-2">
-              <span>
-                {formatCoinAmount(pool.coinBAmount, pool.coinB)}{" "}
-                {getCoinSymbol(pool.coinB)}
-              </span>
-              <Link
-                href={`/swap?coinA=${getCoinSymbol(
-                  pool.coinA
-                )}&coinB=${getCoinSymbol(pool.coinB)}`}
-                className="text-primary/70 gap-1 flex hover:text-primary"
-              >
-                <ArrowLeftRight className="size-3" />
-                Swap
-              </Link>
-            </div>
+            <span>
+              {formatCoinAmount(pool.coinBAmount, pool.coinB)}{" "}
+              {getCoinSymbol(pool.coinB)}
+            </span>
           </div>
         </div>
+        {runePriceInSats && (
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">Rune Price</span>
+            <div className="flex flex-col items-end">
+              <span>{runePriceInSats} sats</span>
+              <span className="text-primary/80 text-xs">
+                {btcPrice
+                  ? `$${new Decimal(runePriceInSats)
+                      .mul(btcPrice)
+                      .div(Math.pow(10, 8))
+                      .toFixed(4)}`
+                  : ""}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

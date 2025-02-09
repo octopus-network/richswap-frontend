@@ -7,6 +7,7 @@ import {
   DepositQuote,
   UnspentOutput,
   PoolInfo,
+  PoolData,
 } from "@/types";
 import { BITCOIN } from "../constants";
 import {
@@ -44,7 +45,7 @@ export class Exchange {
       }[];
 
       if (res?.length) {
-        const promises = res.map(({ id }) => this.getPoolInfo(id));
+        const promises = res.map(({ id }) => this.getPoolData(id));
 
         const poolInfos = await Promise.all(promises);
 
@@ -77,16 +78,9 @@ export class Exchange {
     return poolKey;
   }
 
-  public static async getPoolInfo(poolKey: string): Promise<
-    | {
-        key: string;
-        coinAId: string;
-        coinBId: string;
-        coinAAmount: string;
-        coinBAmount: string;
-      }
-    | undefined
-  > {
+  public static async getPoolData(
+    poolKey: string
+  ): Promise<PoolData | undefined> {
     try {
       const res: any = await actor.find_pool(poolKey);
 
@@ -370,9 +364,15 @@ export class Exchange {
         ],
       };
 
+      const poolData = await Exchange.getPoolData(poolKey);
+
+      if (!poolData) {
+        throw new Error("Invalid pool");
+      }
+
       const quote = {
         state: SwapState.VALID,
-        poolKey,
+        pool: poolData,
         inputAmount,
         outputAmount: output.value.toString(),
         utxos: [utxo],
