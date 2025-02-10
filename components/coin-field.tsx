@@ -102,7 +102,7 @@ export function CoinField({
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectCoinModalOpen, setSelectCoinModalOpen] = useState(false);
   const { address } = useLaserEyes();
-  const balance = useCoinBalance(address, coin?.id);
+  const balance = useCoinBalance(coin?.id);
 
   const onSetHalf = () => {
     onUserInput(

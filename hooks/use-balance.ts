@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { BITCOIN } from "@/lib/constants";
 import { useDefaultCoins } from "./use-coins";
-import { useUtxos } from "./use-utxos";
+import { useWalletUtxos } from "./use-utxos";
 import { formatCoinAmount } from "@/lib/utils";
 import { Coin, UnspentOutput } from "@/types";
+import { useLaserEyes } from "@omnisat/lasereyes";
 
 function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
   const isBitcoin = coin.id === BITCOIN.id;
@@ -29,9 +30,10 @@ function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
   return formatCoinAmount(amount.toString(), coin);
 }
 
-export function useCoinBalances(address: string | undefined, coin?: Coin) {
+export function useCoinBalances() {
   const coins = useDefaultCoins();
-  const utxos = useUtxos(address);
+
+  const utxos = useWalletUtxos();
 
   const balances = useMemo(() => {
     const tmpObj: Record<string, string> = {};
@@ -52,21 +54,16 @@ export function useCoinBalances(address: string | undefined, coin?: Coin) {
   return balances;
 }
 
-export function useCoinBalance(
-  address: string | undefined,
-  coinId: string | undefined
-) {
-  const balances = useCoinBalances(address);
+export function useCoinBalance(coinId: string | undefined) {
+  const balances = useCoinBalances();
 
   return useMemo(
     () =>
-      address
-        ? coinId
-          ? Object.keys(balances).length
-            ? balances[coinId] ?? "0"
-            : undefined
+      coinId
+        ? Object.keys(balances).length
+          ? balances[coinId] ?? "0"
           : undefined
         : undefined,
-    [balances, coinId, address]
+    [balances, coinId]
   );
 }

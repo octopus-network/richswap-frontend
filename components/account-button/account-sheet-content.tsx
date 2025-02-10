@@ -14,9 +14,11 @@ import { usePendingTransactions } from "@/store/transactions";
 import { TransactionsContent } from "./transactions-content";
 
 export function AccountSheetContent() {
-  const { provider, address, disconnect } = useLaserEyes();
+  const { provider, address, paymentAddress, disconnect } = useLaserEyes();
   const { hasCopied, onCopy } = useClipboard(address);
-  const btcBalacne = useCoinBalance(address, BITCOIN.id);
+  const { hasCopied: hasPaymentCopied, onCopy: onPaymentCopy } =
+    useClipboard(paymentAddress);
+  const btcBalacne = useCoinBalance(BITCOIN.id);
   const pendingTransactions = usePendingTransactions();
   return (
     <SheetContent className="p-0" hideCloseButton>
@@ -27,12 +29,34 @@ export function AccountSheetContent() {
               alt={WALLETS[provider]?.name ?? ""}
               width={64}
               height={64}
-              className="size-6"
+              className="size-7 rounded-full"
               src={WALLETS[provider]?.icon ?? ""}
             />
-            <span className="ml-2 font-semibold">
-              {ellipseMiddle(address, 10)}
-            </span>
+            <div className="flex flex-col justify-start ml-2">
+              <span className="font-semibold">
+                {ellipseMiddle(address, 10)}
+              </span>
+              {paymentAddress !== address ? (
+                <div className="flex text-xs text-muted-foreground items-center">
+                  <span>Payment:</span>
+                  <span className="ml-2">
+                    {ellipseMiddle(paymentAddress, 6)}
+                  </span>
+                  <Button
+                    size="icon"
+                    className="h-5 w-5"
+                    variant="ghost"
+                    onClick={onPaymentCopy}
+                  >
+                    {hasPaymentCopied ? (
+                      <Check className="size-3" />
+                    ) : (
+                      <Copy className="size-3" />
+                    )}
+                  </Button>
+                </div>
+              ) : null}
+            </div>
           </div>
           <div className="flex items-center space-x-1">
             <Button size="icon" variant="ghost" onClick={onCopy}>

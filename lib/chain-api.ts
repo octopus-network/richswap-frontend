@@ -88,29 +88,35 @@ export async function getAddressBalance(address: string) {
 // }
 
 export async function getBtcUtxos(address: string) {
-  const utxos = await unisatApi
-    .get<{
-      data: {
-        txid: string;
-        scriptPk: string;
-        vout: number;
-        satoshis: number;
-        runes: any[];
-      }[];
-    }>(`/address/btc-utxo?address=${address}`)
-    .then((res) => res.data?.data || []);
+  const [blockHeight, utxos] = await Promise.all([
+    getLatestBlockHeight(),
+    unisatApi
+      .get<{
+        data: {
+          txid: string;
+          scriptPk: string;
+          vout: number;
+          satoshis: number;
+          height: number;
+          runes: any[];
+        }[];
+      }>(`/address/btc-utxo?address=${address}`)
+      .then((res) => res.data?.data || []),
+  ]);
 
-  return utxos.map((utxo) => ({
-    txid: utxo.txid,
-    vout: utxo.vout,
-    satoshis: utxo.satoshis.toString(),
-    scriptPk: utxo.scriptPk,
-    address,
-    runes: utxo.runes.map((rune) => ({
-      id: rune.runeid,
-      amount: rune.amount,
-    })),
-  }));
+  return utxos
+    .filter((item) => item.height <= Number(blockHeight))
+    .map((utxo) => ({
+      txid: utxo.txid,
+      vout: utxo.vout,
+      satoshis: utxo.satoshis.toString(),
+      scriptPk: utxo.scriptPk,
+      address,
+      runes: utxo.runes.map((rune) => ({
+        id: rune.runeid,
+        amount: rune.amount,
+      })),
+    }));
 }
 
 export async function getRuneUtxos(address: string, runeId: string) {

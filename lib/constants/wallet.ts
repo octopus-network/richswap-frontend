@@ -13,11 +13,6 @@ export const WALLETS: Record<
     icon: "/static/icons/unisat.png",
     url: "https://unisat.io/download",
   },
-  // [OKX]: {
-  //   name: "OKX Wallet",
-  //   icon: "/static/icons/okx.png",
-  //   url: "https://www.okx.com",
-  // },
   [MAGIC_EDEN]: {
     name: "Magic Eden Wallet",
     icon: "/static/icons/magic_eden.png",
@@ -32,5 +27,10 @@ export const WALLETS: Record<
   //   name: "Xverse",
   //   icon: "/static/icons/xverse.png",
   //   url: "https://www.xverse.app",
+  // },
+  // [OKX]: {
+  //   name: "OKX Wallet",
+  //   icon: "/static/icons/okx.png",
+  //   url: "https://www.okx.com",
   // },
 };

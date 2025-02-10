@@ -134,7 +134,13 @@ export function selectUtxos(
 
       if (totalAmount < targetAmount) {
         totalAmount += BigInt(utxo.runes[containsTargetCoinUtxoIdx].amount);
-        selectedUtxos.push(utxo);
+        if (
+          selectedUtxos.findIndex(
+            (item) => item.txid === utxo.txid && item.vout === utxo.vout
+          ) < 0
+        ) {
+          selectedUtxos.push(utxo);
+        }
       } else {
         break;
       }

@@ -25,7 +25,7 @@ export function AccountButton() {
               alt={WALLETS[provider]?.name ?? ""}
               width={64}
               height={64}
-              className="size-5"
+              className="size-5 rounded-full"
               src={WALLETS[provider]?.icon ?? ""}
             />
           )}

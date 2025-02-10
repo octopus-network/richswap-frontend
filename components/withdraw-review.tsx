@@ -10,7 +10,7 @@ import {
 import { formatNumber } from "@/lib/utils";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
-import { ToSignInput } from "@/types";
+
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
 import { getCoinSymbol, getP2trAressAndScript } from "@/lib/utils";
@@ -19,7 +19,7 @@ import { useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
-import { useUtxos } from "@/hooks/use-utxos";
+import { useWalletUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { parseCoinAmount, selectUtxos } from "@/lib/utils";
@@ -56,7 +56,7 @@ export function WithdrawReview({
   outputBtc: bigint;
   showCancelButton?: boolean;
 }) {
-  const { address } = useLaserEyes();
+  const { address, signPsbt } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -69,7 +69,7 @@ export function WithdrawReview({
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 
-  const utxos = useUtxos(address);
+  const utxos = useWalletUtxos();
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinAFiatValue = useMemo(
@@ -208,17 +208,14 @@ export function WithdrawReview({
     }
 
     try {
-      const psbtHex = psbt.toHex();
+      const psbtBase64 = psbt.toBase64();
       setStep(1);
 
-      const toSignInputs: ToSignInput[] = userUtxos.map((_, index) => ({
-        address,
-        index,
-      }));
+      const signedRes = await signPsbt(psbtBase64, true, false);
 
-      const signedPsbtHex = await window.unisat.signPsbt(psbtHex, {
-        toSignInputs,
-      });
+      if (!signedRes?.signedPsbtHex) {
+        throw new Error("Signed Failed");
+      }
 
       addSpentUtxos(userUtxos);
 
@@ -255,7 +252,7 @@ export function WithdrawReview({
             },
           ],
         },
-        psbt_hex: signedPsbtHex,
+        psbt_hex: signedRes.signedPsbtHex,
       });
 
       addTransaction({

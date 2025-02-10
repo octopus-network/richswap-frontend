@@ -48,8 +48,8 @@ export function DepositForm({
   const [outputAmount, setOutputAmount] = useState("");
   const [isEmptyPool, setIsEmptyPool] = useState(false);
 
-  const coinABalance = useCoinBalance(address, pool.coinA?.id);
-  const coinBBalance = useCoinBalance(address, pool.coinB?.id);
+  const coinABalance = useCoinBalance(pool.coinA?.id);
+  const coinBBalance = useCoinBalance(pool.coinB?.id);
 
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
 

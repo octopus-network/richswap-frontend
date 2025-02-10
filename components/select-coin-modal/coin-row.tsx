@@ -15,7 +15,7 @@ export function CoinRow({
   onSelect: (coin: Coin) => void;
 }) {
   const { address } = useLaserEyes();
-  const coinBalance = useCoinBalance(address, coin.id);
+  const coinBalance = useCoinBalance(coin.id);
 
   return (
     <div
