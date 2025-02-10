@@ -282,7 +282,7 @@ export function SwapReview({
       const psbtBase64 = psbt.toBase64();
       setStep(1);
 
-      const res = await signPsbt(psbtBase64, true, false);
+      const res = await signPsbt(psbtBase64);
 
       if (!res?.signedPsbtHex) {
         throw new Error("Signed Failed");

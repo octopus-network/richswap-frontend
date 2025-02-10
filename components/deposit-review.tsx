@@ -230,7 +230,7 @@ export function DepositReview({
 
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
 
-      const signedRes = await signPsbt(psbtBase64, true, false);
+      const signedRes = await signPsbt(psbtBase64);
 
       if (!signedRes?.signedPsbtHex) {
         throw new Error("Signed Failed");

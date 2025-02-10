@@ -211,7 +211,7 @@ export function WithdrawReview({
       const psbtBase64 = psbt.toBase64();
       setStep(1);
 
-      const signedRes = await signPsbt(psbtBase64, true, false);
+      const signedRes = await signPsbt(psbtBase64);
 
       if (!signedRes?.signedPsbtHex) {
         throw new Error("Signed Failed");
