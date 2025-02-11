@@ -56,7 +56,7 @@ export function WithdrawReview({
   outputBtc: bigint;
   showCancelButton?: boolean;
 }) {
-  const { address, signPsbt } = useLaserEyes();
+  const { address, paymentAddress, signPsbt } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -178,7 +178,7 @@ export function WithdrawReview({
     // send runes
     tx.addOutput(address, UTXO_DUST);
     // send btc to user
-    tx.addOutput(address, coinAAmountBigInt + changeBtcAmount);
+    tx.addOutput(paymentAddress, coinAAmountBigInt + changeBtcAmount);
 
     // OP_RETURN
     tx.addScriptOutput(runestone.encipher(), BigInt(0));
@@ -199,6 +199,7 @@ export function WithdrawReview({
     coinBAmount,
     utxos,
     address,
+    paymentAddress,
     recommendedFeeRate,
   ]);
 
@@ -237,7 +238,7 @@ export function WithdrawReview({
                     id: BITCOIN.id,
                     value: coinAAmountBigInt,
                   },
-                  owner_address: address,
+                  owner_address: paymentAddress,
                 },
                 {
                   coin_balance: {

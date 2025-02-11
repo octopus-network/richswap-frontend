@@ -59,7 +59,7 @@ export function DepositReview({
   nonce: string;
   showCancelButton?: boolean;
 }) {
-  const { address, signPsbt } = useLaserEyes();
+  const { address, paymentAddress, signPsbt } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -193,7 +193,7 @@ export function DepositReview({
       poolUtxos.length ? sendBtcAmount + UTXO_DUST : sendBtcAmount
     );
     // change btc
-    tx.addOutput(address, changeBtcAmount);
+    tx.addOutput(paymentAddress, changeBtcAmount);
 
     // OP_RETURN
     tx.addScriptOutput(runestone.encipher(), BigInt(0));
@@ -214,6 +214,7 @@ export function DepositReview({
     coinBAmount,
     utxos,
     address,
+    paymentAddress,
     recommendedFeeRate,
   ]);
 
@@ -261,7 +262,7 @@ export function DepositReview({
               input_coins: [
                 {
                   coin_balance: { id: coinA.id, value: coinAAmountBigInt },
-                  owner_address: address,
+                  owner_address: paymentAddress,
                 },
                 {
                   coin_balance: { id: coinB.id, value: coinBAmountBigInt },

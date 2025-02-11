@@ -61,7 +61,7 @@ export function SwapReview({
   showCancelButton?: boolean;
   setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
-  const { address, signPsbt } = useLaserEyes();
+  const { address, signPsbt, paymentAddress } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -244,7 +244,7 @@ export function SwapReview({
 
     // to user btc
     tx.addOutput(
-      address,
+      paymentAddress,
       changeBtcAmount + (isSwapRune ? BigInt(0) : toSendBtcAmount)
     );
 
@@ -268,6 +268,7 @@ export function SwapReview({
     coinBAmount,
     utxos,
     poolUtxos,
+    paymentAddress,
     address,
     recommendedFeeRate,
   ]);
@@ -307,7 +308,8 @@ export function SwapReview({
                     id: coinA.id,
                     value: coinAAmountBigInt,
                   },
-                  owner_address: address,
+                  owner_address:
+                    coinA.id === BITCOIN.id ? paymentAddress : address,
                 },
               ],
               output_coins: [
@@ -316,7 +318,8 @@ export function SwapReview({
                     id: coinB.id,
                     value: coinBAmountBigInt,
                   },
-                  owner_address: address,
+                  owner_address:
+                    coinB.id === BITCOIN.id ? paymentAddress : address,
                 },
               ],
               pool_key: [poolKey],
