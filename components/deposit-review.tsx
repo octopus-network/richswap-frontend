@@ -224,6 +224,8 @@ export function DepositReview({
 
     try {
       const psbtBase64 = psbt.toBase64();
+
+      console.log("deposit psbtHex:", psbt.toHex());
       setStep(1);
 
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
