@@ -170,8 +170,6 @@ export function DepositReview({
           ),
         ];
 
-    console.log("edicts", edicts);
-
     const runestone = new Runestone(edicts, none(), none(), none());
 
     const inputUtxos = [..._userUtxos, ...poolUtxos];
@@ -229,6 +227,8 @@ export function DepositReview({
       setStep(1);
 
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
+
+      console.log(psbt);
 
       const signedRes = await signPsbt(psbtBase64);
 

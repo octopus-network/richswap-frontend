@@ -88,13 +88,16 @@ export class Exchange {
         const data = res[0];
         const meta = data.meta;
         const state = data.state[0];
-        const { utxo } = state ?? { utxo: [] };
+
+        const { utxo } = state ?? { utxo: [], incomes: BigInt(0) };
 
         return {
           key: poolKey,
           coinAId: BITCOIN.id,
           coinBId: meta.id,
-          coinAAmount: (utxo[0]?.satoshis ?? BigInt(0)).toString(),
+          coinAAmount: (
+            (utxo[0]?.satoshis ?? BigInt(0)) - (state?.incomes ?? BigInt(0))
+          ).toString(),
           coinBAmount: utxo[0]?.balance.value.toString() ?? "0",
         };
       }
@@ -369,6 +372,9 @@ export class Exchange {
       if (!poolData) {
         throw new Error("Invalid pool");
       }
+
+      console.log("preswap output", output);
+      console.log("input amount", inputAmount, inputCoin);
 
       const quote = {
         state: SwapState.VALID,

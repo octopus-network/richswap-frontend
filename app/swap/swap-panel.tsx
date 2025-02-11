@@ -224,6 +224,8 @@ export function SwapPanel() {
     [runeAmount, btcAmount]
   );
 
+  const btcPrice = useCoinPrice(BITCOIN.id);
+
   const runePriceInSatsFromReserves = useMemo(
     () =>
       poolData
@@ -342,28 +344,34 @@ export function SwapPanel() {
           )}
         </div>
         <div className="mt-4 text-xs flex flex-col gap-1">
-          {Boolean(
-            formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
-          ) ? (
-            <div className="justify-between flex">
-              <span className="text-muted-foreground">Exchange Rate</span>
-              <span>
-                {formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
-                  ? `1 ${getCoinSymbol(coinB)} = ${formatNumber(
-                      (1 / Number(formattedAmounts[Field.OUTPUT])) *
-                        Number(formattedAmounts[Field.INPUT])
-                    )} ${getCoinSymbol(coinA)}`
-                  : "-"}
-              </span>
-            </div>
-          ) : null}
           <div className="justify-between flex">
-            <span className="text-muted-foreground">Rune Price</span>
-            {runePriceInSatsFromReserves !== undefined ? (
+            <span className="text-muted-foreground">Exchange Rate</span>
+            <span>
+              {formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
+                ? `1 ${getCoinSymbol(coinB)} = ${formatNumber(
+                    (1 / Number(formattedAmounts[Field.OUTPUT])) *
+                      Number(formattedAmounts[Field.INPUT])
+                  )} ${getCoinSymbol(coinA)}`
+                : "-"}
+            </span>
+          </div>
+
+          <div className="justify-between flex">
+            <span className="text-muted-foreground">Price</span>
+            {runePriceInSats !== undefined ? (
               <div className="flex flex-col items-end">
                 <span>
-                  {runePriceInSatsFromReserves}{" "}
-                  <em className="text-muted-foreground">sats</em>
+                  {runePriceInSats} sats
+                  {btcPrice ? (
+                    <em className="text-muted-foreground">
+                      {" "}
+                      $
+                      {new Decimal(runePriceInSats)
+                        .mul(btcPrice)
+                        .div(Math.pow(10, 8))
+                        .toFixed(4)}
+                    </em>
+                  ) : null}
                 </span>
               </div>
             ) : (
@@ -381,9 +389,6 @@ export function SwapPanel() {
                 >
                   {priceImpact > 0 && "+"}
                   {priceImpact.toFixed(2)}%
-                </span>
-                <span className="ml-1 text-muted-foreground">
-                  ({runePriceInSats} <em>sats</em>)
                 </span>
               </div>
             </div>
