@@ -7,6 +7,7 @@ import { spentUtxosAtom } from "@/store/spent-utxos";
 import axios from "axios";
 import { useTransactions } from "@/store/transactions";
 import useSWR from "swr";
+import { useLaserEyes } from "@omnisat/lasereyes";
 
 export function usePendingUtxos(address: string | undefined) {
   const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
@@ -36,7 +37,7 @@ export function usePendingUtxos(address: string | undefined) {
   useEffect(() => {
     const interval = setInterval(() => {
       setTimer(Date.now());
-    }, 30 * 1000);
+    }, 15 * 1000);
 
     return () => {
       clearInterval(interval);
@@ -59,7 +60,7 @@ export function useUtxos(address: string | undefined) {
         }
         return res.data.data;
       }),
-    { refreshInterval: 30 * 1000 }
+    { refreshInterval: 15 * 1000 }
   );
 
   useEffect(() => {
@@ -86,5 +87,21 @@ export function useUtxos(address: string | undefined) {
             )
         : undefined,
     [apiUtxos, pendingUtxos, spentUtxos]
+  );
+}
+
+export function useWalletUtxos() {
+  const { address, paymentAddress } = useLaserEyes();
+  const utxos = useUtxos(address);
+  const paymentUtxos = useUtxos(paymentAddress);
+
+  return useMemo(
+    () =>
+      utxos && paymentUtxos
+        ? paymentAddress !== address
+          ? utxos.concat(paymentUtxos)
+          : utxos
+        : undefined,
+    [utxos, paymentUtxos]
   );
 }

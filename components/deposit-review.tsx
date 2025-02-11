@@ -8,7 +8,7 @@ import {
 } from "@/types";
 
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
-import { ToSignInput } from "@/types";
+
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -23,7 +23,7 @@ import { useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
-import { useUtxos } from "@/hooks/use-utxos";
+import { useWalletUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { parseCoinAmount, selectUtxos } from "@/lib/utils";
@@ -59,7 +59,7 @@ export function DepositReview({
   nonce: string;
   showCancelButton?: boolean;
 }) {
-  const { address } = useLaserEyes();
+  const { address, signPsbt } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -72,7 +72,7 @@ export function DepositReview({
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 
-  const utxos = useUtxos(address);
+  const utxos = useWalletUtxos();
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinAFiatValue = useMemo(
@@ -170,8 +170,6 @@ export function DepositReview({
           ),
         ];
 
-    console.log("edicts", edicts);
-
     const runestone = new Runestone(edicts, none(), none(), none());
 
     const inputUtxos = [..._userUtxos, ...poolUtxos];
@@ -225,19 +223,20 @@ export function DepositReview({
     }
 
     try {
-      const psbtHex = psbt.toHex();
+      const psbtBase64 = psbt.toBase64();
+
+      console.log("deposit psbtHex:", psbt.toHex());
       setStep(1);
 
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
 
-      const toSignInputs: ToSignInput[] = userUtxos.map((_, index) => ({
-        address,
-        index,
-      }));
+      console.log(psbt);
 
-      const signedPsbtHex = await window.unisat.signPsbt(psbtHex, {
-        toSignInputs,
-      });
+      const signedRes = await signPsbt(psbtBase64);
+
+      if (!signedRes?.signedPsbtHex) {
+        throw new Error("Signed Failed");
+      }
 
       addSpentUtxos(userUtxos);
 
@@ -283,7 +282,7 @@ export function DepositReview({
             },
           ],
         },
-        psbt_hex: signedPsbtHex,
+        psbt_hex: signedRes.signedPsbtHex,
       });
 
       addTransaction({

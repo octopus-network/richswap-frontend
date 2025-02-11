@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Loader2, TriangleAlert } from "lucide-react";
+import { ArrowDown, TriangleAlert } from "lucide-react";
 import {
   Coin,
   TransactionStatus,
   TransactionType,
   UnspentOutput,
 } from "@/types";
-import { ToSignInput } from "@/types";
+
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { BITCOIN } from "@/lib/constants";
@@ -21,7 +21,7 @@ import { useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
-import { useUtxos } from "@/hooks/use-utxos";
+import { useWalletUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
 
 import { parseCoinAmount, selectUtxos } from "@/lib/utils";
@@ -61,7 +61,7 @@ export function SwapReview({
   showCancelButton?: boolean;
   setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
-  const { address } = useLaserEyes();
+  const { address, signPsbt } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -76,7 +76,7 @@ export function SwapReview({
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 
-  const utxos = useUtxos(address);
+  const utxos = useWalletUtxos();
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinAFiatValue = useMemo(
@@ -279,17 +279,14 @@ export function SwapReview({
 
     setIsSubmiting(true);
     try {
-      const psbtHex = psbt.toHex();
+      const psbtBase64 = psbt.toBase64();
       setStep(1);
 
-      const toSignInputs: ToSignInput[] = userUtxos.map((_, index) => ({
-        address,
-        index,
-      }));
+      const res = await signPsbt(psbtBase64);
 
-      const signedPsbtHex = await window.unisat.signPsbt(psbtHex, {
-        toSignInputs,
-      });
+      if (!res?.signedPsbtHex) {
+        throw new Error("Signed Failed");
+      }
 
       addSpentUtxos(userUtxos);
 
@@ -327,7 +324,7 @@ export function SwapReview({
             },
           ],
         },
-        psbt_hex: signedPsbtHex,
+        psbt_hex: res.signedPsbtHex,
       });
 
       addTransaction({
@@ -351,6 +348,7 @@ export function SwapReview({
 
       onSuccess();
     } catch (error: any) {
+      console.log(error);
       if (error.code !== 4001) {
         setErrorMessage(error.message || "Unknown Error");
         removeSpentUtxos(userUtxos);
@@ -444,12 +442,11 @@ export function SwapReview({
               size="xl"
               className="w-full"
               onClick={onSubmit}
-              disabled={!psbt}
+              disabled={!psbt || insufficientUtxos}
             >
-              {!psbt && !insufficientUtxos && (
-                <Loader2 className="animate-spin" />
-              )}
-              {insufficientUtxos ? "Insufficient Utxos" : "Sign Transaction"}
+              {!psbt || insufficientUtxos
+                ? "Insufficient Utxos"
+                : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button

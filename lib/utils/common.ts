@@ -5,6 +5,7 @@ import { BITCOIN, UNKNOWN_COIN } from "../constants";
 import * as ecc from "@bitcoinerlab/secp256k1";
 import { Coin } from "@/types";
 import axios from "axios";
+import Decimal from "decimal.js";
 
 bitcoin.initEccLib(ecc);
 
@@ -67,6 +68,12 @@ export function getCoinSymbol(coin: Coin | null) {
 
 export function getCoinName(coin: Coin | null) {
   return coin ? (coin.id === BITCOIN.id ? coin.name : coin.id) : "";
+}
+
+export function getRunePriceInSats(btcAmount: string, runeAmount: string) {
+  return Number(btcAmount) && Number(runeAmount)
+    ? new Decimal(btcAmount).mul(Math.pow(10, 8)).div(runeAmount).toFixed(2)
+    : undefined;
 }
 
 export async function fetchCoinById(coinId: string): Promise<Coin> {

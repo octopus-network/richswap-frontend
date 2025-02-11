@@ -9,7 +9,7 @@ import { BaseModal } from "../base-modal";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CoinRow } from "./coin-row";
-import { useLaserEyes } from "@omnisat/lasereyes";
+
 import Decimal from "decimal.js";
 import { useSearchCoins } from "@/hooks/use-coins";
 import { useCoinBalances } from "@/hooks/use-balance";
@@ -68,13 +68,11 @@ export function SelectCoinModal({
 
   const userCoinAdder = useAddUserCoin();
 
-  const { address } = useLaserEyes();
-
   useEffect(() => {
     setSearchQuery("");
   }, [open]);
 
-  const coinBalances = useCoinBalances(address);
+  const coinBalances = useCoinBalances();
   const sortedCoins: Coin[] = useMemo(() => {
     const filteredCoins = Object.values(defaultCoins).filter(
       coinFilter(debouncedQuery)

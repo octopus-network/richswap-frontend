@@ -34,8 +34,8 @@ export function CreateForm({
 }) {
   const { address } = useLaserEyes();
   const [isCreating, setIsCreating] = useState(false);
-  const coinABalance = useCoinBalance(address, coinA?.id);
-  const coinBBalance = useCoinBalance(address, coinB?.id);
+  const coinABalance = useCoinBalance(coinA?.id);
+  const coinBBalance = useCoinBalance(coinB?.id);
 
   const addPopup = useAddPopup();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);

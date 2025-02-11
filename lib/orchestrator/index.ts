@@ -22,7 +22,7 @@ export class Orchestrator {
                     message.execution_steps?.[0]?.result?.Err ?? "Unknown Error"
                   }`
                 : `${key}`
-              : "Unknown Error"
+              : `Invoke Error: ${JSON.stringify(data)}`
           );
         }
       })

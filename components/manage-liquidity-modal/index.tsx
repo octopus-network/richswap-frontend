@@ -6,6 +6,9 @@ import { BaseModal } from "../base-modal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DepositContent } from "./deposit-content";
 import { WithdrawContent } from "./withdraw-content";
+import Link from "next/link";
+import { getCoinSymbol } from "@/lib/utils";
+import { ArrowLeftRight } from "lucide-react";
 
 export function ManageLiquidityModal({
   open,
@@ -20,25 +23,40 @@ export function ManageLiquidityModal({
 }) {
   const [onReview, setOnReview] = useState(false);
   return (
-    <BaseModal open={open} setOpen={setOpen} showCloseButton={!onReview}>
-      <div className="p-5">
+    <BaseModal
+      open={open}
+      setOpen={setOpen}
+      showCloseButton={!onReview}
+      title="Manage Pool"
+    >
+      <div className="p-5 pt-0">
         <Tabs defaultValue="deposit">
-          <TabsList className="bg-transparent gap-4">
-            <TabsTrigger
-              value="deposit"
-              className="h-10 rounded-none text-foreground text-lg font-semibold px-0 border-b-[2px] border-transparent data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:border-primary"
-            >
-              Deposit
-            </TabsTrigger>
-            {position && (
+          <div className="flex items-center justify-between">
+            <TabsList className="bg-transparent gap-4">
               <TabsTrigger
-                value="withdraw"
+                value="deposit"
                 className="h-10 rounded-none text-foreground text-lg font-semibold px-0 border-b-[2px] border-transparent data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:border-primary"
               >
-                Withdraw
+                Deposit
               </TabsTrigger>
-            )}
-          </TabsList>
+              {position && (
+                <TabsTrigger
+                  value="withdraw"
+                  className="h-10 rounded-none text-foreground text-lg font-semibold px-0 border-b-[2px] border-transparent data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:border-primary"
+                >
+                  Withdraw
+                </TabsTrigger>
+              )}
+            </TabsList>
+            <Link
+              href={`/swap?coinA=${getCoinSymbol(
+                pool.coinA
+              )}&coinB=${getCoinSymbol(pool.coinB)}`}
+              className="text-primary/80 hover:text-primary ml-3 text-sm inline-flex items-center"
+            >
+              <ArrowLeftRight className="mr-1 size-3" /> Swap
+            </Link>
+          </div>
           <DepositContent
             pool={pool}
             setOnReview={setOnReview}

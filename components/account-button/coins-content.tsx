@@ -1,14 +1,13 @@
 import { TabsContent } from "@/components/ui/tabs";
 import { Coin } from "@/types";
-import { useLaserEyes } from "@omnisat/lasereyes";
+
 import { useCoinBalance } from "@/hooks/use-balance";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { CoinIcon } from "../coin-icon";
 import { formatNumber, cn, getCoinSymbol, getCoinName } from "@/lib/utils";
 
 function CoinRow({ coin }: { coin: Coin }) {
-  const { address } = useLaserEyes();
-  const balance = useCoinBalance(address, coin.id);
+  const balance = useCoinBalance(coin.id);
 
   return (
     <div

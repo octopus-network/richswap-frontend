@@ -7,6 +7,7 @@ import {
   DepositQuote,
   UnspentOutput,
   PoolInfo,
+  PoolData,
 } from "@/types";
 import { BITCOIN } from "../constants";
 import {
@@ -44,7 +45,7 @@ export class Exchange {
       }[];
 
       if (res?.length) {
-        const promises = res.map(({ id }) => this.getPoolInfo(id));
+        const promises = res.map(({ id }) => this.getPoolData(id));
 
         const poolInfos = await Promise.all(promises);
 
@@ -77,16 +78,9 @@ export class Exchange {
     return poolKey;
   }
 
-  public static async getPoolInfo(poolKey: string): Promise<
-    | {
-        key: string;
-        coinAId: string;
-        coinBId: string;
-        coinAAmount: string;
-        coinBAmount: string;
-      }
-    | undefined
-  > {
+  public static async getPoolData(
+    poolKey: string
+  ): Promise<PoolData | undefined> {
     try {
       const res: any = await actor.find_pool(poolKey);
 
@@ -94,13 +88,16 @@ export class Exchange {
         const data = res[0];
         const meta = data.meta;
         const state = data.state[0];
-        const { utxo } = state ?? { utxo: [] };
+
+        const { utxo } = state ?? { utxo: [], incomes: BigInt(0) };
 
         return {
           key: poolKey,
           coinAId: BITCOIN.id,
           coinBId: meta.id,
-          coinAAmount: (utxo[0]?.satoshis ?? BigInt(0)).toString(),
+          coinAAmount: (
+            (utxo[0]?.satoshis ?? BigInt(0)) - (state?.incomes ?? BigInt(0))
+          ).toString(),
           coinBAmount: utxo[0]?.balance.value.toString() ?? "0",
         };
       }
@@ -370,9 +367,18 @@ export class Exchange {
         ],
       };
 
+      const poolData = await Exchange.getPoolData(poolKey);
+
+      if (!poolData) {
+        throw new Error("Invalid pool");
+      }
+
+      console.log("preswap output", output);
+      console.log("input amount", inputAmount, inputCoin);
+
       const quote = {
         state: SwapState.VALID,
-        poolKey,
+        pool: poolData,
         inputAmount,
         outputAmount: output.value.toString(),
         utxos: [utxo],
