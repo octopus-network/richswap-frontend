@@ -15,18 +15,18 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
     useState(false);
 
-  const { address } = useLaserEyes();
+  const { paymentAddress } = useLaserEyes();
 
   const [position, setPosition] = useState<Position | null>();
 
   const poolTvl = usePoolTvl(pool.key);
 
   useEffect(() => {
-    if (!address) {
+    if (!paymentAddress) {
       setPosition(undefined);
     }
-    Exchange.getPosition(pool, address).then(setPosition);
-  }, [pool, address]);
+    Exchange.getPosition(pool, paymentAddress).then(setPosition);
+  }, [pool, paymentAddress]);
 
   const positionPercentage = useMemo(
     () =>
