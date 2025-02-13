@@ -47,7 +47,7 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
       },
       tapInternalKey: hexToBytes(utxo.pubkey),
     };
-  } else if (utxo.addressType === AddressType.P2SH_P2WPKH) {
+  } else if (utxo.addressType === AddressType.P2SH_P2WPKH && utxo.pubkey) {
     const redeemData = bitcoin.payments.p2wpkh({
       pubkey: hexToBytes(utxo.pubkey),
     });

@@ -95,7 +95,7 @@ export function useUtxos(address: string | undefined, pubkey?: string) {
 export function useWalletUtxos() {
   const { address, paymentAddress, publicKey } = useLaserEyes();
   const utxos = useUtxos(address, publicKey);
-  const paymentUtxos = useUtxos(paymentAddress);
+  const paymentUtxos = useUtxos(paymentAddress, publicKey);
 
   console.log("public key", publicKey);
   return useMemo(
