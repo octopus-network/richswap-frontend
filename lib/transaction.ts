@@ -25,7 +25,7 @@ interface TxOutput {
 }
 
 function utxoToInput(utxo: UnspentOutput): TxInput {
-  const data = {
+  let data: any = {
     hash: utxo.txid,
     index: utxo.vout,
     witnessUtxo: {
@@ -33,15 +33,37 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
       script: hexToBytes(utxo.scriptPk),
     },
   };
+  if (
+    (utxo.addressType === AddressType.P2TR ||
+      utxo.addressType === AddressType.M44_P2TR) &&
+    utxo.pubkey
+  ) {
+    data = {
+      hash: utxo.txid,
+      index: utxo.vout,
+      witnessUtxo: {
+        value: BigInt(utxo.satoshis),
+        script: hexToBytes(utxo.scriptPk),
+      },
+      tapInternalKey: hexToBytes(utxo.pubkey),
+    };
+  } else if (utxo.addressType === AddressType.P2SH_P2WPKH) {
+    const redeemData = bitcoin.payments.p2wpkh({
+      pubkey: hexToBytes(utxo.pubkey),
+    });
+    data = {
+      hash: utxo.txid,
+      index: utxo.vout,
+      witnessUtxo: {
+        value: BigInt(utxo.satoshis),
+        script: hexToBytes(utxo.scriptPk),
+      },
+      redeemScript: redeemData.output,
+    };
+  }
 
   return {
-    data:
-      utxo.addressType === AddressType.P2TR && utxo.pubkey
-        ? {
-            ...data,
-            tapInternalKey: hexToBytes(utxo.pubkey),
-          }
-        : data,
+    data,
     utxo,
   };
 }

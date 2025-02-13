@@ -344,7 +344,6 @@ export class Exchange {
           value: BigInt(inputAmount),
         })
         .then((data: any) => {
-          console.log("preswap", data);
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -379,9 +378,6 @@ export class Exchange {
       if (!poolData) {
         throw new Error("Invalid pool");
       }
-
-      console.log("preswap output", output);
-      console.log("input amount", inputAmount, inputCoin);
 
       const quote = {
         state: SwapState.VALID,

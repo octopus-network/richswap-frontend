@@ -201,7 +201,6 @@ export function DepositReview({
     try {
       const _psbt = tx.toPsbt();
       setPsbt(_psbt);
-      console.log("psbt", _psbt);
     } catch (error) {
       console.log("error", error);
     }

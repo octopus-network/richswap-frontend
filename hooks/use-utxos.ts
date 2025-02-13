@@ -97,6 +97,7 @@ export function useWalletUtxos() {
   const utxos = useUtxos(address, publicKey);
   const paymentUtxos = useUtxos(paymentAddress);
 
+  console.log("public key", publicKey);
   return useMemo(
     () =>
       utxos && paymentUtxos
