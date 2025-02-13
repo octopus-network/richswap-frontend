@@ -8,6 +8,7 @@ import {
   UnspentOutput,
   PoolInfo,
   PoolData,
+  AddressType,
 } from "@/types";
 import { BITCOIN } from "../constants";
 import {
@@ -190,6 +191,8 @@ export class Exchange {
           satoshis: satoshis.toString(),
           address: address!,
           scriptPk: output,
+          pubkey: "",
+          addressType: AddressType.P2TR,
           runes: [],
         };
         if (balance.id !== BITCOIN.id) {
@@ -285,6 +288,8 @@ export class Exchange {
         vout: res.input.vout,
         satoshis: res.input.satoshis.toString(),
         address: address!,
+        pubkey: "",
+        addressType: AddressType.P2TR,
         scriptPk: output,
         runes: [
           {
@@ -358,6 +363,8 @@ export class Exchange {
         vout,
         satoshis: satoshis.toString(),
         address: address!,
+        pubkey: "",
+        addressType: AddressType.P2TR,
         scriptPk: outputScript,
         runes: [
           {

@@ -1,4 +1,4 @@
-import { UnspentOutput } from "../types";
+import { AddressType, UnspentOutput } from "../types";
 import { hexToBytes, bytesToHex } from "./utils";
 
 import * as bitcoin from "bitcoinjs-lib";
@@ -25,6 +25,7 @@ interface TxOutput {
 }
 
 function utxoToInput(utxo: UnspentOutput): TxInput {
+  console.log("utxo to input", utxo);
   const data = {
     hash: utxo.txid,
     index: utxo.vout,
@@ -33,8 +34,15 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
       script: hexToBytes(utxo.scriptPk),
     },
   };
+
   return {
-    data,
+    data:
+      utxo.addressType === AddressType.P2TR
+        ? {
+            ...data,
+            tapInternalKey: hexToBytes(utxo.pubkey),
+          }
+        : data,
     utxo,
   };
 }

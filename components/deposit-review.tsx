@@ -106,7 +106,7 @@ export function DepositReview({
       return;
     }
 
-    const txFee = BigInt(Math.ceil(384 * (recommendedFeeRate ?? 10)));
+    const txFee = BigInt(Math.ceil(410 * (recommendedFeeRate ?? 10)));
 
     const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
     const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
@@ -226,12 +226,9 @@ export function DepositReview({
     try {
       const psbtBase64 = psbt.toBase64();
 
-      console.log("deposit psbtHex:", psbt.toHex());
       setStep(1);
 
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
-
-      console.log(psbt);
 
       const signedRes = await signPsbt(psbtBase64);
 
@@ -431,7 +428,7 @@ export function DepositReview({
           <Separator orientation="vertical" className="h-3 w-[2px] ml-[14px]" />
           <Step
             title="Invoke exchange"
-            countdown={15}
+            countdown={5}
             icon={<Shuffle className="size-4" />}
             isActive={step === 2}
           />

@@ -401,7 +401,7 @@ export function WithdrawReview({
           <Separator orientation="vertical" className="h-3 w-[2px] ml-[14px]" />
           <Step
             title="Invoke exchange"
-            countdown={15}
+            countdown={5}
             icon={<Shuffle className="size-4" />}
             isActive={step === 2}
           />

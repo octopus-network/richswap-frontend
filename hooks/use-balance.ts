@@ -4,7 +4,6 @@ import { useDefaultCoins } from "./use-coins";
 import { useWalletUtxos } from "./use-utxos";
 import { formatCoinAmount } from "@/lib/utils";
 import { Coin, UnspentOutput } from "@/types";
-import { useLaserEyes } from "@omnisat/lasereyes";
 
 function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
   const isBitcoin = coin.id === BITCOIN.id;
