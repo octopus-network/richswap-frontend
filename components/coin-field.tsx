@@ -129,7 +129,8 @@ export function CoinField({
           "bg-card/80 px-4 py-2 rounded-xl focus-within:border-primary/80 focus-within:shadow-swap-input border border-transparent transition-colors duration-200",
           className,
           !disabled &&
-            "hover:focus-within:border-primary/60 hover:border-primary/30"
+            "hover:focus-within:border-primary/60 hover:border-primary/30",
+          !disabled && pulsing && "animate-pulse duration-600"
         )}
         onClick={() => {
           inputRef?.current?.focus();
