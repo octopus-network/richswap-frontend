@@ -25,7 +25,6 @@ interface TxOutput {
 }
 
 function utxoToInput(utxo: UnspentOutput): TxInput {
-  console.log("utxo to input", utxo);
   const data = {
     hash: utxo.txid,
     index: utxo.vout,
@@ -37,7 +36,7 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
 
   return {
     data:
-      utxo.addressType === AddressType.P2TR
+      utxo.addressType === AddressType.P2TR && utxo.pubkey
         ? {
             ...data,
             tapInternalKey: hexToBytes(utxo.pubkey),
