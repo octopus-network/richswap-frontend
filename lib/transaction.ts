@@ -4,7 +4,6 @@ import * as btc from "@scure/btc-signer";
 import * as bitcoin from "bitcoinjs-lib";
 import { ECPairAPI, ECPairFactory } from "ecpair";
 import * as ecc from "@bitcoinerlab/secp256k1";
-import { hex, base64 } from "@scure/base";
 
 const ECPair: ECPairAPI = ECPairFactory(ecc);
 
@@ -49,7 +48,6 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
       tapInternalKey: hexToBytes(utxo.pubkey),
     };
   } else if (utxo.addressType === AddressType.P2SH_P2WPKH && utxo.pubkey) {
-
     const p2wpkh = btc.p2wpkh(hexToBytes(utxo.pubkey));
     const p2sh = btc.p2sh(p2wpkh);
     data = {
