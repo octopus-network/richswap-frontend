@@ -8,6 +8,7 @@ import {
   UnspentOutput,
   PoolInfo,
   PoolData,
+  AddressType,
 } from "@/types";
 import { BITCOIN } from "../constants";
 import {
@@ -190,6 +191,8 @@ export class Exchange {
           satoshis: satoshis.toString(),
           address: address!,
           scriptPk: output,
+          pubkey: "",
+          addressType: AddressType.P2TR,
           runes: [],
         };
         if (balance.id !== BITCOIN.id) {
@@ -285,6 +288,8 @@ export class Exchange {
         vout: res.input.vout,
         satoshis: res.input.satoshis.toString(),
         address: address!,
+        pubkey: "",
+        addressType: AddressType.P2TR,
         scriptPk: output,
         runes: [
           {
@@ -339,7 +344,6 @@ export class Exchange {
           value: BigInt(inputAmount),
         })
         .then((data: any) => {
-          console.log("preswap", data);
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -358,6 +362,8 @@ export class Exchange {
         vout,
         satoshis: satoshis.toString(),
         address: address!,
+        pubkey: "",
+        addressType: AddressType.P2TR,
         scriptPk: outputScript,
         runes: [
           {
@@ -372,9 +378,6 @@ export class Exchange {
       if (!poolData) {
         throw new Error("Invalid pool");
       }
-
-      console.log("preswap output", output);
-      console.log("input amount", inputAmount, inputCoin);
 
       const quote = {
         state: SwapState.VALID,

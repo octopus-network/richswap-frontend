@@ -92,7 +92,7 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
         </div>
       </div>
       {showErrorMessage && (
-        <div className="border rounded-sm bg-red-400/5 px-2 py-1 text-sm text-accent-foreground">
+        <div className="border rounded-sm bg-red-300/10 px-2 py-1 text-sm">
           {transaction.message || "Unknown Error"}
         </div>
       )}

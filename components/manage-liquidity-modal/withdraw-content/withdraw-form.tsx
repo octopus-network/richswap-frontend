@@ -60,7 +60,6 @@ export function WithdrawForm({
       id: "0:0",
       value: btc,
     }).then((res) => {
-      console.log("withdraw res", res);
       if (res) {
         setNonce(res.nonce);
         setUtxos(res.utxos);

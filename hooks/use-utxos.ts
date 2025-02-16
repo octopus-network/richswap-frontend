@@ -47,12 +47,14 @@ export function usePendingUtxos(address: string | undefined) {
   return utxos;
 }
 
-export function useUtxos(address: string | undefined) {
+export function useUtxos(address: string | undefined, pubkey?: string) {
   const pendingUtxos = usePendingUtxos(address);
   const spentUtxos = useAtomValue(spentUtxosAtom);
   const transactions = useTransactions();
   const { data: apiUtxos, mutate: mutateApiUtxos } = useSWR(
-    address ? `/api/utxos?address=${address}` : undefined,
+    address
+      ? `/api/utxos?address=${address}${pubkey ? `&pubkey=${pubkey}` : ""}`
+      : undefined,
     (url: string) =>
       axios.get<{ data?: UnspentOutput[]; error: string }>(url).then((res) => {
         if (res.data.error) {
@@ -91,17 +93,21 @@ export function useUtxos(address: string | undefined) {
 }
 
 export function useWalletUtxos() {
-  const { address, paymentAddress } = useLaserEyes();
-  const utxos = useUtxos(address);
-  const paymentUtxos = useUtxos(paymentAddress);
+  const { address, paymentAddress, publicKey, paymentPublicKey } =
+    useLaserEyes();
+
+  const utxos = useUtxos(address, publicKey);
+  const paymentUtxos = useUtxos(paymentAddress, paymentPublicKey);
 
   return useMemo(
     () =>
       utxos && paymentUtxos
         ? paymentAddress !== address
-          ? utxos.concat(paymentUtxos)
+          ? utxos
+              .filter((utxo) => !!utxo.runes.length)
+              .concat(paymentUtxos.filter((utxo) => !!!utxo.runes.length))
           : utxos
         : undefined,
-    [utxos, paymentUtxos]
+    [utxos, paymentUtxos, address, paymentAddress]
   );
 }

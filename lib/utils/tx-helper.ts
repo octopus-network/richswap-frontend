@@ -3,6 +3,7 @@ import { BITCOIN } from "../constants";
 import { Runestone, Edict } from "runelib";
 
 import { getTxInfo, getRawTx } from "@/lib/chain-api";
+import { getAddressType } from "./address";
 
 export async function getTxScript(outpoint: string) {
   const [txid, vout] = outpoint.split(":");
@@ -67,6 +68,8 @@ export async function getUtxoByOutpoint(
     satoshis: value.toString(),
     scriptPk: scriptpubkey,
     address: scriptpubkey_address,
+    pubkey: "",
+    addressType: getAddressType(scriptpubkey_address),
     runes: edict
       ? [
           {

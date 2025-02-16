@@ -1,4 +1,4 @@
-import { UnspentOutput } from "../types";
+import { AddressType, UnspentOutput } from "../types";
 import { hexToBytes, bytesToHex } from "./utils";
 
 import * as bitcoin from "bitcoinjs-lib";
@@ -25,7 +25,7 @@ interface TxOutput {
 }
 
 function utxoToInput(utxo: UnspentOutput): TxInput {
-  const data = {
+  let data: any = {
     hash: utxo.txid,
     index: utxo.vout,
     witnessUtxo: {
@@ -33,6 +33,38 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
       script: hexToBytes(utxo.scriptPk),
     },
   };
+  if (
+    (utxo.addressType === AddressType.P2TR ||
+      utxo.addressType === AddressType.M44_P2TR) &&
+    utxo.pubkey
+  ) {
+    const pubkey =
+      utxo.pubkey.length === 66 ? utxo.pubkey.slice(2) : utxo.pubkey;
+    data = {
+      hash: utxo.txid,
+      index: utxo.vout,
+      witnessUtxo: {
+        value: BigInt(utxo.satoshis),
+        script: hexToBytes(utxo.scriptPk),
+      },
+      tapInternalKey: hexToBytes(pubkey),
+    };
+  } else if (utxo.addressType === AddressType.P2SH_P2WPKH && utxo.pubkey) {
+    const redeemData = bitcoin.payments.p2wpkh({
+      pubkey: Buffer.from(utxo.pubkey, "hex"),
+    });
+
+    data = {
+      hash: utxo.txid,
+      index: utxo.vout,
+      witnessUtxo: {
+        value: BigInt(utxo.satoshis),
+        script: hexToBytes(utxo.scriptPk),
+      },
+      redeemScript: redeemData.output,
+    };
+  }
+
   return {
     data,
     utxo,

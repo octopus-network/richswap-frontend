@@ -1,4 +1,5 @@
 import { Coin } from "./coin";
+import { UnspentOutput } from "./utxo";
 
 export type ToSignInput = {
   address: string;
@@ -10,7 +11,7 @@ export enum TransactionStatus {
   CONFIRMING,
   FINALIZED,
   REJECTED,
-  FAILED
+  FAILED,
 }
 
 export enum TransactionType {
@@ -32,4 +33,5 @@ export interface TransactionInfo {
   nonce?: string;
   message?: string;
   blockHeight?: number;
+  utxos?: UnspentOutput[];
 }
