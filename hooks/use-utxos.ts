@@ -96,10 +96,7 @@ export function useWalletUtxos() {
   const { address, paymentAddress, publicKey, paymentPublicKey } =
     useLaserEyes();
 
-  const utxos = useUtxos(
-    address,
-    publicKey.length === 64 ? publicKey : publicKey.slice(2)
-  );
+  const utxos = useUtxos(address, publicKey);
   const paymentUtxos = useUtxos(paymentAddress, paymentPublicKey);
 
   return useMemo(

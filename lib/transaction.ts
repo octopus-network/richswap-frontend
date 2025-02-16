@@ -38,6 +38,8 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
       utxo.addressType === AddressType.M44_P2TR) &&
     utxo.pubkey
   ) {
+    const pubkey =
+      utxo.pubkey.length === 66 ? utxo.pubkey.slice(2) : utxo.pubkey;
     data = {
       hash: utxo.txid,
       index: utxo.vout,
@@ -45,7 +47,7 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
         value: BigInt(utxo.satoshis),
         script: hexToBytes(utxo.scriptPk),
       },
-      tapInternalKey: hexToBytes(utxo.pubkey),
+      tapInternalKey: hexToBytes(pubkey),
     };
   } else if (utxo.addressType === AddressType.P2SH_P2WPKH && utxo.pubkey) {
     const redeemData = bitcoin.payments.p2wpkh({
