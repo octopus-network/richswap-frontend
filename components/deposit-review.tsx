@@ -289,6 +289,7 @@ export function DepositReview({
         poolKey,
         coinAAmount,
         coinBAmount,
+        utxos: userUtxos,
         type: TransactionType.ADD_LIQUIDITY,
         status: TransactionStatus.BROADCASTED,
       });

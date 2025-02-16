@@ -57,7 +57,7 @@ export function DepositForm({
     return () => {
       onUserInput(Field.INPUT, "");
     };
-  }, []);
+  }, [onUserInput]);
 
   const parsedAmounts = useMemo(
     () => ({
@@ -133,7 +133,7 @@ export function DepositForm({
               : formattedAmounts[Field.INPUT] || "0"
           ).lt(0.0001)
       ),
-    [pool, formattedAmounts]
+    [pool, inputAmount, isEmptyPool, formattedAmounts]
   );
 
   useEffect(() => {
@@ -145,7 +145,7 @@ export function DepositForm({
       }
       setIsEmptyPool(true);
     }
-  }, [deposit, formattedAmounts, isEmptyPool]);
+  }, [deposit, inputAmount, formattedAmounts, isEmptyPool]);
 
   const runePriceInSats = useMemo(
     () =>

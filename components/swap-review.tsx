@@ -254,7 +254,6 @@ export function SwapReview({
     try {
       const _psbt = tx.toPsbt();
       setPsbt(_psbt);
-      console.log("psbt", _psbt);
       setInsufficientUtxos(false);
     } catch (error) {
       setInsufficientUtxos(true);
@@ -336,6 +335,7 @@ export function SwapReview({
         coinB,
         poolKey,
         coinAAmount,
+        utxos: userUtxos,
         coinBAmount,
         type: TransactionType.SWAP,
         status: TransactionStatus.BROADCASTED,

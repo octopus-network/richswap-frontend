@@ -186,7 +186,6 @@ export function WithdrawReview({
     try {
       const _psbt = tx.toPsbt();
       setPsbt(_psbt);
-      console.log("psbt", _psbt);
     } catch (error) {
       console.log("error", error);
     }
@@ -261,6 +260,7 @@ export function WithdrawReview({
         coinA,
         coinB,
         poolKey,
+        utxos: userUtxos,
         coinAAmount,
         coinBAmount,
         type: TransactionType.WITHDRAW_LIQUIDITY,
