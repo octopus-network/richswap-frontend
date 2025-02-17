@@ -225,6 +225,8 @@ export function DepositReview({
     try {
       const psbtBase64 = psbt.toBase64();
 
+      console.log("Deposit Liquidity PSBT:", psbtBase64);
+
       setStep(1);
 
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
