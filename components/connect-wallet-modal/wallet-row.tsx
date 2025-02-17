@@ -47,6 +47,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
   const onConnectWallet = useCallback(async () => {
     if (!installed) {
       window.open(WALLETS[wallet].url, "_blank");
+      return;
     }
     setConnectingWallet(wallet);
 

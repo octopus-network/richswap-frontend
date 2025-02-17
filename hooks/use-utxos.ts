@@ -97,15 +97,16 @@ export function useWalletUtxos() {
     useLaserEyes();
 
   const utxos = useUtxos(address, publicKey);
-  const paymentUtxos = useUtxos(paymentAddress, paymentPublicKey);
+  const paymentUtxos = useUtxos(
+    paymentAddress !== address ? paymentAddress : undefined,
+    paymentPublicKey
+  );
 
   return useMemo(
     () =>
       utxos && paymentUtxos
         ? paymentAddress !== address
-          ? utxos
-              .filter((utxo) => !!utxo.runes.length)
-              .concat(paymentUtxos.filter((utxo) => !!!utxo.runes.length))
+          ? utxos.concat(paymentUtxos)
           : utxos
         : undefined,
     [utxos, paymentUtxos, address, paymentAddress]
