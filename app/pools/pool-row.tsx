@@ -22,11 +22,17 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
   const poolTvl = usePoolTvl(pool.key);
 
   useEffect(() => {
-    if (!paymentAddress) {
-      setPosition(undefined);
-    }
-    Exchange.getPosition(pool, paymentAddress).then(setPosition);
+    // if (!paymentAddress) {
+    //   setPosition(undefined);
+    // }
+
+    Exchange.getPosition(
+      pool,
+      "bc1plvgrpk6mxwyppvqa5j275ujatn8qgs2dcm8m3r2w7sfkn395x6us9l5qdj"
+    ).then(setPosition);
   }, [pool, paymentAddress]);
+
+  console.log("position", position);
 
   const positionPercentage = useMemo(
     () =>

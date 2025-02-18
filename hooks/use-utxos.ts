@@ -104,9 +104,11 @@ export function useWalletUtxos() {
 
   return useMemo(
     () =>
-      utxos && paymentUtxos
+      utxos
         ? paymentAddress !== address
-          ? utxos.concat(paymentUtxos)
+          ? paymentUtxos
+            ? utxos.concat(paymentUtxos)
+            : undefined
           : utxos
         : undefined,
     [utxos, paymentUtxos, address, paymentAddress]
