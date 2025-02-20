@@ -162,7 +162,7 @@ export class Transaction {
   calNetworkFee() {
     const psbt = this.createEstimatePsbt();
     const txSize = psbt.extractTransaction(true).virtualSize();
-    const fee = Math.ceil(txSize * 1.1 * this.feeRate);
+    const fee = Math.ceil(txSize * 1.05 * this.feeRate);
     return fee;
   }
 
