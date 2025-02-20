@@ -162,7 +162,7 @@ export class Transaction {
   calNetworkFee() {
     const psbt = this.createEstimatePsbt();
     const txSize = psbt.extractTransaction(true).virtualSize();
-    const fee = Math.ceil(txSize * 1.05 * this.feeRate);
+    const fee = Math.ceil(txSize * 1.06 * this.feeRate);
     return fee;
   }
 
@@ -271,21 +271,18 @@ export class Transaction {
 
     const pubkey = keyPair.publicKey;
 
-    const address = getEstimateAddress(
-      pubkey,
-      AddressType.P2TR,
-      this.networkType
-    );
-
-    const scriptPk = addressToScriptPk(address, this.networkType);
-
-    const scriptPkHex = bytesToHex(scriptPk);
-
     const tx = this.clone();
+    const addressTypes: AddressType[] = [];
     tx.utxos.forEach((v) => {
       v.pubkey = bytesToHex(pubkey);
-      v.addressType = AddressType.P2TR;
-      v.scriptPk = scriptPkHex;
+      const address = getEstimateAddress(
+        pubkey,
+        v.addressType,
+        this.networkType
+      );
+      const scriptPk = addressToScriptPk(address, this.networkType);
+      v.scriptPk = bytesToHex(scriptPk);
+      addressTypes.push(v.addressType);
     });
 
     tx.inputs = [];
@@ -302,7 +299,15 @@ export class Transaction {
 
     tx.inputs.forEach((_, index) => {
       try {
-        psbt.signTaprootInput(index, tweakedSigner);
+        const addressType = addressTypes[index];
+        if (
+          addressType === AddressType.P2TR ||
+          addressType === AddressType.M44_P2TR
+        ) {
+          psbt.signTaprootInput(index, tweakedSigner);
+        } else {
+          psbt.signInput(index, keyPair);
+        }
         psbt.finalizeInput(index);
       } catch (err) {
         console.log(err);

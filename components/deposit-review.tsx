@@ -348,7 +348,7 @@ export function DepositReview({
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Fee rate</span>
               <span>
-                {recommendedFeeRate}{" "}
+                ≈{recommendedFeeRate}{" "}
                 <em className="text-muted-foreground">sats/vb</em>
               </span>
             </div>
