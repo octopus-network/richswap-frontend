@@ -6,11 +6,11 @@ import { useCoinPrice } from "@/hooks/use-prices";
 import { Skeleton } from "../ui/skeleton";
 import { formatNumber } from "@/lib/utils";
 
-import { useRecommendedFeeRate } from "@/hooks/use-fee-rate";
+import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 
 export function Footer() {
   const btcPrice = useCoinPrice(BITCOIN.id);
-  const feeRate = useRecommendedFeeRate();
+  const feeRate = useRecommendedFeeRateFromOrchestrator(true);
 
   return (
     <div className="hidden bg-background text-sm text-muted-foreground sm:flex justify-end items-cetner fixed bottom-0 left-0 w-full border-t">
@@ -30,7 +30,7 @@ export function Footer() {
             <Skeleton className="h-5 w-16" />
           ) : (
             `${feeRate} sats/vb`
-          )}
+          )}createEstimatePsbt
         </div>
       </div>
     </div>

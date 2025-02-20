@@ -284,6 +284,7 @@ export class Transaction {
     const tx = this.clone();
     tx.utxos.forEach((v) => {
       v.pubkey = bytesToHex(pubkey);
+      v.addressType = AddressType.P2TR;
       v.scriptPk = scriptPkHex;
     });
 
@@ -300,8 +301,12 @@ export class Transaction {
     );
 
     tx.inputs.forEach((_, index) => {
-      psbt.signTaprootInput(index, tweakedSigner);
-      psbt.finalizeInput(index);
+      try {
+        psbt.signTaprootInput(index, tweakedSigner);
+        psbt.finalizeInput(index);
+      } catch (err) {
+        console.log(err);
+      }
     });
 
     return psbt;
