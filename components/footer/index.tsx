@@ -30,7 +30,7 @@ export function Footer() {
             <Skeleton className="h-5 w-16" />
           ) : (
             `${feeRate} sats/vb`
-          )}createEstimatePsbt
+          )}
         </div>
       </div>
     </div>
