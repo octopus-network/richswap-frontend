@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Loader2, TriangleAlert } from "lucide-react";
+import { ChevronLeft, TriangleAlert } from "lucide-react";
 import {
   Coin,
   TransactionStatus,
