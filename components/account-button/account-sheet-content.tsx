@@ -18,7 +18,7 @@ export function AccountSheetContent() {
   const { hasCopied, onCopy } = useClipboard(address);
   const { hasCopied: hasPaymentCopied, onCopy: onPaymentCopy } =
     useClipboard(paymentAddress);
-  const btcBalacne = useCoinBalance(BITCOIN.id);
+  const btcBalacne = useCoinBalance(BITCOIN);
   const pendingTransactions = usePendingTransactions();
   return (
     <SheetContent className="p-0" hideCloseButton>

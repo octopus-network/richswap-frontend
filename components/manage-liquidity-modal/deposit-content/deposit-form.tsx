@@ -48,8 +48,8 @@ export function DepositForm({
   const [outputAmount, setOutputAmount] = useState("");
   const [isEmptyPool, setIsEmptyPool] = useState(false);
 
-  const coinABalance = useCoinBalance(pool.coinA?.id);
-  const coinBBalance = useCoinBalance(pool.coinB?.id);
+  const coinABalance = useCoinBalance(pool.coinA);
+  const coinBBalance = useCoinBalance(pool.coinB);
 
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
 
@@ -124,15 +124,7 @@ export function DepositForm({
   );
 
   const tooSmallFunds = useMemo(
-    () =>
-      Boolean(
-        pool.coinA &&
-          new Decimal(
-            isEmptyPool
-              ? inputAmount || "0"
-              : formattedAmounts[Field.INPUT] || "0"
-          ).lt(0.0001)
-      ),
+    () => false,
     [pool, inputAmount, isEmptyPool, formattedAmounts]
   );
 

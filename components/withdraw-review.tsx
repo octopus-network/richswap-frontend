@@ -7,7 +7,7 @@ import {
   UnspentOutput,
 } from "@/types";
 
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, withdrawTx } from "@/lib/utils";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
@@ -19,18 +19,17 @@ import { useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
-import { useWalletUtxos } from "@/hooks/use-utxos";
+import { useWalletBtcUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
-import { parseCoinAmount, selectUtxos } from "@/lib/utils";
-import { Transaction } from "@/lib/transaction";
-import { BITCOIN, UTXO_DUST } from "@/lib/constants";
+import { parseCoinAmount } from "@/lib/utils";
+
+import { BITCOIN } from "@/lib/constants";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
 import { EXCHANGE_ID } from "@/lib/constants/canister";
 import { useAddTransaction } from "@/store/transactions";
-import { RuneId, Runestone, none, Edict } from "runelib";
 
 export function WithdrawReview({
   coinA,
@@ -61,7 +60,7 @@ export function WithdrawReview({
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [userUtxos, setUserUtxos] = useState<UnspentOutput[]>([]);
+  const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -69,7 +68,7 @@ export function WithdrawReview({
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 
-  const utxos = useWalletUtxos();
+  const btcUtxos = useWalletBtcUtxos();
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinAFiatValue = useMemo(
@@ -92,7 +91,7 @@ export function WithdrawReview({
       !coinB ||
       !coinAAmount ||
       !coinBAmount ||
-      !utxos?.length ||
+      !btcUtxos?.length ||
       !poolUtxos
     ) {
       return;
@@ -103,92 +102,23 @@ export function WithdrawReview({
       return;
     }
 
-    const txFee = BigInt(Math.ceil(322 * (recommendedFeeRate ?? 10)));
-
     const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
     const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
 
-    let btcAmount = BigInt(0);
-
-    const btcUtxos = selectUtxos(utxos, BITCOIN, txFee);
-
-    btcUtxos.forEach((utxo) => {
-      btcAmount += BigInt(utxo.satoshis);
+    const tx = withdrawTx({
+      btcAmount: coinAAmountBigInt,
+      runeid: coinB.id,
+      runeAmount: coinBAmountBigInt,
+      btcUtxos,
+      poolUtxos,
+      poolAddress,
+      address,
+      paymentAddress,
+      feeRate: recommendedFeeRate,
     });
 
-    const changeBtcAmount = btcAmount - txFee - UTXO_DUST;
-
-    const _userUtxos = btcUtxos;
-    setUserUtxos(_userUtxos);
-
-    let poolBtcAmount = BigInt(0),
-      poolRuneAmount = BigInt(0);
-
-    poolUtxos.forEach((utxo) => {
-      const rune = utxo.runes.find((rune) => rune.id === coinB.id);
-      poolRuneAmount += BigInt(rune!.amount);
-      poolBtcAmount += BigInt(utxo.satoshis);
-    });
-
-    const [runeBlock, runeIdx] = coinB.id.split(":");
-
-    const poolChangeRuneAmount = poolRuneAmount - coinBAmountBigInt,
-      poolChangeBtcAmount = poolBtcAmount - coinAAmountBigInt;
-
-    const needChange = poolChangeRuneAmount > 0;
-
-    const edicts = needChange
-      ? [
-          new Edict(
-            new RuneId(Number(runeBlock), Number(runeIdx)),
-            poolChangeRuneAmount,
-            0
-          ),
-          new Edict(
-            new RuneId(Number(runeBlock), Number(runeIdx)),
-            coinBAmountBigInt,
-            1
-          ),
-        ]
-      : [
-          new Edict(
-            new RuneId(Number(runeBlock), Number(runeIdx)),
-            coinBAmountBigInt,
-            0
-          ),
-        ];
-
-    const runestone = new Runestone(edicts, none(), none(), none());
-
-    const inputUtxos = [..._userUtxos, ...poolUtxos];
-
-    const tx = new Transaction();
-    tx.setEnableRBF(false);
-    tx.setFeeRate(10);
-
-    inputUtxos.forEach((utxo) => {
-      tx.addInput(utxo);
-    });
-
-    if (needChange) {
-      // change runes
-      tx.addOutput(poolAddress, poolChangeBtcAmount);
-    }
-
-    // send runes
-    tx.addOutput(address, UTXO_DUST);
-    // send btc to user
-    tx.addOutput(paymentAddress, coinAAmountBigInt + changeBtcAmount);
-
-    // OP_RETURN
-    tx.addScriptOutput(runestone.encipher(), BigInt(0));
-
-    try {
-      const _psbt = tx.toPsbt();
-      setPsbt(_psbt);
-    } catch (error) {
-      console.log("error", error);
-    }
+    setPsbt(tx.psbt);
+    setToSpendUtxos(tx.toSpendUtxos);
   }, [
     poolKey,
     coinA,
@@ -196,14 +126,14 @@ export function WithdrawReview({
     poolUtxos,
     coinAAmount,
     coinBAmount,
-    utxos,
+    btcUtxos,
     address,
     paymentAddress,
     recommendedFeeRate,
   ]);
 
   const onSubmit = async () => {
-    if (!psbt || !coinA || !coinB || !poolUtxos) {
+    if (!psbt || !coinA || !coinB || !poolUtxos || !toSpendUtxos.length) {
       return;
     }
 
@@ -217,7 +147,7 @@ export function WithdrawReview({
         throw new Error("Signed Failed");
       }
 
-      addSpentUtxos(userUtxos);
+      addSpentUtxos(toSpendUtxos);
 
       setStep(2);
 
@@ -260,7 +190,7 @@ export function WithdrawReview({
         coinA,
         coinB,
         poolKey,
-        utxos: userUtxos,
+        utxos: toSpendUtxos,
         coinAAmount,
         coinBAmount,
         type: TransactionType.WITHDRAW_LIQUIDITY,
@@ -277,7 +207,7 @@ export function WithdrawReview({
     } catch (error: any) {
       if (error.code !== 4001) {
         setErrorMessage(error.message || "Unknown Error");
-        removeSpentUtxos(userUtxos);
+        removeSpentUtxos(toSpendUtxos);
       } else {
         setStep(0);
       }

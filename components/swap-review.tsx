@@ -14,25 +14,25 @@ import { CoinIcon } from "@/components/coin-icon";
 import {
   formatNumber,
   getCoinSymbol,
+  parseCoinAmount,
   getP2trAressAndScript,
+  swapRuneTx,
+  swapBtcTx,
 } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
-import { useWalletUtxos } from "@/hooks/use-utxos";
+import { useWalletBtcUtxos, useWalletRuneUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
 
-import { parseCoinAmount, selectUtxos } from "@/lib/utils";
-import { Transaction } from "@/lib/transaction";
-import { UTXO_DUST } from "@/lib/constants";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
 import { EXCHANGE_ID } from "@/lib/constants/canister";
 import { useAddTransaction } from "@/store/transactions";
-import { RuneId, Runestone, none, Edict } from "runelib";
+
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 
@@ -66,9 +66,8 @@ export function SwapReview({
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [insufficientUtxos, setInsufficientUtxos] = useState(false);
 
-  const [userUtxos, setUserUtxos] = useState<UnspentOutput[]>([]);
+  const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -76,7 +75,10 @@ export function SwapReview({
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
 
-  const utxos = useWalletUtxos();
+  const btcUtxos = useWalletBtcUtxos();
+  const runeUtxos = useWalletRuneUtxos(
+    coinA?.id === BITCOIN.id ? undefined : coinA?.id
+  );
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinAFiatValue = useMemo(
@@ -115,7 +117,7 @@ export function SwapReview({
       !coinB ||
       !coinAAmount ||
       !coinBAmount ||
-      !utxos?.length ||
+      !btcUtxos?.length ||
       !poolUtxos?.length
     ) {
       return;
@@ -126,138 +128,77 @@ export function SwapReview({
       return;
     }
 
-    const txFee = BigInt(Math.ceil(373 * (recommendedFeeRate ?? 10)));
-
     const isSwapRune = coinA.id === BITCOIN.id;
     const involvedRune = isSwapRune ? coinB : coinA;
 
     const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
     const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
 
-    let btcAmount = BigInt(0),
-      runeAmount = BigInt(0);
+    if (isSwapRune) {
+      const tx = swapRuneTx({
+        btcAmount: coinAAmountBigInt,
+        runeid: involvedRune.id,
+        runeAmount: coinBAmountBigInt,
+        btcUtxos,
+        poolUtxos,
+        poolAddress,
+        address,
+        paymentAddress,
+        feeRate: recommendedFeeRate,
+      });
 
-    const btcUtxos = selectUtxos(
-      utxos,
-      BITCOIN,
-      isSwapRune ? coinAAmountBigInt + txFee : txFee
-    );
-
-    const runeUtxos = isSwapRune
-      ? []
-      : selectUtxos(utxos, coinA, coinAAmountBigInt);
-
-    btcUtxos.forEach((utxo) => {
-      btcAmount += BigInt(utxo.satoshis);
-    });
-
-    runeUtxos.forEach((utxo) => {
-      const rune = utxo.runes.find((rune) => rune.id === involvedRune.id);
-      runeAmount += BigInt(rune!.amount);
-    });
-
-    let changeBtcAmount =
-      btcAmount - (isSwapRune ? coinAAmountBigInt + txFee + UTXO_DUST : txFee);
-
-    const _userUtxos = [...btcUtxos, ...runeUtxos];
-
-    setUserUtxos(_userUtxos);
-
-    let poolBtcAmount = BigInt(0),
-      poolRunesAmount = BigInt(0);
-
-    poolUtxos.forEach((utxo) => {
-      // pool have only one utxo now
-      const rune = utxo.runes.find((rune) => rune.id === involvedRune.id);
-      poolRunesAmount += BigInt(rune!.amount);
-      poolBtcAmount += BigInt(utxo.satoshis) - UTXO_DUST;
-    });
-
-    const [runeBlock, runeIdx] = involvedRune.id.split(":");
-
-    const toSendRunesAmount = isSwapRune
-      ? coinBAmountBigInt
-      : coinAAmountBigInt;
-
-    const toSendBtcAmount = isSwapRune ? coinAAmountBigInt : coinBAmountBigInt;
-
-    const outputRunesAmount =
-      (isSwapRune ? BigInt(0) : poolRunesAmount) + toSendRunesAmount;
-
-    const changedRunesAmount =
-      (isSwapRune ? poolRunesAmount : runeAmount) - toSendRunesAmount;
-
-    const needChange = changedRunesAmount > 0;
-
-    const edicts = needChange
-      ? [
-          new Edict(
-            new RuneId(Number(runeBlock), Number(runeIdx)),
-            changedRunesAmount,
-            0
-          ),
-          new Edict(
-            new RuneId(Number(runeBlock), Number(runeIdx)),
-            outputRunesAmount,
-            1
-          ),
-        ]
-      : [
-          new Edict(
-            new RuneId(Number(runeBlock), Number(runeIdx)),
-            outputRunesAmount,
-            0
-          ),
-        ];
-
-    const runestone = new Runestone(edicts, none(), none(), none());
-
-    const inputUtxos = [..._userUtxos, ...poolUtxos];
-
-    const tx = new Transaction();
-    tx.setEnableRBF(false);
-    tx.setFeeRate(10);
-
-    // add inputs
-    inputUtxos.forEach((utxo) => {
-      tx.addInput(utxo);
-    });
-
-    const outputToPoolBtcAmount = isSwapRune
-      ? coinAAmountBigInt + poolBtcAmount
-      : poolBtcAmount - toSendBtcAmount;
-
-    if (needChange) {
-      tx.addOutput(
-        isSwapRune ? poolAddress : address,
-        isSwapRune ? outputToPoolBtcAmount + UTXO_DUST : UTXO_DUST
-      );
+      setPsbt(tx.psbt);
+      setToSpendUtxos(tx.toSpendUtxos);
     } else {
-      changeBtcAmount += isSwapRune ? BigInt(0) : UTXO_DUST;
-    }
+      if (!runeUtxos?.length) {
+        return;
+      }
+      const _runeUtxos: UnspentOutput[] = [];
 
-    // send runes
-    tx.addOutput(
-      isSwapRune ? address : poolAddress,
-      isSwapRune ? UTXO_DUST : outputToPoolBtcAmount + UTXO_DUST
-    );
+      const runeAmount = coinAAmountBigInt;
 
-    // to user btc
-    tx.addOutput(
-      paymentAddress,
-      changeBtcAmount + (isSwapRune ? BigInt(0) : toSendBtcAmount)
-    );
+      for (let i = 0; i < runeUtxos.length; i++) {
+        const v = runeUtxos[i];
+        if (v.runes.length) {
+          const balance = v.runes.find((r) => r.id == involvedRune.id);
+          if (balance && BigInt(balance.amount) == runeAmount) {
+            _runeUtxos.push(v);
+            break;
+          }
+        }
+      }
 
-    // OP_RETURN
-    tx.addScriptOutput(runestone.encipher(), BigInt(0));
+      if (_runeUtxos.length == 0) {
+        let total = BigInt(0);
+        for (let i = 0; i < runeUtxos.length; i++) {
+          const v = runeUtxos[i];
+          v.runes.forEach((r) => {
+            if (r.id == involvedRune.id) {
+              total = total + BigInt(r.amount);
+            }
+          });
+          _runeUtxos.push(v);
+          if (total >= runeAmount) {
+            break;
+          }
+        }
+      }
 
-    try {
-      const _psbt = tx.toPsbt();
-      setPsbt(_psbt);
-      setInsufficientUtxos(false);
-    } catch (error) {
-      setInsufficientUtxos(true);
-      console.log("psbt error", error);
+      const tx = swapBtcTx({
+        runeid: involvedRune.id,
+        runeAmount: runeAmount,
+        btcAmount: coinBAmountBigInt,
+        btcUtxos,
+        runeUtxos: _runeUtxos,
+        poolUtxos,
+        poolAddress,
+        address,
+        paymentAddress,
+        feeRate: recommendedFeeRate,
+      });
+
+      setPsbt(tx.psbt);
+      setToSpendUtxos(tx.toSpendUtxos);
     }
   }, [
     poolKey,
@@ -265,7 +206,8 @@ export function SwapReview({
     coinB,
     coinAAmount,
     coinBAmount,
-    utxos,
+    btcUtxos,
+    runeUtxos,
     poolUtxos,
     paymentAddress,
     address,
@@ -273,7 +215,14 @@ export function SwapReview({
   ]);
 
   const onSubmit = async () => {
-    if (!psbt || !coinA || !coinB || !poolUtxos?.length || !poolKey) {
+    if (
+      !psbt ||
+      !coinA ||
+      !coinB ||
+      !poolUtxos?.length ||
+      !poolKey ||
+      !toSpendUtxos.length
+    ) {
       return;
     }
 
@@ -288,7 +237,7 @@ export function SwapReview({
         throw new Error("Signed Failed");
       }
 
-      addSpentUtxos(userUtxos);
+      addSpentUtxos(toSpendUtxos);
 
       setStep(2);
 
@@ -335,7 +284,7 @@ export function SwapReview({
         coinB,
         poolKey,
         coinAAmount,
-        utxos: userUtxos,
+        utxos: toSpendUtxos,
         coinBAmount,
         type: TransactionType.SWAP,
         status: TransactionStatus.BROADCASTED,
@@ -354,7 +303,7 @@ export function SwapReview({
       console.log(error);
       if (error.code !== 4001) {
         setErrorMessage(error.message || "Unknown Error");
-        removeSpentUtxos(userUtxos);
+        removeSpentUtxos(toSpendUtxos);
       } else {
         setStep(0);
       }
@@ -445,11 +394,9 @@ export function SwapReview({
               size="xl"
               className="w-full"
               onClick={onSubmit}
-              disabled={!psbt || insufficientUtxos}
+              disabled={!psbt}
             >
-              {!psbt || insufficientUtxos
-                ? "Insufficient Utxos"
-                : "Sign Transaction"}
+              {!psbt ? "Insufficient Utxos" : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button

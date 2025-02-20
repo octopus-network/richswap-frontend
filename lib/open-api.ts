@@ -77,6 +77,7 @@ export class OpenApi {
         }[];
       }
     >(`/v1/indexer/address/${address}/utxo-data?cursor=${cursor}&size=${size}`);
+
     return response;
   }
 
@@ -112,7 +113,9 @@ export class OpenApi {
           runes: { runeid: string; amount: string }[];
         }[];
       }
-    >(`/v1/indexer/address/${address}/runes/${runeid}/utxo`);
+    >(`/v1/indexer/address/${address}/runes/${runeid}/utxo?start=0&limit=500`);
+
+    console.log("rune utxos", response);
 
     return response;
   }

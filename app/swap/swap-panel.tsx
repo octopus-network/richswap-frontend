@@ -83,7 +83,7 @@ export function SwapPanel() {
     [parsedAmounts, typedValue, dependentField, independentField, swapState]
   );
 
-  const coinABalance = useCoinBalance(coinA?.id);
+  const coinABalance = useCoinBalance(coinA);
 
   const insufficientBalance = useMemo(
     () =>

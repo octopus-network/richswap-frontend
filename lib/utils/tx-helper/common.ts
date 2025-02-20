@@ -1,9 +1,9 @@
 import { Coin, UnspentOutput } from "@/types";
-import { BITCOIN } from "../constants";
-import { Runestone, Edict } from "runelib";
 
+import { Runestone, Edict } from "runelib";
+import { AddressType } from "@/types";
 import { getTxInfo, getRawTx } from "@/lib/chain-api";
-import { getAddressType } from "./address";
+import { getAddressType } from "../address";
 
 export async function getTxScript(outpoint: string) {
   const [txid, vout] = outpoint.split(":");
@@ -81,74 +81,85 @@ export async function getUtxoByOutpoint(
   };
 }
 
-export function selectUtxos(
-  utxos: UnspentOutput[] | undefined,
-  coin: Coin,
-  targetAmount: bigint
-) {
-  if (!utxos?.length) {
-    return [];
-  }
-
+export function selectBtcUtxos(utxos: UnspentOutput[], targetAmount: bigint) {
   const selectedUtxos: UnspentOutput[] = [];
+  const remainingUtxos: UnspentOutput[] = [];
 
   let totalAmount = BigInt(0);
-
-  const sortedUtxos = utxos.sort((a, b) => {
-    const runeA = a.runes.find((rune) => rune.id === coin.id);
-    const runeB = b.runes.find((rune) => rune.id === coin.id);
-    const amountA =
-      BITCOIN.id === coin.id
-        ? BigInt(a.satoshis)
-        : runeA
-        ? BigInt(runeA.amount)
-        : BigInt(0);
-    const amountB =
-      BITCOIN.id === coin.id
-        ? BigInt(a.satoshis)
-        : runeB
-        ? BigInt(runeB.amount)
-        : BigInt(0);
-
-    return Number(amountB - amountA);
-  });
-
-  for (let i = 0; i < sortedUtxos.length; i++) {
-    const utxo = sortedUtxos[i];
-    if (coin === BITCOIN) {
-      if (utxo.runes.length) {
-        continue;
-      }
-      if (totalAmount < targetAmount) {
-        totalAmount += BigInt(utxo.satoshis);
-        selectedUtxos.push(utxo);
-      }
+  for (const utxo of utxos) {
+    if (utxo.runes.length) {
+      continue;
+    }
+    if (totalAmount < targetAmount) {
+      totalAmount += BigInt(utxo.satoshis);
+      selectedUtxos.push(utxo);
     } else {
-      if (!utxo.runes.length) {
-        continue;
-      }
-      const containsTargetCoinUtxoIdx = utxo.runes.findIndex(
-        (rune) => rune.id === coin.id
-      );
-
-      if (containsTargetCoinUtxoIdx < 0) {
-        continue;
-      }
-
-      if (totalAmount < targetAmount) {
-        totalAmount += BigInt(utxo.runes[containsTargetCoinUtxoIdx].amount);
-        if (
-          selectedUtxos.findIndex(
-            (item) => item.txid === utxo.txid && item.vout === utxo.vout
-          ) < 0
-        ) {
-          selectedUtxos.push(utxo);
-        }
-      } else {
-        break;
-      }
+      remainingUtxos.push(utxo);
     }
   }
 
-  return selectedUtxos;
+  return {
+    selectedUtxos,
+    remainingUtxos,
+  };
+}
+
+export function selectRuneUtxos(
+  utxos: UnspentOutput[],
+  coin: Coin,
+  targetAmount: bigint
+) {
+  const selectedUtxos: UnspentOutput[] = [];
+  const remainingUtxos: UnspentOutput[] = [];
+
+  let totalAmount = BigInt(0);
+  for (const utxo of utxos) {
+    if (!utxo.runes.length) {
+      continue;
+    }
+    const containsTargetCoinUtxoIdx = utxo.runes.findIndex(
+      (rune) => rune.id === coin.id
+    );
+
+    if (containsTargetCoinUtxoIdx < 0) {
+      continue;
+    }
+
+    if (totalAmount < targetAmount) {
+      totalAmount += BigInt(utxo.runes[containsTargetCoinUtxoIdx].amount);
+      if (
+        selectedUtxos.findIndex(
+          (item) => item.txid === utxo.txid && item.vout === utxo.vout
+        ) < 0
+      ) {
+        selectedUtxos.push(utxo);
+      }
+    } else {
+      remainingUtxos.push(utxo);
+    }
+  }
+
+  return {
+    selectedUtxos,
+    remainingUtxos,
+  };
+}
+
+export function getAddedVirtualSize(addressType: AddressType) {
+  if (
+    addressType === AddressType.P2WPKH ||
+    addressType === AddressType.M44_P2WPKH
+  ) {
+    return 41 + (1 + 1 + 72 + 1 + 33) / 4;
+  } else if (
+    addressType === AddressType.P2TR ||
+    addressType === AddressType.M44_P2TR
+  ) {
+    return 41 + (1 + 1 + 64) / 4;
+  } else if (addressType === AddressType.P2PKH) {
+    return 41 + 1 + 1 + 72 + 1 + 33;
+  } else if (addressType === AddressType.P2SH_P2WPKH) {
+    return 41 + 24 + (1 + 1 + 72 + 1 + 33) / 4;
+  }
+  throw new Error("unknown address type");
 }

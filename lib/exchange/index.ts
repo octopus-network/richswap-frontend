@@ -246,6 +246,7 @@ export class Exchange {
       const res = await actor
         .pre_withdraw_liquidity(poolKey, userAddress, coinBalance)
         .then((data: any) => {
+          console.log("withdraw liquidity", data);
           if (data.Ok) {
             return data.Ok as {
               input: {
@@ -330,6 +331,7 @@ export class Exchange {
     }
 
     const poolKey = await Exchange.getPoolKey(inputCoin.id, outputCoin.id);
+
     if (!poolKey) {
       return {
         state: SwapState.NO_POOL,
@@ -344,6 +346,7 @@ export class Exchange {
           value: BigInt(inputAmount),
         })
         .then((data: any) => {
+          console.log("data", data);
           if (data.Ok) {
             return data.Ok;
           } else {
