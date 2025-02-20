@@ -15,8 +15,8 @@ export default function Pools() {
   return (
     <div className="md:pt-6 w-full flex flex-col items-center">
       <div className="w-full max-w-5xl">
-        <div className="flex justify-between items-center h-9">
-          <span className="text-2xl font-semibold">Pools</span>
+        <div className="flex justify-between items-center">
+          <span className="text-3xl font-semibold">Pools</span>
           <div className="flex items-center gap-10">
             <div className="md:flex gap-6 hidden">
               <div className="flex flex-col space-y-1">
