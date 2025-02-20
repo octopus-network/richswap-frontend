@@ -69,19 +69,19 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
             </span>
           </div>
         </div>
-        <div className="col-span-3 hidden flex-col md:flex items-center justify-center space-y-1">
+        <div className="col-span-3 hidden flex-col md:flex items-center justify-center">
           {poolTvl !== undefined ? (
             <span className="font-semibold md:text-md">
               ${formatNumber(poolTvl)}
             </span>
           ) : (
-            <Skeleton className="h-[18px] w-12 bg-slate-500/40" />
+            <Skeleton className="h-5 w-20 bg-slate-500/40" />
           )}
         </div>
-        <div className="col-span-3 flex-col flex items-center justify-center space-y-1">
+        <div className="col-span-3 flex-col flex items-center justify-center">
           <>
             {positionPercentage === undefined ? (
-              <Skeleton className="h-[18px] w-12 bg-slate-500/40" />
+              <Skeleton className="h-5 w-20 bg-slate-500/40" />
             ) : (
               <div className="flex items-center">
                 {positionPercentage ? (
@@ -108,7 +108,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
               {poolTvl ? `${formatNumber((poolFees * 100) / poolTvl)}%` : "-"}
             </span>
           ) : (
-            <Skeleton className="h-[18px] w-12 bg-slate-500/40" />
+            <Skeleton className="h-5 w-20 bg-slate-500/40" />
           )}
         </div>
         <div className="col-span-1 flex justify-end">
