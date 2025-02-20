@@ -9,7 +9,7 @@ import { formatNumber, cn, getCoinSymbol, getCoinName } from "@/lib/utils";
 function CoinRow({ coin }: { coin: Coin }) {
   const balance = useCoinBalance(coin);
 
-  return Number(balance) === 0 ? null : (
+  return !balance || Number(balance) === 0 ? null : (
     <div
       className={cn(
         "px-4 py-2 flex justify-between hover:bg-secondary cursor-pointer transition-colors duration-200"
