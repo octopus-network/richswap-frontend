@@ -61,10 +61,10 @@ export default function Pools() {
             <div className="col-span-3 justify-center hidden md:flex">
               <span>TVL</span>
             </div>
-            <div className="col-span-3 text-center">Your share</div>
             <div className="col-span-2 justify-center hidden md:flex">
               <span>Fees/TVL</span>
             </div>
+            <div className="col-span-3 text-center">Your share</div>
             <div className="col-span-1" />
           </div>
           {poolList?.length
@@ -81,13 +81,13 @@ export default function Pools() {
                       <Skeleton className="h-3 w-12" />
                     </div>
                   </div>
-                  <div className="col-span-3 hidden flex-col md:flex items-center justify-center">
-                    <Skeleton className="h-5 w-20" />
-                  </div>
-                  <div className="col-span-3 flex-col flex items-center justify-center">
+                  <div className="col-span-3 flex justify-center">
                     <Skeleton className="h-5 w-20" />
                   </div>
                   <div className="col-span-2 hidden md:flex justify-center">
+                    <Skeleton className="h-5 w-20" />
+                  </div>
+                  <div className="col-span-3 hidden md:flex justify-center">
                     <Skeleton className="h-5 w-20" />
                   </div>
                 </div>
