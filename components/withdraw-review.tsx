@@ -105,20 +105,24 @@ export function WithdrawReview({
     const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
     const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
 
-    const tx = withdrawTx({
-      btcAmount: coinAAmountBigInt,
-      runeid: coinB.id,
-      runeAmount: coinBAmountBigInt,
-      btcUtxos,
-      poolUtxos,
-      poolAddress,
-      address,
-      paymentAddress,
-      feeRate: recommendedFeeRate,
-    });
+    try {
+      const tx = withdrawTx({
+        btcAmount: coinAAmountBigInt,
+        runeid: coinB.id,
+        runeAmount: coinBAmountBigInt,
+        btcUtxos,
+        poolUtxos,
+        poolAddress,
+        address,
+        paymentAddress,
+        feeRate: recommendedFeeRate,
+      });
 
-    setPsbt(tx.psbt);
-    setToSpendUtxos(tx.toSpendUtxos);
+      setPsbt(tx.psbt);
+      setToSpendUtxos(tx.toSpendUtxos);
+    } catch (err) {
+      console.log(err);
+    }
   }, [
     poolKey,
     coinA,
@@ -306,7 +310,7 @@ export function WithdrawReview({
               onClick={onSubmit}
               disabled={!psbt}
             >
-              {!psbt ? "Insufficient UTXO(s)" : "Sign Transaction"}
+              {!psbt ? "Insufficient Utxos" : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button

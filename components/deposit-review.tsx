@@ -142,23 +142,27 @@ export function DepositReview({
       }
     }
 
-    const tx = depositTx({
-      runeid: coinB.id,
-      runeAmount,
-      btcAmount: coinAAmountBigInt,
-      btcUtxos,
-      runeUtxos: _runeUtxos,
-      poolUtxos,
-      poolAddress,
-      address,
-      paymentAddress,
-      feeRate: recommendedFeeRate,
-    });
+    try {
+      const tx = depositTx({
+        runeid: coinB.id,
+        runeAmount,
+        btcAmount: coinAAmountBigInt,
+        btcUtxos,
+        runeUtxos: _runeUtxos,
+        poolUtxos,
+        poolAddress,
+        address,
+        paymentAddress,
+        feeRate: recommendedFeeRate,
+      });
 
-    console.log("tx", tx);
+      console.log("tx", tx);
 
-    setPsbt(tx.psbt);
-    setToSpendUtxos(tx.toSpendUtxos);
+      setPsbt(tx.psbt);
+      setToSpendUtxos(tx.toSpendUtxos);
+    } catch (err) {
+      console.log(err);
+    }
   }, [
     poolKey,
     coinA,
@@ -360,8 +364,7 @@ export function DepositReview({
               onClick={onSubmit}
               disabled={!psbt}
             >
-              {!psbt && <Loader2 className="animate-spin" />}
-              Sign Transaction
+              {!psbt ? "Insufficient Utxos" : "Sign PSBT"}
             </Button>
             {showCancelButton && (
               <Button

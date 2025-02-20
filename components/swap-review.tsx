@@ -135,20 +135,24 @@ export function SwapReview({
     const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
 
     if (isSwapRune) {
-      const tx = swapRuneTx({
-        btcAmount: coinAAmountBigInt,
-        runeid: involvedRune.id,
-        runeAmount: coinBAmountBigInt,
-        btcUtxos,
-        poolUtxos,
-        poolAddress,
-        address,
-        paymentAddress,
-        feeRate: recommendedFeeRate,
-      });
+      try {
+        const tx = swapRuneTx({
+          btcAmount: coinAAmountBigInt,
+          runeid: involvedRune.id,
+          runeAmount: coinBAmountBigInt,
+          btcUtxos,
+          poolUtxos,
+          poolAddress,
+          address,
+          paymentAddress,
+          feeRate: recommendedFeeRate,
+        });
 
-      setPsbt(tx.psbt);
-      setToSpendUtxos(tx.toSpendUtxos);
+        setPsbt(tx.psbt);
+        setToSpendUtxos(tx.toSpendUtxos);
+      } catch (err) {
+        console.log(err);
+      }
     } else {
       if (!runeUtxos?.length) {
         return;
@@ -184,21 +188,25 @@ export function SwapReview({
         }
       }
 
-      const tx = swapBtcTx({
-        runeid: involvedRune.id,
-        runeAmount: runeAmount,
-        btcAmount: coinBAmountBigInt,
-        btcUtxos,
-        runeUtxos: _runeUtxos,
-        poolUtxos,
-        poolAddress,
-        address,
-        paymentAddress,
-        feeRate: recommendedFeeRate,
-      });
+      try {
+        const tx = swapBtcTx({
+          runeid: involvedRune.id,
+          runeAmount: runeAmount,
+          btcAmount: coinBAmountBigInt,
+          btcUtxos,
+          runeUtxos: _runeUtxos,
+          poolUtxos,
+          poolAddress,
+          address,
+          paymentAddress,
+          feeRate: recommendedFeeRate,
+        });
 
-      setPsbt(tx.psbt);
-      setToSpendUtxos(tx.toSpendUtxos);
+        setPsbt(tx.psbt);
+        setToSpendUtxos(tx.toSpendUtxos);
+      } catch (err) {
+        console.log(err);
+      }
     }
   }, [
     poolKey,

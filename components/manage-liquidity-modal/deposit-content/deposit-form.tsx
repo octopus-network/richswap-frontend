@@ -124,7 +124,15 @@ export function DepositForm({
   );
 
   const tooSmallFunds = useMemo(
-    () => false,
+    () =>
+      Boolean(
+        pool.coinA &&
+          new Decimal(
+            isEmptyPool
+              ? inputAmount || "0"
+              : formattedAmounts[Field.INPUT] || "0"
+          ).lt(0.0001)
+      ),
     [pool, inputAmount, isEmptyPool, formattedAmounts]
   );
 
