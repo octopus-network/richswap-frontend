@@ -239,6 +239,7 @@ export function SwapReview({
       const psbtBase64 = psbt.toBase64();
       setStep(1);
 
+      console.log("swap psbt before sign:", psbtBase64);
       const res = await signPsbt(psbtBase64);
 
       if (!res?.signedPsbtHex) {

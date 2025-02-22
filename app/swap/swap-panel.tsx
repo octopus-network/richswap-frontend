@@ -123,7 +123,7 @@ export function SwapPanel() {
         return undefined;
       })
       .then(setPoolData);
-  }, [coinA, coinB]);
+  }, [coinA, coinB, swap]);
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinBPrice = useCoinPrice(coinB?.id);
