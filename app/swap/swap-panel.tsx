@@ -226,34 +226,45 @@ export function SwapPanel() {
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
-  const runePriceInSatsFromReserves = useMemo(
-    () =>
-      poolData
-        ? getRunePriceInSats(
-            formatCoinAmount(
-              poolData.coinAAmount,
-              coinA?.id === BITCOIN.id ? coinA : coinB
-            ),
-            formatCoinAmount(
-              poolData.coinBAmount,
-              coinA?.id === BITCOIN.id ? coinB : coinA
-            )
-          )
-        : undefined,
-    [poolData, coinA, coinB]
-  );
+  const priceImpact = useMemo(() => {
+    if (!poolData || !coinA || !coinB || !runeAmount || !btcAmount) {
+      return;
+    }
+    const btcAmountInDecimal = new Decimal(btcAmount);
+    const runeAmountInDecimal = new Decimal(runeAmount);
 
-  const priceImpact = useMemo(
-    () =>
-      Number(runePriceInSatsFromReserves) &&
-      Number(runePriceInSats) &&
-      swap?.state !== SwapState.LOADING
-        ? ((Number(runePriceInSats) - Number(runePriceInSatsFromReserves)) *
-            100) /
-          Number(runePriceInSatsFromReserves)
-        : undefined,
-    [runePriceInSats, runePriceInSatsFromReserves, swap]
-  );
+    const isSwapRune = coinA.id === BITCOIN.id;
+
+    const rune = isSwapRune ? coinB : coinA;
+
+    const btcAmountBefore = new Decimal(
+      formatCoinAmount(poolData.coinAAmount, BITCOIN)
+    );
+    const runeAmountBefore = new Decimal(
+      formatCoinAmount(poolData.coinBAmount, rune)
+    );
+
+    const btcAmountAfter = isSwapRune
+      ? btcAmountBefore.plus(btcAmountInDecimal)
+      : btcAmountBefore.sub(btcAmountInDecimal);
+
+    const runeAmountAfter = isSwapRune
+      ? runeAmountBefore.sub(runeAmountInDecimal)
+      : runeAmountBefore.plus(runeAmountInDecimal);
+
+    const priceBefore = btcAmountBefore
+      .mul(Math.pow(10, 8))
+      .div(runeAmountBefore);
+    const priceAfter = btcAmountAfter.mul(Math.pow(10, 8)).div(runeAmountAfter);
+
+    const impact = priceAfter
+      .sub(priceBefore)
+      .mul(100)
+      .div(priceBefore)
+      .toNumber();
+
+    return impact;
+  }, [poolData, runeAmount, btcAmount, coinA, coinB]);
 
   return (
     <>
@@ -388,7 +399,7 @@ export function SwapPanel() {
                   }
                 >
                   {priceImpact > 0 && "+"}
-                  {priceImpact.toFixed(2)}%
+                  {priceImpact.toFixed(3)}%
                 </span>
               </div>
             </div>
