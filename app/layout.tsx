@@ -26,7 +26,7 @@ export default function RootLayout({
         <Providers>
           <div className="flex min-h-screen w-screen flex-col">
             <Topbar />
-            <div className="flex flex-1 flex-col p-6 overflow-y-auto pb-16">
+            <div className="flex flex-1 flex-col sm:p-6 p-3 overflow-y-auto sm:pb-16">
               {children}
             </div>
             <Footer />
