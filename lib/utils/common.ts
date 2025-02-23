@@ -72,7 +72,7 @@ export function getCoinName(coin: Coin | null) {
 
 export function getRunePriceInSats(btcAmount: string, runeAmount: string) {
   return Number(btcAmount) && Number(runeAmount)
-    ? new Decimal(btcAmount).mul(Math.pow(10, 8)).div(runeAmount).toFixed(2)
+    ? new Decimal(btcAmount).mul(Math.pow(10, 8)).div(runeAmount).toFixed(3)
     : undefined;
 }
 

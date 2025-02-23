@@ -18,6 +18,13 @@ import Decimal from "decimal.js";
 
 import { getCoinSymbol, getCoinName } from "@/lib/utils";
 
+export function beautify(str = ""): string {
+  const reg =
+    str.indexOf(".") > -1 ? /(\d)(?=(\d{3})+\.)/g : /(\d)(?=(?:\d{3})+$)/g;
+  str = str.replace(reg, "$1,");
+  return str.replace(/(\.[0-9]+[1-9]+)(0)*/, "$1");
+}
+
 const CoinButton = ({
   coin,
   onClick,
@@ -104,6 +111,8 @@ export function CoinField({
   const { address } = useLaserEyes();
   const balance = useCoinBalance(coin);
 
+  const beautifiedValue = beautify(value);
+
   const onSetHalf = () => {
     onUserInput(
       new Decimal(balance!).mul(0.5).toDecimalPlaces(coin?.decimals).toFixed()
@@ -182,7 +191,7 @@ export function CoinField({
               onClick={() => setSelectCoinModalOpen(true)}
             />
           ) : (
-            <div className="flex gap-2 items-center w-[calc(100%_-_24px)]">
+            <div className="flex gap-2 items-center w-36 sm:w-40">
               <CoinIcon coin={coin!} />
               <div className="flex flex-col text-left w-[calc(100%_-_32px)]">
                 <span className="truncate">{getCoinSymbol(coin)}</span>
@@ -200,17 +209,22 @@ export function CoinField({
                 </div>
               ) : (
                 <span className="font-bold text-right text-xl md:text-xl h-full">
-                  {value}
+                  {beautifiedValue}
                 </span>
               )
             ) : (
               <Input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 ref={inputRef}
                 autoFocus={autoFocus}
                 placeholder={placeholder ?? "0.00"}
-                onChange={(e) => onUserInput(e.target.value)}
-                value={value}
+                pattern="^[0-9]*[.,]?[0-9]*$"
+                onChange={(event) => {
+                  const value = event.target.value.replaceAll(/,/g, "");
+                  onUserInput(value);
+                }}
+                value={beautifiedValue}
                 disabled={disabled}
                 className={cn(
                   "border-none rounded-none p-0 h-full w-full font-bold text-right text-xl md:text-xl focus:outline-none"

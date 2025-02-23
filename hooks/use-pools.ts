@@ -81,7 +81,7 @@ export function usePoolsTvl() {
   return tvls;
 }
 
-export function usePoolsFees() {
+export function usePoolsFee() {
   const poolsList = usePoolList();
 
   const btcPrice = useCoinPrice(BITCOIN.id);
@@ -109,8 +109,8 @@ export function usePoolTvl(poolKey: string) {
   return tvls[poolKey];
 }
 
-export function usePoolFees(poolKey: string) {
-  const fees = usePoolsFees();
+export function usePoolFee(poolKey: string) {
+  const fees = usePoolsFee();
 
   return fees[poolKey];
 }
