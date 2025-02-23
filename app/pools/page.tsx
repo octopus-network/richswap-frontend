@@ -94,23 +94,23 @@ export default function Pools() {
             : [1, 2, 3, 4, 5].map((idx) => (
                 <div
                   key={idx}
-                  className="grid md:grid-cols-12 grid-cols-8 h-[66px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3"
+                  className="grid md:grid-cols-12 grid-cols-9 h-[66px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3"
                 >
                   <div className="col-span-3 flex items-center space-x-3">
-                    <Skeleton className="size-10 rounded-full" />
+                    <Skeleton className="size-10 rounded-full hidden sm:block" />
                     <div className="flex flex-col space-y-1">
-                      <Skeleton className="h-5 w-28" />
-                      <Skeleton className="h-3 w-12" />
+                      <Skeleton className="h-5 w-20" />
+                      <Skeleton className="h-3 w-8" />
                     </div>
                   </div>
                   <div className="col-span-3 flex">
-                    <Skeleton className="h-5 w-20" />
-                  </div>
-                  <div className="col-span-2 hidden md:flex">
-                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-5 w-2/3" />
                   </div>
                   <div className="col-span-3 hidden md:flex">
-                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-5 w-2/3" />
+                  </div>
+                  <div className="col-span-2 hidden md:flex">
+                    <Skeleton className="h-5 w-2/3" />
                   </div>
                 </div>
               ))}

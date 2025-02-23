@@ -91,7 +91,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
             <CoinIcon size="lg" coin={pool.coinB} />
           </div>
           <div
-            className="flex flex-col space-y-1 w-full group"
+            className="hidden sm:inline-flex flex-col space-y-1 w-full group"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -111,11 +111,21 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
               {pool.coinB.id}
             </span>
           </div>
+          <div className="inline-flex sm:hidden flex-col space-y-1 w-full group">
+            <div className="flex w-full items-center space-x-1">
+              <span className="font-semibold text-sm truncate max-w-[85%]">
+                {pool.name}
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground truncate">
+              {pool.coinB.id}
+            </span>
+          </div>
         </div>
         <div className="col-span-3">
           {poolTvl !== undefined && poolTvlInBtc !== undefined ? (
             <div
-              className="flex flex-col space-y-1 group"
+              className="inline-flex flex-col space-y-1 group"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();

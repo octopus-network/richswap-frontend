@@ -18,7 +18,7 @@ export function CoinIcon({
       width={128}
       height={128}
       className={cn(
-        "rounded-full",
+        "rounded-full shrink-0",
         size === "md" ? "size-8" : size === "lg" ? "size-10" : "size-12",
         className
       )}
