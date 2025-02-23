@@ -43,12 +43,12 @@ export function Topbar() {
       <div className="items-center flex space-x-3 flex-1 justify-start">
         <Image
           src="/static/logo.png"
-          className="size-8"
+          className="size-6 sm:size-8"
           width={128}
           height={128}
           alt="RichSwap"
         />
-        <span className="font-bold text-lg">RichSwap</span>
+        <span className="font-bold sm:text-lg">RichSwap</span>
       </div>
       <div className="flex-none">
         <Nav />
