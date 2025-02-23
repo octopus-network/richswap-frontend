@@ -47,13 +47,12 @@ export function usePendingUtxos(address: string | undefined) {
   return utxos;
 }
 
-export function useUtxos(address: string | undefined, pubkey?: string) {
+export function useBtcUtxos(address: string | undefined, pubkey?: string) {
   const pendingUtxos = usePendingUtxos(address);
   const spentUtxos = useAtomValue(spentUtxosAtom);
-  const transactions = useTransactions();
-  const { data: apiUtxos, mutate: mutateApiUtxos } = useSWR(
+  const { data: apiUtxos } = useSWR(
     address
-      ? `/api/utxos?address=${address}${pubkey ? `&pubkey=${pubkey}` : ""}`
+      ? `/api/utxos/btc?address=${address}${pubkey ? `&pubkey=${pubkey}` : ""}`
       : undefined,
     (url: string) =>
       axios.get<{ data?: UnspentOutput[]; error: string }>(url).then((res) => {
@@ -64,10 +63,6 @@ export function useUtxos(address: string | undefined, pubkey?: string) {
       }),
     { refreshInterval: 15 * 1000 }
   );
-
-  useEffect(() => {
-    mutateApiUtxos();
-  }, [transactions, mutateApiUtxos]);
 
   return useMemo(
     () =>
@@ -82,6 +77,7 @@ export function useUtxos(address: string | undefined, pubkey?: string) {
             .concat(
               pendingUtxos.filter(
                 (p) =>
+                  !p.runes.length &&
                   apiUtxos.findIndex(
                     (c) => c.txid === p.txid && c.vout === p.vout
                   ) < 0
@@ -92,20 +88,94 @@ export function useUtxos(address: string | undefined, pubkey?: string) {
   );
 }
 
-export function useWalletUtxos() {
-  const { address, paymentAddress, publicKey, paymentPublicKey } =
-    useLaserEyes();
-
-  const utxos = useUtxos(address, publicKey);
-  const paymentUtxos = useUtxos(paymentAddress, paymentPublicKey);
+export function useRuneUtxos(
+  address: string | undefined,
+  runeid?: string | undefined,
+  pubkey?: string
+) {
+  const pendingUtxos = usePendingUtxos(address);
+  const spentUtxos = useAtomValue(spentUtxosAtom);
+  const { data: apiUtxos } = useSWR(
+    address && runeid
+      ? `/api/utxos/rune?address=${address}&runeid=${runeid}${
+          pubkey ? `&pubkey=${pubkey}` : ""
+        }`
+      : undefined,
+    (url: string) =>
+      axios.get<{ data?: UnspentOutput[]; error: string }>(url).then((res) => {
+        if (res.data.error) {
+          throw new Error(res.data.error);
+        }
+        return res.data.data;
+      }),
+    { refreshInterval: 15 * 1000 }
+  );
 
   return useMemo(
     () =>
-      utxos && paymentUtxos
+      apiUtxos
+        ? apiUtxos
+            .filter(
+              (c) =>
+                spentUtxos.findIndex(
+                  (s) => s.txid === c.txid && s.vout === c.vout
+                ) < 0
+            )
+            .concat(
+              pendingUtxos.filter(
+                (p) =>
+                  p.runes.length &&
+                  apiUtxos.findIndex(
+                    (c) => c.txid === p.txid && c.vout === p.vout
+                  ) < 0
+              )
+            )
+        : undefined,
+    [apiUtxos, pendingUtxos, spentUtxos]
+  );
+}
+
+export function useWalletBtcUtxos() {
+  const { address, paymentAddress, publicKey, paymentPublicKey } =
+    useLaserEyes();
+
+  const utxos = useBtcUtxos(address, publicKey);
+  const paymentUtxos = useBtcUtxos(
+    paymentAddress !== address ? paymentAddress : undefined,
+    paymentPublicKey
+  );
+
+  return useMemo(
+    () =>
+      utxos
         ? paymentAddress !== address
-          ? utxos
-              .filter((utxo) => !!utxo.runes.length)
-              .concat(paymentUtxos.filter((utxo) => !!!utxo.runes.length))
+          ? paymentUtxos
+            ? utxos.concat(paymentUtxos)
+            : undefined
+          : utxos
+        : undefined,
+    [utxos, paymentUtxos, address, paymentAddress]
+  );
+}
+
+export function useWalletRuneUtxos(runeid: string | undefined) {
+  const { address, paymentAddress, publicKey, paymentPublicKey } =
+    useLaserEyes();
+
+  const utxos = useRuneUtxos(address, runeid, publicKey);
+  const paymentUtxos = useRuneUtxos(
+    paymentAddress !== address ? paymentAddress : undefined,
+    runeid,
+    paymentPublicKey
+  );
+
+  return useMemo(
+    () =>
+      utxos
+        ? paymentAddress !== address
+          ? paymentUtxos
+            ? utxos.concat(paymentUtxos)
+            : undefined
           : utxos
         : undefined,
     [utxos, paymentUtxos, address, paymentAddress]

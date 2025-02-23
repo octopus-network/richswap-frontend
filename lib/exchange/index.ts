@@ -36,6 +36,7 @@ export class Exchange {
       coinBId: string;
       coinAAmount: string;
       name: string;
+      incomes: string;
       coinBAmount: string;
     }[]
   > {
@@ -92,14 +93,15 @@ export class Exchange {
 
         const { utxo } = state ?? { utxo: [], incomes: BigInt(0) };
 
+        const incomes = state?.incomes ?? BigInt(0);
+
         return {
           key: poolKey,
           coinAId: BITCOIN.id,
           coinBId: meta.id,
-          coinAAmount: (
-            (utxo[0]?.satoshis ?? BigInt(0)) - (state?.incomes ?? BigInt(0))
-          ).toString(),
+          coinAAmount: ((utxo[0]?.satoshis ?? BigInt(0)) - incomes).toString(),
           coinBAmount: utxo[0]?.balance.value.toString() ?? "0",
+          incomes: incomes.toString(),
         };
       }
     } catch (error) {
@@ -246,6 +248,7 @@ export class Exchange {
       const res = await actor
         .pre_withdraw_liquidity(poolKey, userAddress, coinBalance)
         .then((data: any) => {
+          console.log("withdraw liquidity", data);
           if (data.Ok) {
             return data.Ok as {
               input: {
@@ -330,6 +333,7 @@ export class Exchange {
     }
 
     const poolKey = await Exchange.getPoolKey(inputCoin.id, outputCoin.id);
+
     if (!poolKey) {
       return {
         state: SwapState.NO_POOL,
@@ -344,6 +348,7 @@ export class Exchange {
           value: BigInt(inputAmount),
         })
         .then((data: any) => {
+          console.log("data", data);
           if (data.Ok) {
             return data.Ok;
           } else {

@@ -1,5 +1,16 @@
 import { AddressType, UnspentOutput } from "../types";
-import { hexToBytes, bytesToHex } from "./utils";
+import {
+  hexToBytes,
+  bytesToHex,
+  getEstimateAddress,
+  NetworkType,
+  addressToScriptPk,
+  toPsbtNetwork,
+  getAddedVirtualSize,
+  selectBtcUtxos,
+} from "./utils";
+import { ToSignInput } from "../types";
+import { UTXO_DUST } from "./constants";
 
 import * as bitcoin from "bitcoinjs-lib";
 import { ECPairAPI, ECPairFactory } from "ecpair";
@@ -24,7 +35,7 @@ interface TxOutput {
   value: bigint;
 }
 
-function utxoToInput(utxo: UnspentOutput): TxInput {
+function utxoToInput(utxo: UnspentOutput, estimate?: boolean): TxInput {
   let data: any = {
     hash: utxo.txid,
     index: utxo.vout,
@@ -49,9 +60,24 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
       },
       tapInternalKey: hexToBytes(pubkey),
     };
+  } else if (utxo.addressType === AddressType.P2PKH) {
+    if (!utxo.rawtx || estimate) {
+      const data = {
+        hash: utxo.txid,
+        index: utxo.vout,
+        witnessUtxo: {
+          value: BigInt(utxo.satoshis),
+          script: hexToBytes(utxo.scriptPk),
+        },
+      };
+      return {
+        data,
+        utxo,
+      };
+    }
   } else if (utxo.addressType === AddressType.P2SH_P2WPKH && utxo.pubkey) {
     const redeemData = bitcoin.payments.p2wpkh({
-      pubkey: Buffer.from(utxo.pubkey, "hex"),
+      pubkey: hexToBytes(utxo.pubkey),
     });
 
     data = {
@@ -71,13 +97,26 @@ function utxoToInput(utxo: UnspentOutput): TxInput {
   };
 }
 
+/**
+ * Transaction
+ */
 export class Transaction {
   private utxos: UnspentOutput[] = [];
   private inputs: TxInput[] = [];
   public outputs: TxOutput[] = [];
+  private changeOutputIndex = -1;
   public changedAddress: string = "";
+  private networkType: NetworkType = NetworkType.MAINNET;
   private feeRate: number = 0;
   private enableRBF = true;
+  private _cacheNetworkFee = 0;
+  private _cacheBtcUtxos: UnspentOutput[] = [];
+  private _cacheToSignInputs: ToSignInput[] = [];
+  constructor() {}
+
+  setNetworkType(network: NetworkType) {
+    this.networkType = network;
+  }
 
   setEnableRBF(enable: boolean) {
     this.enableRBF = enable;
@@ -112,10 +151,18 @@ export class Transaction {
     return this.outputs.reduce((pre, cur) => pre + cur.value, BigInt(0));
   }
 
+  getUnspent() {
+    return this.getTotalInput() - this.getTotalOutput();
+  }
+
+  getInputs() {
+    return this.inputs;
+  }
+
   calNetworkFee() {
     const psbt = this.createEstimatePsbt();
     const txSize = psbt.extractTransaction(true).virtualSize();
-    const fee = Math.ceil(txSize * this.feeRate);
+    const fee = Math.ceil(txSize * 1.06 * this.feeRate);
     return fee;
   }
 
@@ -126,22 +173,66 @@ export class Transaction {
     });
   }
 
-  addScriptOutput(script: Uint8Array, value: bigint) {
+  addOpreturn(data: Buffer[]) {
+    const embed = bitcoin.payments.embed({ data });
+    this.outputs.push({
+      script: embed.output,
+      value: BigInt(0),
+    });
+  }
+
+  addScriptOutput(script: Buffer, value: bigint) {
     this.outputs.push({
       script,
       value,
     });
   }
 
+  getOutput(index: number) {
+    return this.outputs[index];
+  }
+
+  addChangeOutput(value: bigint) {
+    this.outputs.push({
+      address: this.changedAddress,
+      value,
+    });
+    this.changeOutputIndex = this.outputs.length - 1;
+  }
+
+  getChangeOutput() {
+    return this.outputs[this.changeOutputIndex];
+  }
+
+  getChangeAmount() {
+    const output = this.getChangeOutput();
+    return output ? output.value : 0;
+  }
+
+  removeChangeOutput() {
+    this.outputs.splice(this.changeOutputIndex, 1);
+    this.changeOutputIndex = -1;
+  }
+
+  removeRecentOutputs(count: number) {
+    this.outputs.splice(-count);
+  }
+
   toPsbt() {
-    const psbt = new bitcoin.Psbt({ network: bitcoin.networks.bitcoin });
+    const network = toPsbtNetwork(this.networkType);
+    const psbt = new bitcoin.Psbt({ network });
     this.inputs.forEach((v, index) => {
+      if (v.utxo.addressType === AddressType.P2PKH) {
+        if (v.data.witnessUtxo) {
+          //@ts-expect-error: todo
+          psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
+        }
+      }
       psbt.data.addInput(v.data);
       if (this.enableRBF) {
         psbt.setInputSequence(index, 0xfffffffd);
       }
     });
-
     this.outputs.forEach((v) => {
       if (v.address) {
         psbt.addOutput({
@@ -161,7 +252,7 @@ export class Transaction {
 
   clone() {
     const tx = new Transaction();
-
+    tx.setNetworkType(this.networkType);
     tx.setFeeRate(this.feeRate);
     tx.setEnableRBF(this.enableRBF);
     tx.setChangeAddress(this.changedAddress);
@@ -172,38 +263,123 @@ export class Transaction {
   }
 
   createEstimatePsbt() {
-    const network = bitcoin.networks.bitcoin;
-    const ecpair = ECPair.makeRandom({ network });
-    const keyPair = ECPair.fromWIF(ecpair.toWIF(), network);
-    const pubkey = keyPair.publicKey;
-    const { address } = bitcoin.payments.p2wpkh({
-      pubkey,
+    const network = toPsbtNetwork(this.networkType);
+    const ecpair = ECPair.makeRandom({
       network,
     });
-    const scriptPk = bitcoin.address.toOutputScript(address!, network);
+    const keyPair = ECPair.fromWIF(ecpair.toWIF(), network);
+
+    const pubkey = keyPair.publicKey;
 
     const tx = this.clone();
+    const addressTypes: AddressType[] = [];
     tx.utxos.forEach((v) => {
+      v.pubkey = bytesToHex(pubkey);
+      const address = getEstimateAddress(
+        pubkey,
+        v.addressType,
+        this.networkType
+      );
+      const scriptPk = addressToScriptPk(address, this.networkType);
       v.scriptPk = bytesToHex(scriptPk);
+      addressTypes.push(v.addressType);
     });
 
     tx.inputs = [];
     tx.utxos.forEach((v) => {
-      const input = utxoToInput(v);
+      const input = utxoToInput(v, true);
       tx.inputs.push(input);
     });
+
     const psbt = tx.toPsbt();
 
-    const toSignInputs = tx.inputs.map((v, index) => ({
-      index,
-      publicKey: pubkey,
-    }));
+    const tweakedSigner = keyPair.tweak(
+      bitcoin.crypto.taggedHash("TapTweak", pubkey.slice(1))
+    );
 
-    toSignInputs.forEach((input) => {
-      psbt.signTaprootInput(input.index, keyPair);
-      psbt.finalizeInput(input.index);
+    tx.inputs.forEach((_, index) => {
+      try {
+        const addressType = addressTypes[index];
+        if (
+          addressType === AddressType.P2TR ||
+          addressType === AddressType.M44_P2TR
+        ) {
+          psbt.signTaprootInput(index, tweakedSigner);
+        } else {
+          psbt.signInput(index, keyPair);
+        }
+        psbt.finalizeInput(index);
+      } catch (err) {
+        console.log(err);
+      }
     });
 
     return psbt;
+  }
+
+  private selectBtcUtxos() {
+    const totalInput = this.getTotalInput();
+
+    const totalOutput =
+      this.getTotalOutput() + BigInt(Math.ceil(this._cacheNetworkFee));
+    if (totalInput < totalOutput) {
+      const { selectedUtxos, remainingUtxos } = selectBtcUtxos(
+        this._cacheBtcUtxos,
+        totalOutput - totalInput
+      );
+      if (selectedUtxos.length == 0) {
+        throw new Error("INSUFFICIENT_BTC_UTXO");
+      }
+      selectedUtxos.forEach((v) => {
+        this.addInput(v);
+        this._cacheToSignInputs.push({
+          index: this.inputs.length - 1,
+          publicKey: v.pubkey,
+        });
+        this._cacheNetworkFee +=
+          getAddedVirtualSize(v.addressType) * this.feeRate;
+      });
+      this._cacheBtcUtxos = remainingUtxos;
+      this.selectBtcUtxos();
+    }
+  }
+
+  addSufficientUtxosForFee(btcUtxos: UnspentOutput[], forceAsFee?: boolean) {
+    if (btcUtxos.length > 0) {
+      this._cacheBtcUtxos = btcUtxos;
+      const dummyBtcUtxo = Object.assign({}, btcUtxos[0]);
+      dummyBtcUtxo.satoshis = "2100000000000000";
+      this.addInput(dummyBtcUtxo);
+      this.addChangeOutput(BigInt(0));
+
+      const networkFee = this.calNetworkFee();
+      const dummyBtcUtxoSize = getAddedVirtualSize(dummyBtcUtxo.addressType);
+      this._cacheNetworkFee = networkFee - dummyBtcUtxoSize * this.feeRate;
+
+      this.removeLastInput();
+
+      this.selectBtcUtxos();
+    } else {
+      if (forceAsFee) {
+        throw new Error("INSUFFICIENT_BTC_UTXO");
+      }
+      if (this.getTotalInput() < this.getTotalOutput()) {
+        throw new Error("INSUFFICIENT_BTC_UTXO");
+      }
+      this._cacheNetworkFee = this.calNetworkFee();
+    }
+
+    const changeAmount =
+      this.getTotalInput() -
+      this.getTotalOutput() -
+      BigInt(Math.ceil(this._cacheNetworkFee));
+    if (changeAmount > UTXO_DUST) {
+      this.removeChangeOutput();
+      this.addChangeOutput(changeAmount);
+    } else {
+      this.removeChangeOutput();
+    }
+
+    return this._cacheToSignInputs;
   }
 }

@@ -1,15 +1,17 @@
 import { Position, PoolInfo } from "@/types";
 import { Exchange } from "@/lib/exchange";
 import { useEffect, useState, useMemo } from "react";
-import { ChevronRight } from "lucide-react";
-import { usePoolTvl } from "@/hooks/use-pools";
+import { ChevronRight, ExternalLink } from "lucide-react";
+import { usePoolFee, usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 import { useLaserEyes } from "@omnisat/lasereyes";
+import { useCoinPrice } from "@/hooks/use-prices";
 
 import Decimal from "decimal.js";
 import { CoinIcon } from "@/components/coin-icon";
+import { BITCOIN } from "@/lib/constants";
 
 export function PoolRow({ pool }: { pool: PoolInfo }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
@@ -20,6 +22,9 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
   const [position, setPosition] = useState<Position | null>();
 
   const poolTvl = usePoolTvl(pool.key);
+  const poolFee = usePoolFee(pool.key);
+
+  const btcPrice = useCoinPrice(BITCOIN.id);
 
   useEffect(() => {
     if (!paymentAddress) {
@@ -51,59 +56,126 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
       : undefined;
   }, [poolTvl, positionPercentage]);
 
+  const poolTvlInBtc = useMemo(
+    () =>
+      poolTvl !== undefined && btcPrice !== undefined
+        ? poolTvl / btcPrice
+        : btcPrice
+        ? poolTvl ?? 0 / btcPrice
+        : undefined,
+    [btcPrice, poolTvl]
+  );
+
+  const poolFeeInBtc = useMemo(
+    () =>
+      poolFee !== undefined && btcPrice !== undefined
+        ? poolFee / btcPrice
+        : btcPrice
+        ? poolFee ?? 0 / btcPrice
+        : undefined,
+    [btcPrice, poolFee]
+  );
+
+  const poolAddress = useMemo(() => {
+    const { address } = getP2trAressAndScript(pool.key);
+    return address;
+  }, [pool]);
   return (
     <>
       <div
-        className="grid md:grid-cols-12 grid-cols-8 h-[68px] items-center gap-1 bg-secondary/80 hover:bg-secondary cursor-pointer px-4 py-3 rounded-xl"
+        className="grid md:grid-cols-12 grid-cols-9 h-[66px] items-center gap-1 sm:gap-3 md:gap-6 hover:bg-secondary cursor-pointer px-4 py-3"
         onClick={() => setManageLiquidityModalOpen(true)}
       >
-        <div className="col-span-4 flex items-center space-x-3">
-          <div className="hidden sm:block">
+        <div className="col-span-3 flex items-center">
+          <div className="hidden sm:block mr-3">
             <CoinIcon size="lg" coin={pool.coinB} />
           </div>
-          <div className="flex flex-col space-y-1">
-            <span className="font-semibold text-sm">{pool.name}</span>
-            <span className="text-xs text-muted-foreground">
+          <div
+            className="flex flex-col space-y-1 w-full group"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              window.open(
+                `https://mempool.space/address/${poolAddress}`,
+                "_blank"
+              );
+            }}
+          >
+            <div className="flex w-full items-center space-x-1 group-hover:underline">
+              <span className="font-semibold text-sm truncate max-w-[85%]">
+                {pool.name}
+              </span>
+              <ExternalLink className="size-3 text-muted-foreground group-hover:text-foreground" />
+            </div>
+            <span className="text-xs text-muted-foreground truncate">
               {pool.coinB.id}
             </span>
           </div>
         </div>
-        <div className="col-span-4 hidden flex-col md:flex items-center justify-center space-y-1">
-          <span className="text-muted-foreground text-xs">TVL</span>
-          {poolTvl !== undefined ? (
-            <span className="font-semibold text-sm md:text-md">
-              ${formatNumber(poolTvl)}
-            </span>
+        <div className="col-span-3">
+          {poolTvl !== undefined && poolTvlInBtc !== undefined ? (
+            <div
+              className="flex flex-col space-y-1 group"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                window.open(
+                  `https://www.runescan.net/address/${poolAddress}`,
+                  "_blank"
+                );
+              }}
+            >
+              <div className="flex w-full items-center space-x-1 group-hover:underline">
+                <span className="font-semibold text-sm truncate">
+                  {formatNumber(poolTvlInBtc)} ₿
+                </span>
+                <ExternalLink className="size-3 text-muted-foreground group-hover:text-foreground" />
+              </div>
+              <span className="text-muted-foreground text-xs">
+                ${formatNumber(poolTvl)}
+              </span>
+            </div>
           ) : (
-            <Skeleton className="h-[18px] w-12 bg-slate-500/40" />
+            <Skeleton className="h-5 w-20" />
           )}
         </div>
-        <div className="col-span-3 flex-col flex items-center justify-center space-y-1">
-          <span className="text-muted-foreground text-xs">Your share</span>
-          <>
-            {positionPercentage === undefined ? (
-              <Skeleton className="h-[18px] w-12 bg-slate-500/40" />
-            ) : (
-              <div className="flex items-center">
-                {positionPercentage ? (
-                  <>
-                    <span className="font-semibold">
-                      {formatNumber(positionPercentage)}%
-                    </span>
-                    {positionValue ? (
-                      <span className="text-primary/80 text-xs ml-1">
-                        ${formatNumber(positionValue ?? "0")}
-                      </span>
-                    ) : null}
-                  </>
-                ) : (
-                  "-"
-                )}
-              </div>
-            )}
-          </>
+        <div className="col-span-3">
+          {poolFee !== undefined && poolFeeInBtc !== undefined ? (
+            <div className="flex flex-col space-y-1">
+              <span className="font-semibold text-sm truncate">
+                {formatNumber(poolFeeInBtc)} ₿
+              </span>
+              <span className="text-muted-foreground text-xs">
+                ${formatNumber(poolFee)}
+              </span>
+            </div>
+          ) : (
+            <Skeleton className="h-5 w-20" />
+          )}
         </div>
-        <div className="col-span-1 flex justify-end">
+        <div className="col-span-2 hidden md:flex">
+          {positionPercentage === undefined ? (
+            <Skeleton className="h-5 w-20" />
+          ) : (
+            <div className="flex  space-y-1 flex-col">
+              {positionPercentage ? (
+                <>
+                  <span className="font-semibold">
+                    {formatNumber(positionPercentage)}%
+                  </span>
+                  {positionValue ? (
+                    <span className="text-muted-foreground text-xs">
+                      ${formatNumber(positionValue ?? "0")}
+                    </span>
+                  ) : null}
+                </>
+              ) : (
+                "-"
+              )}
+            </div>
+          )}
+        </div>
+        <div className="col-span-1 hidden md:flex justify-end">
           <ChevronRight className="size-4 md:size-5 text-muted-foreground" />
         </div>
       </div>

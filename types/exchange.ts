@@ -42,6 +42,7 @@ export type PoolData = {
   coinBId: string;
   coinAAmount: string;
   coinBAmount: string;
+  incomes: string;
 };
 
 export type PoolInfo = {
@@ -51,6 +52,7 @@ export type PoolInfo = {
   coinB: Coin;
   coinAAmount: string;
   coinBAmount: string;
+  incomes: string;
 };
 
 export interface Position {

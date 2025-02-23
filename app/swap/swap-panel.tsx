@@ -83,7 +83,7 @@ export function SwapPanel() {
     [parsedAmounts, typedValue, dependentField, independentField, swapState]
   );
 
-  const coinABalance = useCoinBalance(coinA?.id);
+  const coinABalance = useCoinBalance(coinA);
 
   const insufficientBalance = useMemo(
     () =>
@@ -123,7 +123,7 @@ export function SwapPanel() {
         return undefined;
       })
       .then(setPoolData);
-  }, [coinA, coinB]);
+  }, [coinA, coinB, swap]);
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinBPrice = useCoinPrice(coinB?.id);

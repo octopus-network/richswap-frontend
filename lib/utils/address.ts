@@ -1,10 +1,48 @@
 import * as bitcoin from "bitcoinjs-lib";
 import { AddressType } from "@/types";
+import { NetworkType } from "./network";
+import { toPsbtNetwork } from "./network";
 
-export enum NetworkType {
-  MAINNET,
-  TESTNET,
-  REGTEST,
+export function addressToScriptPk(address: string, networkType: NetworkType) {
+  const network = toPsbtNetwork(networkType);
+  return bitcoin.address.toOutputScript(address, network);
+}
+
+export function getEstimateAddress(
+  pubkey: Uint8Array,
+  addressType: AddressType,
+  networkType: NetworkType
+) {
+  const network = toPsbtNetwork(networkType);
+
+  const defaultAddress =
+    "bc1py6wpspaygpcgzts8se00cufvrz0acf3yklxc7gx3trj0wxag8n5sm2ysdc";
+
+  if (addressType === AddressType.P2PKH) {
+    const { address } = bitcoin.payments.p2pkh({
+      pubkey,
+      network,
+    });
+    return address ?? defaultAddress;
+  } else if (
+    addressType === AddressType.P2SH_P2WPKH ||
+    addressType === AddressType.P2WPKH
+  ) {
+    const { address } = bitcoin.payments.p2wpkh({
+      pubkey,
+      network,
+    });
+    return address ?? defaultAddress;
+  } else if (addressType === AddressType.P2TR) {
+    const { address } = bitcoin.payments.p2tr({
+      internalPubkey: pubkey.slice(1),
+      network,
+    });
+
+    return address ?? defaultAddress;
+  }
+
+  return defaultAddress;
 }
 
 export function decodeAddress(address: string) {

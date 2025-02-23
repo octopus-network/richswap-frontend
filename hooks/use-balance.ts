@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { BITCOIN } from "@/lib/constants";
-import { useDefaultCoins } from "./use-coins";
-import { useWalletUtxos } from "./use-utxos";
+
+import { useWalletBtcUtxos, useWalletRuneUtxos } from "./use-utxos";
 import { formatCoinAmount } from "@/lib/utils";
 import { Coin, UnspentOutput } from "@/types";
 
@@ -29,40 +29,20 @@ function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
   return formatCoinAmount(amount.toString(), coin);
 }
 
-export function useCoinBalances() {
-  const coins = useDefaultCoins();
-
-  const utxos = useWalletUtxos();
-
-  const balances = useMemo(() => {
-    const tmpObj: Record<string, string> = {};
-    if (!utxos) {
-      return tmpObj;
-    }
-
-    const coinsArray = Object.values(coins);
-
-    for (let i = 0; i < coinsArray.length; i++) {
-      const coin = coinsArray[i];
-      tmpObj[coin.id] = getBalanceByUtxos(coin, utxos);
-    }
-
-    return tmpObj;
-  }, [utxos, coins]);
-
-  return balances;
-}
-
-export function useCoinBalance(coinId: string | undefined) {
-  const balances = useCoinBalances();
-
+export function useCoinBalance(coin: Coin | null) {
+  const btcUtxos = useWalletBtcUtxos();
+  const runeUtxos = useWalletRuneUtxos(coin?.id);
   return useMemo(
     () =>
-      coinId
-        ? Object.keys(balances).length
-          ? balances[coinId] ?? "0"
+      coin
+        ? coin.id === BITCOIN.id
+          ? btcUtxos
+            ? getBalanceByUtxos(coin, btcUtxos)
+            : undefined
+          : runeUtxos
+          ? getBalanceByUtxos(coin, runeUtxos)
           : undefined
         : undefined,
-    [balances, coinId]
+    [btcUtxos, runeUtxos, coin]
   );
 }

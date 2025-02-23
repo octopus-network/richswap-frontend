@@ -9,7 +9,7 @@ export function CreateButton() {
   const [createPoolModalOpen, setCreatePoolModalOpen] = useState(false);
   return (
     <>
-      <Button variant="secondary" onClick={() => setCreatePoolModalOpen(true)}>
+      <Button variant="secondary" size="lg" onClick={() => setCreatePoolModalOpen(true)}>
         <Plus className="size-4" />
         Create Pool
       </Button>

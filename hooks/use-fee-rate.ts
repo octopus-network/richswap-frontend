@@ -37,13 +37,25 @@ export function useRecommendedFeeRate() {
   );
 }
 
-export function useRecommendedFeeRateFromOrchestrator() {
+export function useRecommendedFeeRateFromOrchestrator(refetch?: boolean) {
   const [feeRate, setFeeRate] = useState(5);
+  const [timer, setTimer] = useState<number>(0);
   useEffect(() => {
     Orchestrator.getRecommendedFee().then((fee) => {
       setFeeRate(fee);
     });
-  }, []);
+  }, [timer]);
+
+  useEffect(() => {
+    if (!refetch) {
+      return;
+    }
+    const interval = setInterval(() => setTimer(Date.now()), 1500);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [refetch]);
 
   return feeRate;
 }

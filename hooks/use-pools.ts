@@ -1,11 +1,12 @@
 import { Exchange } from "@/lib/exchange";
 import { useState, useEffect, useMemo } from "react";
-import { useCoinPrices } from "./use-prices";
+import { useCoinPrice, useCoinPrices } from "./use-prices";
 import { PoolInfo } from "@/types";
 import Decimal from "decimal.js";
 import { formatCoinAmount } from "@/lib/utils";
 import { useDefaultCoins } from "./use-coins";
 import { fetchCoinById } from "@/lib/utils";
+import { BITCOIN } from "@/lib/constants";
 
 export function usePoolList() {
   const [poolList, setPoolList] = useState<PoolInfo[]>([]);
@@ -80,8 +81,36 @@ export function usePoolsTvl() {
   return tvls;
 }
 
+export function usePoolsFee() {
+  const poolsList = usePoolList();
+
+  const btcPrice = useCoinPrice(BITCOIN.id);
+
+  const fees = useMemo(() => {
+    const tmpObj: Record<string, number> = {};
+    if (!btcPrice) {
+      return tmpObj;
+    }
+    poolsList.forEach(({ incomes, key }) => {
+      const fees = new Decimal(formatCoinAmount(incomes, BITCOIN)).mul(
+        btcPrice
+      );
+      tmpObj[key] = fees.toNumber();
+    });
+    return tmpObj;
+  }, [poolsList, btcPrice]);
+
+  return fees;
+}
+
 export function usePoolTvl(poolKey: string) {
   const tvls = usePoolsTvl();
 
   return tvls[poolKey];
+}
+
+export function usePoolFee(poolKey: string) {
+  const fees = usePoolsFee();
+
+  return fees[poolKey];
 }

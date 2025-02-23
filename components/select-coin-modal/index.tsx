@@ -10,9 +10,8 @@ import { useDefaultCoins } from "@/hooks/use-coins";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CoinRow } from "./coin-row";
 
-import Decimal from "decimal.js";
 import { useSearchCoins } from "@/hooks/use-coins";
-import { useCoinBalances } from "@/hooks/use-balance";
+
 import { useAddUserCoin } from "@/store/user/hooks";
 
 function coinFilter(query: string) {
@@ -72,31 +71,13 @@ export function SelectCoinModal({
     setSearchQuery("");
   }, [open]);
 
-  const coinBalances = useCoinBalances();
   const sortedCoins: Coin[] = useMemo(() => {
     const filteredCoins = Object.values(defaultCoins).filter(
       coinFilter(debouncedQuery)
     );
 
-    return filteredCoins.sort((coinA, coinB) => {
-      const balanceA = coinBalances[coinA.id]
-        ? new Decimal(coinBalances[coinA.id])
-        : undefined;
-      const balanceB = coinBalances[coinB.id]
-        ? new Decimal(coinBalances[coinB.id])
-        : undefined;
-
-      if (balanceA && balanceB) {
-        return balanceA.equals(balanceB) ? 0 : balanceA > balanceB ? -1 : 1;
-      } else if (balanceA && !balanceB?.gt(0)) {
-        return -1;
-      } else if (!balanceA?.gt(0) && balanceB) {
-        return 1;
-      }
-
-      return -1;
-    });
-  }, [defaultCoins, coinBalances, debouncedQuery]);
+    return filteredCoins;
+  }, [defaultCoins, debouncedQuery]);
 
   const handleCoinSelect = (coin: Coin, hasWarning?: boolean) => {
     if (!hasWarning) {
