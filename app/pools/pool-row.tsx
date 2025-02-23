@@ -124,27 +124,39 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
         </div>
         <div className="col-span-3">
           {poolTvl !== undefined && poolTvlInBtc !== undefined ? (
-            <div
-              className="inline-flex flex-col space-y-1 group"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                window.open(
-                  `https://www.runescan.net/address/${poolAddress}`,
-                  "_blank"
-                );
-              }}
-            >
-              <div className="flex w-full items-center space-x-1 group-hover:underline">
-                <span className="font-semibold text-sm truncate">
-                  {formatNumber(poolTvlInBtc)} ₿
+            <>
+              <div
+                className="hidden sm:inline-flex flex-col space-y-1 group"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  window.open(
+                    `https://www.runescan.net/address/${poolAddress}`,
+                    "_blank"
+                  );
+                }}
+              >
+                <div className="flex w-full items-center space-x-1 group-hover:underline">
+                  <span className="font-semibold text-sm truncate">
+                    {formatNumber(poolTvlInBtc)} ₿
+                  </span>
+                  <ExternalLink className="size-3 text-muted-foreground group-hover:text-foreground" />
+                </div>
+                <span className="text-muted-foreground text-xs">
+                  ${formatNumber(poolTvl)}
                 </span>
-                <ExternalLink className="size-3 text-muted-foreground group-hover:text-foreground" />
               </div>
-              <span className="text-muted-foreground text-xs">
-                ${formatNumber(poolTvl)}
-              </span>
-            </div>
+              <div className="inline-flex sm:hidden flex-col space-y-1">
+                <div className="flex w-full items-center space-x-1">
+                  <span className="font-semibold text-sm truncate">
+                    {formatNumber(poolTvlInBtc)} ₿
+                  </span>
+                </div>
+                <span className="text-muted-foreground text-xs">
+                  ${formatNumber(poolTvl)}
+                </span>
+              </div>
+            </>
           ) : (
             <Skeleton className="h-5 w-20" />
           )}
