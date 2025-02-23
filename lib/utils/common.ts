@@ -83,3 +83,8 @@ export async function fetchCoinById(coinId: string): Promise<Coin> {
 
   return queryRes.length ? queryRes[0] : UNKNOWN_COIN;
 }
+
+export function isNumber(value: string) {
+  const reg = /^[0-9]+\.?[0-9]*$/;
+  return reg.test(value);
+}

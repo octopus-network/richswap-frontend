@@ -9,7 +9,7 @@ import { Coin } from "@/types";
 import { CoinIcon } from "./coin-icon";
 import { SelectCoinModal } from "./select-coin-modal";
 import { Skeleton } from "./ui/skeleton";
-import { cn } from "@/lib/utils";
+import { cn, isNumber } from "@/lib/utils";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { Wallet } from "lucide-react";
@@ -221,8 +221,12 @@ export function CoinField({
                 placeholder={placeholder ?? "0.00"}
                 pattern="^[0-9]*[.,]?[0-9]*$"
                 onChange={(event) => {
-                  const value = event.target.value.replaceAll(/,/g, "");
-                  onUserInput(value);
+                  const targetValue = event.target.value.replaceAll(/,/g, "");
+
+                  if (targetValue !== "" && !isNumber(targetValue)) {
+                    return;
+                  }
+                  onUserInput(targetValue);
                 }}
                 value={beautifiedValue}
                 disabled={disabled}
