@@ -39,7 +39,7 @@ export function Topbar() {
   }, [setPoolCoins]);
 
   return (
-    <div className="flex justify-between items-cetner p-4">
+    <div className="flex justify-between items-cetner sm:p-4 p-3">
       <div className="items-center flex space-x-3 flex-1 justify-start">
         <Image
           src="/static/logo.png"
