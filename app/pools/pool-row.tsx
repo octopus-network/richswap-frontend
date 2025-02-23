@@ -91,7 +91,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
             <CoinIcon size="lg" coin={pool.coinB} />
           </div>
           <div
-            className="flex flex-col space-y-1 w-full group"
+            className="inline-flex flex-col space-y-1 w-full group"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -115,7 +115,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
         <div className="col-span-3">
           {poolTvl !== undefined && poolTvlInBtc !== undefined ? (
             <div
-              className="flex flex-col space-y-1 group"
+              className="inline-flex flex-col space-y-1 group"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
