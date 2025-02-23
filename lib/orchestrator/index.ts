@@ -21,7 +21,7 @@ export class Orchestrator {
                 ? `${key}: ${
                     message.execution_steps?.[0]?.result?.Err ?? "Unknown Error"
                   }`
-                : `${key}`
+                : `Invoke Error: ${JSON.stringify(data)}`
               : `Invoke Error: ${JSON.stringify(data)}`
           );
         }
