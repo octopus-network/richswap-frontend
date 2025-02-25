@@ -20,10 +20,7 @@ export function CoinIcon({
       )}
     >
       <AvatarImage
-        src={
-          coin.icon ??
-          `https://ord-mirror.magiceden.dev/content/${coin.etching}i0`
-        }
+        src={coin.icon ?? `https://ordinals.com/content/${coin.etching}i0`}
       />
       <AvatarFallback className="bg-accent">
         {coin.runeSymbol ?? coin.symbol?.slice(0, 2)}

@@ -5,7 +5,7 @@ import { idlFactory } from "../dids/orchestrator.did";
 export const actor = Actor.createActor(idlFactory, {
   agent: HttpAgent.createSync({
     host: ICP_HOST,
-    retryTimes: 20,
+    retryTimes: 30,
   }),
   canisterId: ORCHESTRATOR_CANISTER_ID,
 });
