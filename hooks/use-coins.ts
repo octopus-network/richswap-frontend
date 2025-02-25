@@ -4,8 +4,6 @@ import { Coin } from "@/types";
 import { useUserAddedCoins } from "@/store/user/hooks";
 import axios from "axios";
 
-import { Exchange } from "@/lib/exchange";
-import { fetchCoinById } from "@/lib/utils";
 import { useAtomValue } from "jotai";
 import { poolCoinsAtom } from "@/store/pool-coins";
 

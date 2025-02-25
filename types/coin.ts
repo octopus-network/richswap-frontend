@@ -5,6 +5,7 @@ export interface Coin {
   name: string;
   runeId?: string;
   runeSymbol?: string;
+  etching?: string;
   decimals: number;
 }
 
