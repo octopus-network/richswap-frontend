@@ -40,32 +40,36 @@ export class Exchange {
       coinBAmount: string;
     }[]
   > {
-    const res = (await actor.list_pools(
-      [],
+    const tmpRes = (await actor.list_pools(
+      ["5c9eaaf2e8821d8810c625f5039ed69db13f3e6fb2ed4f3c9194e212bfc88428"],
       20
     )) as {
       id: string;
       name: string;
     }[];
 
-    if (res?.length) {
-      const promises = res.map(({ id }) => this.getPoolData(id));
+    const res = [
+      {
+        id: "5c9eaaf2e8821d8810c625f5039ed69db13f3e6fb2ed4f3c9194e212bfc88428",
+        name: "HOPE•YOU•GET•RICH",
+      },
+    ].concat(tmpRes);
 
-      const poolInfos = await Promise.all(promises);
+    const promises = res.map(({ id }) => this.getPoolData(id));
 
-      const poolList = [];
+    const poolInfos = await Promise.all(promises);
 
-      for (let i = 0; i < poolInfos.length; i++) {
-        const info = poolInfos[i];
-        const { name } = res[i];
-        if (info) {
-          poolList.push({ ...info, name });
-        }
+    const poolList = [];
+
+    for (let i = 0; i < poolInfos.length; i++) {
+      const info = poolInfos[i];
+      const { name } = res[i];
+      if (info) {
+        poolList.push({ ...info, name });
       }
-
-      return poolList;
     }
-    return [];
+
+    return poolList;
   }
 
   public static async createPool(coinId: string) {
