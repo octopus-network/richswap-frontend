@@ -1,53 +1,27 @@
-import { Exchange } from "@/lib/exchange";
-import { useState, useEffect, useMemo } from "react";
+import axios from "axios";
+import { useMemo } from "react";
 import { useCoinPrice, useCoinPrices } from "./use-prices";
-import { PoolInfo } from "@/types";
+
 import Decimal from "decimal.js";
 import { formatCoinAmount } from "@/lib/utils";
-import { useDefaultCoins } from "./use-coins";
-import { fetchCoinById } from "@/lib/utils";
+
 import { BITCOIN } from "@/lib/constants";
+import useSWR from "swr";
+import { PoolInfo } from "@/types";
 
 export function usePoolList() {
-  const [poolList, setPoolList] = useState<PoolInfo[]>([]);
-  const [timer, setTimer] = useState<number>();
-  const coins = useDefaultCoins();
+  const { data } = useSWR(
+    "/api/pools",
+    (url: string) =>
+      axios
+        .get<{
+          data: PoolInfo[];
+        }>(url)
+        .then((res) => res.data.data),
+    { refreshInterval: 30 * 1000 }
+  );
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer(Date.now());
-    }, 15 * 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    Exchange.getPoolList().then(async (res) => {
-      const pools = [];
-
-      for (let i = 0; i < res.length; i++) {
-        const { coinAId, coinBId, ...rest } = res[i];
-
-        const coinA = coins[coinAId];
-        let coinB = coins[coinBId];
-        if (!coinB) {
-          coinB = await fetchCoinById(coinBId);
-        }
-
-        pools.push({
-          ...rest,
-          coinA,
-          coinB,
-        });
-      }
-
-      setPoolList(pools);
-    });
-  }, [coins, timer]);
-
-  return poolList;
+  return data ?? [];
 }
 
 export function usePoolsTvl() {

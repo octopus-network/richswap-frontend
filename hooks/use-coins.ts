@@ -4,8 +4,7 @@ import { Coin } from "@/types";
 import { useUserAddedCoins } from "@/store/user/hooks";
 import axios from "axios";
 
-import { useAtomValue } from "jotai";
-import { poolCoinsAtom } from "@/store/pool-coins";
+import { usePoolList } from "./use-pools";
 
 export function useSearchCoins(searchQuery: string) {
   const [searchCoins, setSearchCoins] = useState<Coin[]>([]);
@@ -46,7 +45,13 @@ export function useSearchCoins(searchQuery: string) {
 
 export function useDefaultCoins() {
   const userAddedCoins = useUserAddedCoins();
-  const poolCoins = useAtomValue(poolCoinsAtom);
+
+  const poolList = usePoolList();
+
+  const poolCoins = useMemo(
+    () => poolList?.map((pool) => pool.coinB),
+    [poolList]
+  );
   return useMemo(
     () =>
       userAddedCoins.reduce<{ [id: string]: Coin }>(
