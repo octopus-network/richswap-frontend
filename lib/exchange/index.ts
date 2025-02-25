@@ -40,7 +40,10 @@ export class Exchange {
       coinBAmount: string;
     }[]
   > {
-    const res = (await actor.list_pools([], 20)) as {
+    const res = (await actor.list_pools(
+      [],
+      20
+    )) as {
       id: string;
       name: string;
     }[];
