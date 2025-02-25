@@ -81,6 +81,8 @@ export async function fetchCoinById(coinId: string): Promise<Coin> {
     .get(`/api/runes/search?keyword=${coinId}`)
     .then((res) => res.data.data ?? []);
 
+  console.log("fetched coin", queryRes);
+
   return queryRes.length ? queryRes[0] : UNKNOWN_COIN;
 }
 

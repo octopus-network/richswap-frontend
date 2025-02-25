@@ -115,8 +115,6 @@ export class OpenApi {
       }
     >(`/v1/indexer/address/${address}/runes/${runeid}/utxo?start=0&limit=500`);
 
-    console.log("rune utxos", response);
-
     return response;
   }
 }
