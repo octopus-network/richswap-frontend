@@ -6,6 +6,7 @@ export const actor = Actor.createActor(idlFactory, {
   agent: HttpAgent.createSync({
     host: ICP_HOST,
     retryTimes: 30,
+    verifyQuerySignatures: false,
   }),
   canisterId: EXCHANGE_CANISTER_ID,
 });
