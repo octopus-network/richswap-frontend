@@ -40,31 +40,27 @@ export class Exchange {
       coinBAmount: string;
     }[]
   > {
-    try {
-      const res = (await actor.list_pools([], 20)) as {
-        id: string;
-        name: string;
-      }[];
+    const res = (await actor.list_pools([], 20)) as {
+      id: string;
+      name: string;
+    }[];
 
-      if (res?.length) {
-        const promises = res.map(({ id }) => this.getPoolData(id));
+    if (res?.length) {
+      const promises = res.map(({ id }) => this.getPoolData(id));
 
-        const poolInfos = await Promise.all(promises);
+      const poolInfos = await Promise.all(promises);
 
-        const poolList = [];
+      const poolList = [];
 
-        for (let i = 0; i < poolInfos.length; i++) {
-          const info = poolInfos[i];
-          const { name } = res[i];
-          if (info) {
-            poolList.push({ ...info, name });
-          }
+      for (let i = 0; i < poolInfos.length; i++) {
+        const info = poolInfos[i];
+        const { name } = res[i];
+        if (info) {
+          poolList.push({ ...info, name });
         }
-
-        return poolList;
       }
-    } catch (error) {
-      throw error;
+
+      return poolList;
     }
     return [];
   }
@@ -83,32 +79,26 @@ export class Exchange {
   public static async getPoolData(
     poolKey: string
   ): Promise<PoolData | undefined> {
-    try {
-      const res: any = await actor.find_pool(poolKey);
+    const res: any = await actor.find_pool(poolKey);
 
-      if (res?.length) {
-        const data = res[0];
-        const meta = data.meta;
-        const state = data.state[0];
+    if (res?.length) {
+      const data = res[0];
+      const meta = data.meta;
+      const state = data.state[0];
 
-        const { utxo } = state ?? { utxo: [], incomes: BigInt(0) };
+      const { utxo } = state ?? { utxo: [], incomes: BigInt(0) };
 
-        const incomes = state?.incomes ?? BigInt(0);
+      const incomes = state?.incomes ?? BigInt(0);
 
-        return {
-          key: poolKey,
-          coinAId: BITCOIN.id,
-          coinBId: meta.id,
-          coinAAmount: ((utxo[0]?.satoshis ?? BigInt(0)) - incomes).toString(),
-          coinBAmount: utxo[0]?.balance.value.toString() ?? "0",
-          incomes: incomes.toString(),
-        };
-      }
-    } catch (error) {
-      console.log(error);
+      return {
+        key: poolKey,
+        coinAId: BITCOIN.id,
+        coinBId: meta.id,
+        coinAAmount: ((utxo[0]?.satoshis ?? BigInt(0)) - incomes).toString(),
+        coinBAmount: utxo[0]?.balance.value.toString() ?? "0",
+        incomes: incomes.toString(),
+      };
     }
-
-    return undefined;
   }
 
   public static async getPosition(pool: PoolInfo, userAddress: string) {
