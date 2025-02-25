@@ -7,16 +7,7 @@ import { queryRunes } from "@/lib/chain-api";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const cache = await fetch(
-    "https://vquok3pr3bhc6tui.public.blob.vercel-storage.com/pool-list.json"
-  ).then((res) => res.json());
-
-  if (cache?.length) {
-    return NextResponse.json({
-      success: true,
-      data: cache,
-    });
-  } else {
+  try {
     const res = await Exchange.getPoolList();
 
     const pools = [];
@@ -70,6 +61,14 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: pools,
+    });
+  } catch (error) {
+    return NextResponse.json({
+      error:
+        error instanceof Error
+          ? error.message || error.toString()
+          : "Unkown Error",
+      success: false,
     });
   }
 }
