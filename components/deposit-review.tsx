@@ -9,6 +9,8 @@ import {
 
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import { getAddressType } from "@/lib/utils";
+import { AddressType } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -274,6 +276,14 @@ export function DepositReview({
     }
   };
 
+  const invalidAddressType = useMemo(() => {
+    const paymentAddressType = getAddressType(paymentAddress);
+    return (
+      paymentAddressType !== AddressType.P2TR &&
+      paymentAddressType !== AddressType.P2WPKH
+    );
+  }, [paymentAddress]);
+
   return errorMessage ? (
     <div className="mt-4 flex flex-col gap-4">
       <div className="p-4 border rounded-lg flex flex-col items-center">
@@ -362,9 +372,13 @@ export function DepositReview({
               size="xl"
               className="w-full"
               onClick={onSubmit}
-              disabled={!psbt}
+              disabled={!psbt || invalidAddressType}
             >
-              {!psbt ? "Insufficient Utxos" : "Sign PSBT"}
+              {!psbt
+                ? "Insufficient Utxos"
+                : invalidAddressType
+                ? "Unsupported Address Type"
+                : "Sign PSBT"}
             </Button>
             {showCancelButton && (
               <Button

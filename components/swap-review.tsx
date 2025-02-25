@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown, TriangleAlert } from "lucide-react";
 import {
+  AddressType,
   Coin,
   TransactionStatus,
   TransactionType,
@@ -11,6 +12,7 @@ import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "@/components/coin-icon";
+import { getAddressType } from "@/lib/utils";
 import {
   formatNumber,
   getCoinSymbol,
@@ -320,6 +322,14 @@ export function SwapReview({
     setIsSubmiting(false);
   };
 
+  const invalidAddressType = useMemo(() => {
+    const paymentAddressType = getAddressType(paymentAddress);
+    return (
+      paymentAddressType !== AddressType.P2TR &&
+      paymentAddressType !== AddressType.P2WPKH
+    );
+  }, [paymentAddress]);
+
   return errorMessage ? (
     <div className="flex flex-col gap-4">
       <div className="p-4 border rounded-lg flex flex-col items-center">
@@ -403,9 +413,13 @@ export function SwapReview({
               size="xl"
               className="w-full"
               onClick={onSubmit}
-              disabled={!psbt}
+              disabled={!psbt || invalidAddressType}
             >
-              {!psbt ? "Insufficient Utxos" : "Sign Transaction"}
+              {!psbt
+                ? "Insufficient Utxos"
+                : invalidAddressType
+                ? "Unsupported Address Type"
+                : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button
