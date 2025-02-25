@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { BITCOIN, UNKNOWN_COIN } from "@/lib/constants";
 import { Exchange } from "@/lib/exchange";
-
+import { put } from "@vercel/blob";
 import { queryRunes } from "@/lib/chain-api";
 
 export const dynamic = "force-dynamic";
@@ -53,18 +53,22 @@ export async function GET() {
       });
     }
 
+    await put("pool-list.json", JSON.stringify(pools), {
+      access: "public",
+      addRandomSuffix: false,
+    });
+
     return NextResponse.json({
       success: true,
       data: pools,
     });
-  } catch (error) {
-    console.log(error);
+  } catch {
+    const cache = await fetch(
+      "https://vquok3pr3bhc6tui.public.blob.vercel-storage.com/pool-list.json"
+    ).then((res) => res.json());
     return NextResponse.json({
-      error:
-        error instanceof Error
-          ? error.message || error.toString()
-          : "Unkown Error",
-      success: false,
+      success: true,
+      data: cache ?? [],
     });
   }
 }
