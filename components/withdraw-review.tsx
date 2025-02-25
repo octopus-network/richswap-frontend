@@ -11,6 +11,8 @@ import { formatNumber, withdrawTx } from "@/lib/utils";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import { AddressType } from "@/types";
+import { getAddressType } from "@/lib/utils";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
 import { getCoinSymbol, getP2trAressAndScript } from "@/lib/utils";
@@ -218,6 +220,14 @@ export function WithdrawReview({
     }
   };
 
+  const invalidAddressType = useMemo(() => {
+    const paymentAddressType = getAddressType(paymentAddress);
+    return (
+      paymentAddressType !== AddressType.P2TR &&
+      paymentAddressType !== AddressType.P2WPKH
+    );
+  }, [paymentAddress]);
+
   return errorMessage ? (
     <div className="mt-4 flex flex-col gap-4">
       <div className="p-4 border rounded-lg flex flex-col items-center">
@@ -308,9 +318,13 @@ export function WithdrawReview({
               size="xl"
               className="w-full"
               onClick={onSubmit}
-              disabled={!psbt}
+              disabled={!psbt || invalidAddressType}
             >
-              {!psbt ? "Insufficient Utxos" : "Sign Transaction"}
+              {!psbt
+                ? "Insufficient Utxos"
+                : invalidAddressType
+                ? "Unsupported Address Type"
+                : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button
