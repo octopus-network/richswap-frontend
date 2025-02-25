@@ -64,7 +64,7 @@ export class Exchange {
         return poolList;
       }
     } catch (error) {
-      console.log(error);
+      throw error;
     }
     return [];
   }
