@@ -4,40 +4,47 @@ import { Exchange } from "@/lib/exchange";
 
 import { queryRunes } from "@/lib/chain-api";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const res = await Exchange.getPoolList();
 
     const pools = [];
 
+    const coinRes = await Promise.all(
+      res.map(({ coinBId }) =>
+        queryRunes(coinBId).then((data) =>
+          data.length
+            ? data.map(
+                ({
+                  runeid,
+                  spacedRune,
+                  rune,
+                  symbol,
+                  divisibility,
+                  etching,
+                  number,
+                }) => ({
+                  id: runeid,
+                  name: spacedRune,
+                  runeId: rune,
+                  runeSymbol: symbol,
+                  decimals: divisibility,
+                  etching,
+                  number,
+                })
+              )[0]
+            : UNKNOWN_COIN
+        )
+      )
+    );
+
     for (let i = 0; i < res.length; i++) {
-      const { coinBId, ...rest } = res[i];
+      const { ...rest } = res[i];
 
       const coinA = BITCOIN;
-
-      const queryRes = await queryRunes(coinBId);
-
-      const coinB = queryRes?.length
-        ? queryRes.map(
-            ({
-              runeid,
-              spacedRune,
-              rune,
-              symbol,
-              divisibility,
-              etching,
-              number,
-            }) => ({
-              id: runeid,
-              name: spacedRune,
-              runeId: rune,
-              runeSymbol: symbol,
-              decimals: divisibility,
-              etching,
-              number,
-            })
-          )[0]
-        : UNKNOWN_COIN;
+      const coinB = coinRes[i];
 
       pools.push({
         ...rest,
