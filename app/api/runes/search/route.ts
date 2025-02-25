@@ -13,13 +13,22 @@ export async function GET(req: NextRequest) {
       success: true,
       data: res?.length
         ? res.map(
-            ({ runeid, spacedRune, rune, symbol, divisibility, etching }) => ({
+            ({
+              runeid,
+              spacedRune,
+              rune,
+              symbol,
+              divisibility,
+              etching,
+              number,
+            }) => ({
               id: runeid,
               name: spacedRune,
               runeId: rune,
               runeSymbol: symbol,
               decimals: divisibility,
               etching,
+              number,
             })
           )
         : [],

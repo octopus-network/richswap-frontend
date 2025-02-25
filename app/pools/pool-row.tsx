@@ -96,7 +96,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
               e.stopPropagation();
               e.preventDefault();
               window.open(
-                `https://mempool.space/address/${poolAddress}`,
+                `https://www.runescan.net/runes/${pool.coinB.number}`,
                 "_blank"
               );
             }}

@@ -7,6 +7,7 @@ export interface Coin {
   runeSymbol?: string;
   etching?: string;
   decimals: number;
+  number?: number;
 }
 
 export enum Field {

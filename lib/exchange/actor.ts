@@ -5,7 +5,7 @@ import { idlFactory } from "../dids/rich-swap.did";
 export const actor = Actor.createActor(idlFactory, {
   agent: HttpAgent.createSync({
     host: ICP_HOST,
-    retryTimes: 20,
+    retryTimes: 30,
   }),
   canisterId: EXCHANGE_CANISTER_ID,
 });

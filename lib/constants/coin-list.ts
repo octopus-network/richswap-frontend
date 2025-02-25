@@ -24,5 +24,6 @@ export const COIN_LIST: Coin[] = [
     name: "HOPE•YOU•GET•RICH",
     runeId: "HOPEYOUGETRICH",
     decimals: 2,
+    number: 431,
   },
 ];

@@ -280,6 +280,7 @@ export async function queryRunes(rune: string) {
           rune: string;
           spacedRune: string;
           etching: string;
+          number: number;
         }[];
       };
     }>(
