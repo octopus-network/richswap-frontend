@@ -78,7 +78,7 @@ export function AccountSheetContent() {
         </div>
         <div className="px-4">
           <Link
-            href={`https://mempool.space/address/${address}`}
+            href={`https://www.runescan.net/address/${address}`}
             target="_blank"
           >
             <Button variant="secondary" className="w-full">
