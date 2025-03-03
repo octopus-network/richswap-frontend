@@ -1,7 +1,7 @@
 "use client";
 
 import { PoolInfo, Position } from "@/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BaseModal } from "../base-modal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DepositContent } from "./deposit-content";
@@ -9,6 +9,7 @@ import { WithdrawContent } from "./withdraw-content";
 import Link from "next/link";
 import { getCoinSymbol } from "@/lib/utils";
 import { ArrowLeftRight } from "lucide-react";
+import { Exchange } from "@/lib/exchange";
 
 export function ManageLiquidityModal({
   open,
@@ -22,6 +23,19 @@ export function ManageLiquidityModal({
   position: Position | null | undefined;
 }) {
   const [onReview, setOnReview] = useState(false);
+  const [poolInfo, setPoolInfo] = useState<PoolInfo>(pool);
+  useEffect(() => {
+    Exchange.getPoolData(pool.key).then((res) => {
+      if (!res) {
+        return;
+      }
+      setPoolInfo({
+        ...pool,
+        coinAAmount: res.coinAAmount,
+        coinBAmount: res.coinBAmount,
+      });
+    });
+  }, [pool, open]);
   return (
     <BaseModal
       open={open}
@@ -58,7 +72,7 @@ export function ManageLiquidityModal({
             </Link>
           </div>
           <DepositContent
-            pool={pool}
+            pool={poolInfo}
             setOnReview={setOnReview}
             onSuccess={() => {
               setOpen(false);
