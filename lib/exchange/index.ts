@@ -225,10 +225,7 @@ export class Exchange {
   public static async preWithdrawLiquidity(
     poolKey: string,
     userAddress: string,
-    coinBalance: {
-      id: string;
-      value: bigint;
-    }
+    sqrK: bigint
   ): Promise<{
     utxos: UnspentOutput[];
     nonce: string;
@@ -241,17 +238,19 @@ export class Exchange {
   } | null> {
     try {
       const res = await actor
-        .pre_withdraw_liquidity(poolKey, userAddress, coinBalance)
+        .pre_withdraw_liquidity(poolKey, userAddress, sqrK)
         .then((data: any) => {
           console.log("withdraw liquidity", data);
           if (data.Ok) {
             return data.Ok as {
               input: {
-                balance: {
-                  id: string;
-                  value: bigint;
-                };
-                satoshis: bigint;
+                maybe_rune: [
+                  {
+                    id: string;
+                    value: bigint;
+                  }
+                ];
+                sats: bigint;
                 txid: string;
                 vout: number;
               };
@@ -281,18 +280,20 @@ export class Exchange {
 
       const { address, output } = getP2trAressAndScript(poolKey);
 
+      const rune = res.input.maybe_rune[0];
+
       const utxo: UnspentOutput = {
         txid: res.input.txid,
         vout: res.input.vout,
-        satoshis: res.input.satoshis.toString(),
+        satoshis: res.input.sats.toString(),
         address: address!,
         pubkey: "",
         addressType: AddressType.P2TR,
         scriptPk: output,
         runes: [
           {
-            id: res.input.balance.id,
-            amount: res.input.balance.value.toString(),
+            id: rune.id,
+            amount: rune.value.toString(),
           },
         ],
       };

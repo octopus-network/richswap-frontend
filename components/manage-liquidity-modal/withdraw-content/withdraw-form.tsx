@@ -48,18 +48,15 @@ export function WithdrawForm({
       setOutput(undefined);
       return;
     }
-    const btc =
-      (BigInt(debouncedPercentage) *
-        BigInt(position.userShare) *
-        BigInt(position.btcSupply)) /
-      (BigInt(position.sqrtK) * BigInt(100));
 
-    setOutputBtc(btc);
+    const sqrtK =
+      (BigInt(debouncedPercentage) * BigInt(position.userShare)) / BigInt(100);
 
-    Exchange.preWithdrawLiquidity(position.poolKey, position.userAddress, {
-      id: "0:0",
-      value: btc,
-    }).then((res) => {
+    Exchange.preWithdrawLiquidity(
+      position.poolKey,
+      position.userAddress,
+      sqrtK
+    ).then((res) => {
       if (res) {
         setNonce(res.nonce);
         setUtxos(res.utxos);
@@ -67,6 +64,8 @@ export function WithdrawForm({
       }
     });
   }, [debouncedPercentage, position]);
+
+  console.log(output);
 
   return (
     <div>
