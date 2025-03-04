@@ -21,8 +21,7 @@ export function WithdrawForm({
     coinAAmount: string,
     coinBAmount: string,
     nonce: string,
-    poolUtxos: UnspentOutput[],
-    outputBtc: bigint
+    poolUtxos: UnspentOutput[]
   ) => void;
 }) {
   const coinAPrice = useCoinPrice(position?.coinA?.id);
@@ -31,7 +30,7 @@ export function WithdrawForm({
   const [withdrawPercentage, setWithdrawPercentage] = useState(0);
   const [nonce, setNonce] = useState("0");
   const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
-  const [outputBtc, setOutputBtc] = useState(BigInt(0));
+
   const [output, setOutput] = useState<{
     coinA: Coin;
     coinB: Coin;
@@ -130,13 +129,7 @@ export function WithdrawForm({
             disabled={!position || !Number(nonce) || !output || !utxos.length}
             onClick={() =>
               output
-                ? onReview(
-                    output.coinAAmount,
-                    output.coinBAmount,
-                    nonce,
-                    utxos,
-                    outputBtc
-                  )
+                ? onReview(output.coinAAmount, output.coinBAmount, nonce, utxos)
                 : null
             }
           >

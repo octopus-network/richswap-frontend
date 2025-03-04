@@ -55,7 +55,6 @@ export function WithdrawReview({
   onSuccess: () => void;
   onBack: () => void;
   nonce: string;
-  outputBtc: bigint;
   showCancelButton?: boolean;
 }) {
   const { address, paymentAddress, signPsbt } = useLaserEyes();

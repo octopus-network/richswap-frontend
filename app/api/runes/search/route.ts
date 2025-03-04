@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { queryRunes } from "@/lib/chain-api";
+
 import { OpenApi } from "@/lib/open-api";
 
 const UNISAT_API = process.env.UNISAT_API!;
