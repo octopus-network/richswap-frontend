@@ -217,7 +217,13 @@ export function SwapReview({
         });
 
         setPsbt(tx.psbt);
+
         setToSpendUtxos(tx.toSpendUtxos);
+        setPoolSpendUtxos(tx.poolSpendUtxos);
+        setPoolReceiveUtxos(tx.poolReceiveUtxos);
+        setTxid(tx.txid);
+        setInputCoins(tx.inputCoins);
+        setOutputCoins(tx.outputCoins);
       } catch (err) {
         console.log(err);
       }
@@ -273,11 +279,6 @@ export function SwapReview({
       addSpentUtxos(toSpendUtxos);
 
       setStep(2);
-
-      console.log("poolSpendUtxos", poolSpendUtxos);
-      console.log("poolReceiveUtxos", poolReceiveUtxos);
-      console.log("inputCoins", inputCoins);
-      console.log("outputCoins", outputCoins);
 
       await Orchestrator.invoke({
         intention_set: {

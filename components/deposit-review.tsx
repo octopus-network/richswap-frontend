@@ -5,6 +5,8 @@ import {
   TransactionStatus,
   TransactionType,
   UnspentOutput,
+  InputCoin,
+  OutputCoin,
 } from "@/types";
 
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
@@ -65,8 +67,13 @@ export function DepositReview({
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [txid, setTxid] = useState("");
 
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
+  const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
+  const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
+  const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
+  const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -162,6 +169,12 @@ export function DepositReview({
 
       setPsbt(tx.psbt);
       setToSpendUtxos(tx.toSpendUtxos);
+      setToSpendUtxos(tx.toSpendUtxos);
+      setPoolSpendUtxos(tx.poolSpendUtxos);
+      setPoolReceiveUtxos(tx.poolReceiveUtxos);
+      setTxid(tx.txid);
+      setInputCoins(tx.inputCoins);
+      setOutputCoins(tx.outputCoins);
     } catch (err) {
       console.log(err);
     }
@@ -187,11 +200,14 @@ export function DepositReview({
     try {
       const psbtBase64 = psbt.toBase64();
 
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+      if (!poolAddress) {
+        return;
+      }
+
       console.log("Deposit Liquidity PSBT:", psbtBase64);
 
       setStep(1);
-
-      const { address: poolAddress } = getP2trAressAndScript(poolKey);
 
       const signedRes = await signPsbt(psbtBase64);
 
@@ -203,9 +219,6 @@ export function DepositReview({
 
       setStep(2);
 
-      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
-
       let poolRuneAmount = BigInt(0);
 
       poolUtxos.forEach((utxo) => {
@@ -214,32 +227,18 @@ export function DepositReview({
       });
 
       const txid = await Orchestrator.invoke({
-        instruction_set: {
-          steps: [
+        intention_set: {
+          initiator_address: paymentAddress,
+          intentions: [
             {
-              method: "add_liquidity",
+              action: "add_liquidity",
               exchange_id: EXCHANGE_ID,
-              input_coins: [
-                {
-                  coin_balance: { id: coinA.id, value: coinAAmountBigInt },
-                  owner_address: paymentAddress,
-                },
-                {
-                  coin_balance: { id: coinB.id, value: coinBAmountBigInt },
-                  owner_address: address,
-                },
-              ],
-              output_coins: [
-                {
-                  coin_balance: {
-                    id: coinB.id,
-                    value: coinBAmountBigInt + poolRuneAmount,
-                  },
-                  owner_address: poolAddress!,
-                },
-              ],
-              pool_key: [poolKey],
-              nonce: [BigInt(nonce)],
+              input_coins: inputCoins,
+              pool_utxo_spend: poolSpendUtxos,
+              pool_utxo_receive: poolReceiveUtxos,
+              output_coins: outputCoins,
+              pool_address: poolAddress,
+              nonce: BigInt(nonce),
             },
           ],
         },
