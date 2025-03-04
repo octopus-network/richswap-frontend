@@ -95,8 +95,6 @@ export class Exchange {
       }
     ];
 
-    console.log("pool info", res);
-
     if (res?.length) {
       const data = res[0];
 
@@ -107,7 +105,7 @@ export class Exchange {
       const incomes = BigInt(0);
 
       return {
-        key: "",
+        key: data.id,
         coinAId: BITCOIN.id,
         coinBId: coinReserved.id,
         coinAAmount: ((utxo.sats ?? BigInt(0)) - incomes).toString(),
@@ -184,6 +182,7 @@ export class Exchange {
       const { output, inputs, nonce } = await actor
         .pre_add_liquidity(poolKey, { id: coin.id, value: BigInt(coinAmount) })
         .then((data: any) => {
+          console.log("preAddLiquidity", data);
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -195,24 +194,26 @@ export class Exchange {
 
       const utxos: UnspentOutput[] = [];
 
-      inputs.forEach(async ({ txid, vout, satoshis, balance }: any) => {
+      inputs.forEach(async ({ txid, vout, sats, maybe_rune }: any) => {
         const { address, output } = getP2trAressAndScript(poolKey);
+
+        const rune = maybe_rune[0];
 
         const tmpObj: UnspentOutput = {
           txid,
           vout,
-          satoshis: satoshis.toString(),
+          satoshis: sats.toString(),
           address: address!,
           scriptPk: output,
           pubkey: "",
           addressType: AddressType.P2TR,
           runes: [],
         };
-        if (balance.id !== BITCOIN.id) {
+        if (rune.id !== BITCOIN.id) {
           tmpObj.runes = [
             {
-              id: balance.id,
-              amount: balance.value.toString(),
+              id: rune.id,
+              amount: rune.value.toString(),
             },
           ];
         }
@@ -369,22 +370,24 @@ export class Exchange {
           }
         });
 
-      const { txid, vout, satoshis, balance } = input;
+      const { txid, vout, sats, maybe_rune } = input;
+
+      const rune = maybe_rune[0];
 
       const { output: outputScript, address } = getP2trAressAndScript(pool.key);
 
       const utxo: UnspentOutput = {
         txid,
         vout,
-        satoshis: satoshis.toString(),
+        satoshis: sats.toString(),
         address: address!,
         pubkey: "",
         addressType: AddressType.P2TR,
         scriptPk: outputScript,
         runes: [
           {
-            id: balance.id,
-            amount: balance.value.toString(),
+            id: rune.id,
+            amount: rune.value.toString(),
           },
         ],
       };

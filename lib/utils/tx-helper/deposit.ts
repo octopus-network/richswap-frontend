@@ -3,7 +3,6 @@ import { UnspentOutput } from "@/types";
 import { ToSignInput } from "@/types";
 import { UTXO_DUST } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
-import { NetworkType } from "../network";
 
 import { RuneId, Runestone, none, Edict } from "runelib";
 
@@ -33,10 +32,8 @@ export function depositTx({
   let poolRuneAmount = BigInt(0),
     poolBtcAmount = BigInt(0);
 
-  const networkType = NetworkType.MAINNET;
-
   const tx = new Transaction();
-  tx.setNetworkType(networkType);
+
   tx.setFeeRate(feeRate);
   tx.setEnableRBF(false);
   tx.setChangeAddress(paymentAddress);

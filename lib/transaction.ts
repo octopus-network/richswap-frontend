@@ -3,14 +3,13 @@ import {
   hexToBytes,
   bytesToHex,
   getEstimateAddress,
-  NetworkType,
   addressToScriptPk,
-  toPsbtNetwork,
   getAddedVirtualSize,
   selectBtcUtxos,
+  toPsbtNetwork,
 } from "./utils";
 import { ToSignInput } from "../types";
-import { UTXO_DUST } from "./constants";
+import { NETWORK, UTXO_DUST } from "./constants";
 
 import * as bitcoin from "bitcoinjs-lib";
 import { ECPairAPI, ECPairFactory } from "ecpair";
@@ -78,6 +77,7 @@ function utxoToInput(utxo: UnspentOutput, estimate?: boolean): TxInput {
   } else if (utxo.addressType === AddressType.P2SH_P2WPKH && utxo.pubkey) {
     const redeemData = bitcoin.payments.p2wpkh({
       pubkey: hexToBytes(utxo.pubkey),
+      network: toPsbtNetwork(NETWORK),
     });
 
     data = {
@@ -106,17 +106,13 @@ export class Transaction {
   public outputs: TxOutput[] = [];
   private changeOutputIndex = -1;
   public changedAddress: string = "";
-  private networkType: NetworkType = NetworkType.MAINNET;
+
   private feeRate: number = 0;
   private enableRBF = true;
   private _cacheNetworkFee = 0;
   private _cacheBtcUtxos: UnspentOutput[] = [];
   private _cacheToSignInputs: ToSignInput[] = [];
   constructor() {}
-
-  setNetworkType(network: NetworkType) {
-    this.networkType = network;
-  }
 
   setEnableRBF(enable: boolean) {
     this.enableRBF = enable;
@@ -219,8 +215,9 @@ export class Transaction {
   }
 
   toPsbt() {
-    const network = toPsbtNetwork(this.networkType);
-    const psbt = new bitcoin.Psbt({ network });
+    const psbt = new bitcoin.Psbt({
+      network: toPsbtNetwork(NETWORK),
+    });
     this.inputs.forEach((v, index) => {
       if (v.utxo.addressType === AddressType.P2PKH) {
         if (v.data.witnessUtxo) {
@@ -252,7 +249,7 @@ export class Transaction {
 
   clone() {
     const tx = new Transaction();
-    tx.setNetworkType(this.networkType);
+
     tx.setFeeRate(this.feeRate);
     tx.setEnableRBF(this.enableRBF);
     tx.setChangeAddress(this.changedAddress);
@@ -263,7 +260,7 @@ export class Transaction {
   }
 
   createEstimatePsbt() {
-    const network = toPsbtNetwork(this.networkType);
+    const network = toPsbtNetwork(NETWORK);
     const ecpair = ECPair.makeRandom({
       network,
     });
@@ -275,12 +272,8 @@ export class Transaction {
     const addressTypes: AddressType[] = [];
     tx.utxos.forEach((v) => {
       v.pubkey = bytesToHex(pubkey);
-      const address = getEstimateAddress(
-        pubkey,
-        v.addressType,
-        this.networkType
-      );
-      const scriptPk = addressToScriptPk(address, this.networkType);
+      const address = getEstimateAddress(pubkey, v.addressType);
+      const scriptPk = addressToScriptPk(address);
       v.scriptPk = bytesToHex(scriptPk);
       addressTypes.push(v.addressType);
     });
