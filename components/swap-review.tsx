@@ -32,7 +32,7 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
-import { EXCHANGE_ID } from "@/lib/constants/canister";
+import { EXCHANGE_ID } from "@/lib/constants";
 import { useAddTransaction } from "@/store/transactions";
 
 import { useCoinPrice } from "@/hooks/use-prices";

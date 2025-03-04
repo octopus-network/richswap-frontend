@@ -30,7 +30,7 @@ import { BITCOIN } from "@/lib/constants";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
-import { EXCHANGE_ID } from "@/lib/constants/canister";
+import { EXCHANGE_ID } from "@/lib/constants";
 import { useAddTransaction } from "@/store/transactions";
 
 export function WithdrawReview({

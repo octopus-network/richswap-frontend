@@ -49,24 +49,25 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   });
   const ExchangePool = IDL.Record({
     exchange_id: IDL.Text,
+    pool_address: IDL.Text,
     pool_key: IDL.Text,
   });
   const RollbackStepLogView = IDL.Record({
     result: Result,
     exchange_id: IDL.Text,
-    tx_id: IDL.Text,
+    txid: IDL.Text,
     rollback_time: IDL.Text,
     maybe_return_time: IDL.Opt(IDL.Text),
-    pool_key: IDL.Text,
+    pool_address: IDL.Text,
   });
   const Result_2 = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
   const ExecutionStepLogView = IDL.Record({
     result: Result_2,
     exchange_id: IDL.Text,
-    maybe_pool_id: IDL.Opt(IDL.Text),
     maybe_return_time: IDL.Opt(IDL.Text),
     calling_method: IDL.Text,
     calling_args: IDL.Text,
+    pool_address: IDL.Text,
     calling_time: IDL.Text,
   });
   const InvokeLogView = IDL.Record({
@@ -78,21 +79,24 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     calling_time: IDL.Text,
   });
   const CoinBalance = IDL.Record({ id: IDL.Text, value: IDL.Nat });
-  const AssetWithOwner = IDL.Record({
-    coin_balance: CoinBalance,
-    owner_address: IDL.Text,
-  });
-  const ReeInstruction = IDL.Record({
-    input_coins: IDL.Vec(AssetWithOwner),
-    method: IDL.Text,
-    output_coins: IDL.Vec(AssetWithOwner),
+  const InputCoin = IDL.Record({ coin: CoinBalance, from: IDL.Text });
+  const OutputCoin = IDL.Record({ to: IDL.Text, coin: CoinBalance });
+  const Intention = IDL.Record({
+    input_coins: IDL.Vec(InputCoin),
+    output_coins: IDL.Vec(OutputCoin),
+    action: IDL.Text,
     exchange_id: IDL.Text,
-    nonce: IDL.Opt(IDL.Nat64),
-    pool_key: IDL.Opt(IDL.Text),
+    pool_utxo_spend: IDL.Vec(IDL.Text),
+    nonce: IDL.Nat64,
+    pool_utxo_receive: IDL.Vec(IDL.Text),
+    pool_address: IDL.Text,
   });
-  const ReeInstructionSet = IDL.Record({ steps: IDL.Vec(ReeInstruction) });
+  const IntentionSet = IDL.Record({
+    initiator_address: IDL.Text,
+    intentions: IDL.Vec(Intention),
+  });
   const InvokeArgs = IDL.Record({
-    instruction_set: ReeInstructionSet,
+    intention_set: IntentionSet,
     psbt_hex: IDL.Text,
   });
   const MempoolTxFeeRateView = IDL.Record({
@@ -108,10 +112,15 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   const ReceivedBlockView = IDL.Record({
     processing_results: IDL.Vec(IDL.Text),
     block_basic: BlockBasic,
-    tx_ids: IDL.Vec(IDL.Text),
+    txids: IDL.Vec(IDL.Text),
     received_time: IDL.Text,
   });
-  const ExchangeMetadata = IDL.Record({
+  const ExchangeStatus = IDL.Variant({
+    Active: IDL.Null,
+    Halted: IDL.Record({ txid: IDL.Text }),
+  });
+  const ExchangeView = IDL.Record({
+    status: ExchangeStatus,
     exchange_id: IDL.Text,
     name: IDL.Text,
     canister_id: IDL.Principal,
@@ -119,7 +128,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   });
   const RejectedTxView = IDL.Record({
     rollback_results: IDL.Vec(IDL.Text),
-    tx_id: IDL.Text,
+    txid: IDL.Text,
     received_time: IDL.Text,
     reason: IDL.Text,
   });
@@ -129,31 +138,19 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     testnet: IDL.Null,
   });
   const OrchestratorSettings = IDL.Record({
-    max_instructions_per_invoke: IDL.Nat32,
-    ord_canister_id: IDL.Principal,
     min_tx_confirmations: IDL.Nat32,
     mempool_connector_principal: IDL.Principal,
     max_unconfirmed_tx_count_in_pool: IDL.Nat32,
     min_btc_amount_for_utxo: IDL.Nat64,
+    rune_indexer_principal: IDL.Principal,
+    max_intentions_per_invoke: IDL.Nat32,
     bitcoin_network: BitcoinNetwork,
   });
-  const InputRune = IDL.Record({
-    tx_id: IDL.Text,
-    coin_balance: IDL.Opt(CoinBalance),
-    vout: IDL.Nat32,
-    btc_amount: IDL.Nat64,
-  });
-  const OutputRune = IDL.Record({
-    coin_balance: IDL.Opt(CoinBalance),
-    btc_amount: IDL.Nat64,
-  });
   const SignPsbtArgs = IDL.Record({
-    tx_id: IDL.Text,
     zero_confirmed_tx_count_in_queue: IDL.Nat32,
-    instruction_index: IDL.Nat32,
-    input_runes: IDL.Vec(InputRune),
-    output_runes: IDL.Vec(OutputRune),
-    all_instructions: IDL.Vec(ReeInstruction),
+    txid: IDL.Text,
+    intention_set: IntentionSet,
+    intention_index: IDL.Nat32,
     psbt_hex: IDL.Text,
   });
   const TxStatus = IDL.Variant({
@@ -167,65 +164,16 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     included_block: IDL.Opt(BlockBasic),
     sent_tx_hex: IDL.Text,
   });
-  const RollbackStepLog = IDL.Record({
-    result: Result,
-    exchange_id: IDL.Text,
-    tx_id: IDL.Text,
-    rollback_time: IDL.Nat64,
-    maybe_return_time: IDL.Opt(IDL.Nat64),
-    pool_key: IDL.Text,
-  });
-  const ExecutionStepLog = IDL.Record({
-    result: Result_2,
-    exchange_id: IDL.Text,
-    maybe_return_time: IDL.Opt(IDL.Nat64),
-    maybe_pool_key: IDL.Opt(IDL.Text),
-    calling_method: IDL.Text,
-    calling_args: IDL.Text,
-    calling_time: IDL.Nat64,
-  });
-  const InvokeLog = IDL.Record({
-    maybe_tx_sent_time: IDL.Opt(IDL.Nat64),
-    rollback_steps: IDL.Vec(RollbackStepLog),
-    execution_steps: IDL.Vec(ExecutionStepLog),
-    processing_result: Result_2,
-    calling_args: IDL.Text,
-    calling_time: IDL.Nat64,
-  });
-  const InvokeError = IDL.Variant({
-    InvalidOutpointForAddress: IDL.Record({
-      value: IDL.Nat64,
-      address: IDL.Text,
-      available_utxos: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat64)),
-      outpoint: IDL.Text,
-    }),
-    NoSignedAddressFound: IDL.Null,
-    InvalidPsbtHex: IDL.Text,
-    InvokeIsPaused: IDL.Null,
-    ErrorOccurredDuringExecution: InvokeLog,
-    InvalidPsbt: IDL.Text,
-    TooManyInstructions: IDL.Record({
-      max_instructions_per_invoke: IDL.Nat32,
-      actual_instructions: IDL.Nat32,
-    }),
-    FailedToQueryUtxos: IDL.Record({
-      error: IDL.Text,
-      address: IDL.Text,
-    }),
-    MultipleSignedAddresses: IDL.Text,
-    NoInstructions: IDL.Null,
-    FailedToParsePsbt: IDL.Text,
-    InvalidInstruction: IDL.Record({
-      instruction_index: IDL.Nat32,
-      reason: IDL.Text,
-    }),
-    InputAlreadySpent: IDL.Text,
-  });
-  const Result_3 = IDL.Variant({ Ok: IDL.Text, Err: InvokeError });
   const NewBlockDetectedArgs = IDL.Record({
     block_hash: IDL.Text,
     tx_ids: IDL.Vec(IDL.Text),
     block_height: IDL.Nat32,
+  });
+  const ExchangeMetadata = IDL.Record({
+    principal: IDL.Principal,
+    exchange_id: IDL.Text,
+    name: IDL.Text,
+    description: IDL.Text,
   });
   const SetTxFeePerVbyteArgs = IDL.Record({
     low: IDL.Nat64,
@@ -255,10 +203,9 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     ),
     get_last_sent_txs: IDL.Func(
       [IDL.Opt(IDL.Nat32)],
-      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text, IDL.Opt(IDL.Nat32)))],
       ["query"]
     ),
-    get_latency_logs: IDL.Func([], [IDL.Vec(IDL.Text)], ["query"]),
     get_mempool_tx_fee_rate: IDL.Func([], [MempoolTxFeeRateView], ["query"]),
     get_received_blocks: IDL.Func(
       [IDL.Opt(IDL.Nat32), IDL.Opt(IDL.Bool)],
@@ -270,11 +217,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
       [IDL.Nat64],
       ["query"]
     ),
-    get_registered_exchanges: IDL.Func(
-      [],
-      [IDL.Vec(ExchangeMetadata)],
-      ["query"]
-    ),
+    get_registered_exchanges: IDL.Func([], [IDL.Vec(ExchangeView)], ["query"]),
     get_rejected_txs: IDL.Func(
       [IDL.Opt(IDL.Nat32)],
       [IDL.Vec(RejectedTxView)],
@@ -291,8 +234,17 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
       [IDL.Opt(TxDetailView)],
       ["query"]
     ),
-    get_tx_queue_of_pool: IDL.Func([IDL.Text], [IDL.Vec(IDL.Text)], ["query"]),
+    get_tx_queue_of_pool: IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Opt(IDL.Opt(IDL.Nat32))))],
+      ["query"]
+    ),
     get_tx_sent: IDL.Func([IDL.Text], [IDL.Opt(TxDetailView)], ["query"]),
+    get_used_outpoints: IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      ["query"]
+    ),
     get_zero_confirmed_tx_count_of_pool: IDL.Func(
       [IDL.Text],
       [IDL.Nat32],
@@ -308,20 +260,26 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
       [IDL.Vec(IDL.Text)],
       ["query"]
     ),
-    invoke: IDL.Func([InvokeArgs], [Result_3], []),
+    invoke: IDL.Func([InvokeArgs], [Result_2], []),
     new_block_detected: IDL.Func([NewBlockDetectedArgs], [Result], []),
     pause_invoke: IDL.Func([], [Result], []),
     register_exchange: IDL.Func([ExchangeMetadata], [Result], []),
     reject_tx: IDL.Func([IDL.Text, IDL.Text], [Result], []),
     remove_tx_detail: IDL.Func([IDL.Text], [Result], []),
     remove_tx_from_pool: IDL.Func([IDL.Text, IDL.Text], [Result], []),
+    remove_used_outpoints: IDL.Func([IDL.Text], [Result], []),
     resume_invoke: IDL.Func([], [Result], []),
-    rollback_tx_for_pool: IDL.Func([ExchangePool, IDL.Text], [Result], []),
+    rollback_tx_for_pool: IDL.Func([IDL.Text, IDL.Text], [Result], []),
     save_included_block_for_tx: IDL.Func([IDL.Text, BlockBasic], [Result], []),
     set_bitcoin_network: IDL.Func([BitcoinNetwork], [Result], []),
+    set_max_intentions_per_invoke: IDL.Func([IDL.Nat32], [Result], []),
+    set_max_unconfirmed_tx_count_in_pool: IDL.Func([IDL.Nat32], [Result], []),
     set_mempool_connector_principal: IDL.Func([IDL.Principal], [Result], []),
-    set_ord_canister_id: IDL.Func([IDL.Principal], [Result], []),
+    set_min_btc_amount_for_utxo: IDL.Func([IDL.Nat64], [Result], []),
+    set_min_tx_confirmations: IDL.Func([IDL.Nat32], [Result], []),
+    set_rune_indexer_principal: IDL.Func([IDL.Principal], [Result], []),
     set_tx_fee_per_vbyte: IDL.Func([SetTxFeePerVbyteArgs], [Result], []),
     unhalt_exchange: IDL.Func([IDL.Text], [Result], []),
+    version: IDL.Func([], [IDL.Text], ["query"]),
   });
 };
