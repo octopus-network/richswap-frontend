@@ -61,13 +61,14 @@ export async function GET() {
         btcReserved,
         coinA,
         coinB,
-        incomes: "0",
+        incomes: "1000",
       });
     }
 
     await put("pool-list.json", JSON.stringify(pools), {
       access: "public",
       addRandomSuffix: false,
+      cacheControlMaxAge: 15,
     });
 
     return NextResponse.json({
