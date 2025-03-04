@@ -255,39 +255,44 @@ export function SwapReview({
       const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
       const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
 
-      const txid = await Orchestrator.invoke({
-        instruction_set: {
-          steps: [
-            {
-              method: "swap",
-              exchange_id: EXCHANGE_ID,
-              input_coins: [
-                {
-                  coin_balance: {
-                    id: coinA.id,
-                    value: coinAAmountBigInt,
-                  },
-                  owner_address:
-                    coinA.id === BITCOIN.id ? paymentAddress : address,
-                },
-              ],
-              output_coins: [
-                {
-                  coin_balance: {
-                    id: coinB.id,
-                    value: coinBAmountBigInt,
-                  },
-                  owner_address:
-                    coinB.id === BITCOIN.id ? paymentAddress : address,
-                },
-              ],
-              pool_key: [poolKey],
-              nonce: [BigInt(nonce)],
-            },
-          ],
-        },
-        psbt_hex: res.signedPsbtHex,
-      });
+      const tx = psbt.extractTransaction();
+      const txid = tx.getId();
+
+      console.log(txid);
+
+      // const txid = await Orchestrator.invoke({
+      //   instruction_set: {
+      //     steps: [
+      //       {
+      //         method: "swap",
+      //         exchange_id: EXCHANGE_ID,
+      //         input_coins: [
+      //           {
+      //             coin_balance: {
+      //               id: coinA.id,
+      //               value: coinAAmountBigInt,
+      //             },
+      //             owner_address:
+      //               coinA.id === BITCOIN.id ? paymentAddress : address,
+      //           },
+      //         ],
+      //         output_coins: [
+      //           {
+      //             coin_balance: {
+      //               id: coinB.id,
+      //               value: coinBAmountBigInt,
+      //             },
+      //             owner_address:
+      //               coinB.id === BITCOIN.id ? paymentAddress : address,
+      //           },
+      //         ],
+      //         pool_key: [poolKey],
+      //         nonce: [BigInt(nonce)],
+      //       },
+      //     ],
+      //   },
+      //   psbt_hex: res.signedPsbtHex,
+      // });
 
       addTransaction({
         txid,

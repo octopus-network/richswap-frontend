@@ -3,23 +3,33 @@ export type CoinBalance = {
   value: bigint;
 };
 
-export type AssetWithOwner = {
-  coin_balance: CoinBalance;
-  owner_address: string;
+export type InputCoin = {
+  coin: CoinBalance;
+  from: string;
 };
 
-export type ReeInstruction = {
-  method: string;
+export type OutputCoin = {
+  coin: CoinBalance;
+  to: string;
+};
+
+export type Intention = {
+  input_coins: InputCoin[];
+  output_coins: OutputCoin[];
+  action: string;
   exchange_id: string;
-  input_coins: AssetWithOwner[];
-  output_coins: AssetWithOwner[];
-  nonce?: bigint[];
-  pool_key?: string[];
+  pool_utxo_spend: string[];
+  nonce: string;
+  pool_utxo_receive: string[];
+  pool_address: string;
+};
+
+export type IntentionSet = {
+  initiator_address: string;
+  intentions: Intention[];
 };
 
 export type InvokeArgs = {
-  instruction_set: {
-    steps: ReeInstruction[];
-  };
+  intention_set: IntentionSet;
   psbt_hex: string;
 };

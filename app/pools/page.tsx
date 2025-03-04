@@ -70,7 +70,7 @@ export default function Pools() {
                 )}
                 {totalPoolsTvl ? (
                   <span className="text-xs text-muted-foreground">
-                    ${formatNumber(totalPoolsTvl, true)}
+                    ${formatNumber(totalPoolsTvl)}
                   </span>
                 ) : (
                   <Skeleton className="h-4 w-12" />
@@ -88,7 +88,7 @@ export default function Pools() {
                 )}
                 {totalPoolsFee ? (
                   <span className="text-xs text-muted-foreground">
-                    ${formatNumber(totalPoolsFee, true)}
+                    ${formatNumber(totalPoolsFee)}
                   </span>
                 ) : (
                   <Skeleton className="h-4 w-12" />
@@ -111,7 +111,7 @@ export default function Pools() {
               )}
               {totalPoolsTvl ? (
                 <span className="text-xs text-muted-foreground">
-                  ${formatNumber(totalPoolsTvl, true)}
+                  ${formatNumber(totalPoolsTvl)}
                 </span>
               ) : (
                 <Skeleton className="h-4 w-12" />
