@@ -80,7 +80,7 @@ export default function Pools() {
                 <span className="text-muted-foreground text-xs">Fee</span>
                 {poolsFeeInSats ? (
                   <span className="font-semibold">
-                    {formatNumber(poolsFeeInSats)}{" "}
+                    {formatNumber(poolsFeeInSats, true)}{" "}
                     <em className="font-normal">sats</em>
                   </span>
                 ) : (
@@ -123,7 +123,7 @@ export default function Pools() {
             <div className="flex flex-col space-y-0.5 items-end">
               {poolsFeeInSats ? (
                 <span className="font-semibold">
-                  {formatNumber(poolsFeeInSats)}{" "}
+                  {formatNumber(poolsFeeInSats, true)}{" "}
                   <em className="font-normal">sats</em>
                 </span>
               ) : (

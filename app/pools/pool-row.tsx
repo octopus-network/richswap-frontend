@@ -171,7 +171,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
           {poolFee !== undefined && poolFeeInSats !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
-                {formatNumber(poolFeeInSats)}{" "}
+                {formatNumber(poolFeeInSats, true)}{" "}
                 <em className="font-normal">sats</em>
               </span>
               <span className="text-muted-foreground text-xs">
