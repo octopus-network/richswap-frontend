@@ -163,7 +163,7 @@ export function DepositForm({
             formatCoinAmount(poolData.coinBAmount, pool.coinB)
           )
         : undefined,
-    [poolData]
+    [poolData, pool]
   );
 
   const btcPrice = useCoinPrice(pool.coinA.id);
