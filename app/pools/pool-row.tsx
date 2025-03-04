@@ -76,6 +76,12 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
     [btcPrice, poolFee]
   );
 
+  const poolFeeInSats = useMemo(
+    () =>
+      poolFeeInBtc !== undefined ? poolFeeInBtc * Math.pow(10, 8) : undefined,
+    [poolFeeInBtc]
+  );
+
   const poolAddress = useMemo(() => {
     const { address } = getP2trAressAndScript(pool.key);
     return address;
@@ -162,10 +168,11 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
           )}
         </div>
         <div className="col-span-3">
-          {poolFee !== undefined && poolFeeInBtc !== undefined ? (
+          {poolFee !== undefined && poolFeeInSats !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
-                {formatNumber(poolFeeInBtc)} ₿
+                {formatNumber(poolFeeInSats)}{" "}
+                <em className="font-normal">sats</em>
               </span>
               <span className="text-muted-foreground text-xs">
                 ${formatNumber(poolFee)}

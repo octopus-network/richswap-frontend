@@ -46,6 +46,12 @@ export default function Pools() {
     [btcPrice, totalPoolsFee]
   );
 
+  const poolsFeeInSats = useMemo(
+    () =>
+      poolsFeeInBtc !== undefined ? poolsFeeInBtc * Math.pow(10, 8) : undefined,
+    [poolsFeeInBtc]
+  );
+
   return (
     <div className="md:pt-6 w-full flex flex-col items-center">
       <div className="w-full max-w-5xl">
@@ -53,7 +59,7 @@ export default function Pools() {
           <span className="text-3xl font-semibold">Pools</span>
           <div className="flex items-center gap-10">
             <div className="md:flex gap-6 hidden">
-              <div className="flex flex-col space-y-1">
+              <div className="flex flex-col space-y-0.5">
                 <span className="text-muted-foreground text-xs">TVL</span>
                 {poolsTvlInBtc ? (
                   <span className="font-semibold">
@@ -62,19 +68,75 @@ export default function Pools() {
                 ) : (
                   <Skeleton className="h-6 w-20" />
                 )}
+                {totalPoolsTvl ? (
+                  <span className="text-xs text-muted-foreground">
+                    ${formatNumber(totalPoolsTvl)}
+                  </span>
+                ) : (
+                  <Skeleton className="h-4 w-12" />
+                )}
               </div>
-              <div className="flex flex-col space-y-1">
+              <div className="flex flex-col space-y-0.5">
                 <span className="text-muted-foreground text-xs">Fee</span>
-                {poolsFeeInBtc ? (
+                {poolsFeeInSats ? (
                   <span className="font-semibold">
-                    {formatNumber(poolsFeeInBtc)} ₿
+                    {formatNumber(poolsFeeInSats)}{" "}
+                    <em className="font-normal">sats</em>
                   </span>
                 ) : (
                   <Skeleton className="h-6 w-20" />
                 )}
+                {totalPoolsFee ? (
+                  <span className="text-xs text-muted-foreground">
+                    ${formatNumber(totalPoolsFee)}
+                  </span>
+                ) : (
+                  <Skeleton className="h-4 w-12" />
+                )}
               </div>
             </div>
             <CreateButton />
+          </div>
+        </div>
+        <div className="mt-6 flex flex-col space-y-2 md:hidden p-4 border bg-secondary/40 rounded-xl">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">TVL</span>
+            <div className="flex flex-col space-y-0.5 items-end">
+              {poolsTvlInBtc ? (
+                <span className="font-semibold">
+                  {formatNumber(poolsTvlInBtc)} ₿
+                </span>
+              ) : (
+                <Skeleton className="h-6 w-20" />
+              )}
+              {totalPoolsTvl ? (
+                <span className="text-xs text-muted-foreground">
+                  ${formatNumber(totalPoolsTvl)}
+                </span>
+              ) : (
+                <Skeleton className="h-4 w-12" />
+              )}
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Fee</span>
+            <div className="flex flex-col space-y-0.5 items-end">
+              {poolsFeeInSats ? (
+                <span className="font-semibold">
+                  {formatNumber(poolsFeeInSats)}{" "}
+                  <em className="font-normal">sats</em>
+                </span>
+              ) : (
+                <Skeleton className="h-6 w-20" />
+              )}
+              {totalPoolsFee ? (
+                <span className="text-xs text-muted-foreground">
+                  ${formatNumber(totalPoolsFee)}
+                </span>
+              ) : (
+                <Skeleton className="h-4 w-12" />
+              )}
+            </div>
           </div>
         </div>
         <div className="mt-6 border rounded-xl">
