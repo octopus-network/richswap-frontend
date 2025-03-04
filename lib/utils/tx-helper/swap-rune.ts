@@ -1,9 +1,10 @@
 import { UnspentOutput } from "@/types";
 
 import { ToSignInput } from "@/types";
-import { UTXO_DUST } from "@/lib/constants";
+import { BITCOIN, UTXO_DUST } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
 
+import { InputCoin, OutputCoin } from "@/types";
 import { RuneId, Runestone, none, Edict } from "runelib";
 
 export function swapRuneTx({
@@ -75,8 +76,12 @@ export function swapRuneTx({
 
   const runestone = new Runestone(edicts, none(), none(), none());
 
+  const poolSpendUtxos = poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`);
+  const poolVouts: number[] = [];
+
   if (needChange) {
     tx.addOutput(poolAddress, poolBtcAmount + btcAmount);
+    poolVouts.push(0);
   }
 
   // send rune to user
@@ -84,17 +89,25 @@ export function swapRuneTx({
 
   if (!needChange) {
     tx.addOutput(poolAddress, poolBtcAmount + btcAmount);
+    poolVouts.push(1);
   }
 
   // OP_RETURN
   tx.addScriptOutput(runestone.encipher(), BigInt(0));
 
   const _toSignInputs = tx.addSufficientUtxosForFee(btcUtxos, true);
+
   toSignInputs.push(..._toSignInputs);
 
   const inputs = tx.getInputs();
 
   const psbt = tx.toPsbt();
+
+  //@ts-expect-error: todo
+  const unsignedTx = psbt.__CACHE.__TX;
+  const txid = unsignedTx.getId();
+
+  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
   const toSpendUtxos = inputs
     .filter(
@@ -103,5 +116,34 @@ export function swapRuneTx({
     )
     .map((input) => input.utxo);
 
-  return { psbt, toSignInputs, toSpendUtxos };
+  const inputCoins: InputCoin[] = [
+    {
+      from: paymentAddress,
+      coin: {
+        id: BITCOIN.id,
+        value: btcAmount,
+      },
+    },
+  ];
+
+  const outputCoins: OutputCoin[] = [
+    {
+      to: address,
+      coin: {
+        id: runeid,
+        value: runeAmount,
+      },
+    },
+  ];
+
+  return {
+    psbt,
+    toSignInputs,
+    toSpendUtxos,
+    poolSpendUtxos,
+    poolReceiveUtxos,
+    txid,
+    inputCoins,
+    outputCoins,
+  };
 }

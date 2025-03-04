@@ -1,7 +1,4 @@
-export type CoinBalance = {
-  id: string;
-  value: bigint;
-};
+import { CoinBalance } from "./coin";
 
 export type InputCoin = {
   coin: CoinBalance;
@@ -19,7 +16,7 @@ export type Intention = {
   action: string;
   exchange_id: string;
   pool_utxo_spend: string[];
-  nonce: string;
+  nonce: bigint;
   pool_utxo_receive: string[];
   pool_address: string;
 };

@@ -9,6 +9,7 @@ import {
   PoolInfo,
   AddressType,
   PoolData,
+  PoolOverview,
 } from "@/types";
 
 import { BITCOIN } from "../constants";
@@ -23,40 +24,20 @@ export class Exchange {
   public static async getPool(inputCoin: Coin, outputCoin: Coin) {
     const poolList = await this.getPoolList();
 
-    const runeId =
-      inputCoin.id === BITCOIN.id ? outputCoin.name : inputCoin.name;
+    const runeId = inputCoin.id === BITCOIN.id ? outputCoin.id : inputCoin.id;
 
-    const pool = poolList?.find((p) => p.name === runeId);
+    const pool = poolList?.find((p) => p.coin_reserved[0].id === runeId);
 
     return pool;
   }
 
-  public static async getPoolList(): Promise<
-    {
-      key: string;
-      name: string;
-      btcReserved: string;
-      address: string;
-      nonce: string;
-    }[]
-  > {
+  public static async getPoolList(): Promise<PoolOverview[]> {
     const res = (await actor.get_pool_list({
       from: [],
       limit: 20,
-    })) as {
-      id: string;
-      name: string;
-      btc_reserved: bigint;
-      address: string;
-      nonce: bigint;
-    }[];
+    })) as PoolOverview[];
 
-    return res.map(({ id, btc_reserved, nonce, ...rest }) => ({
-      ...rest,
-      key: id,
-      nonce: nonce.toString(),
-      btcReserved: btc_reserved.toString(),
-    }));
+    return res;
   }
 
   public static async createPool(coinId: string) {
@@ -81,7 +62,7 @@ export class Exchange {
         attributes: string;
         btc_reserved: bigint;
         coin_reserved: [{ id: string; value: bigint }];
-        id: string;
+        key: string;
         name: string;
         nonce: bigint;
         utxos: [
@@ -98,6 +79,8 @@ export class Exchange {
     if (res?.length) {
       const data = res[0];
 
+      const attributes = JSON.parse(data.attributes);
+
       const coinReserved = data.coin_reserved[0];
 
       const utxo = data.utxos[0];
@@ -105,12 +88,12 @@ export class Exchange {
       const incomes = BigInt(0);
 
       return {
-        key: data.id,
+        key: data.key,
         coinAId: BITCOIN.id,
         coinBId: coinReserved.id,
         coinAAmount: ((utxo.sats ?? BigInt(0)) - incomes).toString(),
         coinBAmount: utxo.maybe_rune[0].value.toString(),
-        incomes: incomes.toString(),
+        incomes: attributes.incomes.toString(),
       };
     }
   }

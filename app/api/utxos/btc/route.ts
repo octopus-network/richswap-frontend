@@ -24,10 +24,10 @@ export async function GET(req: NextRequest) {
     const { blocks } = await openApi.getBlockchainInfo();
 
     const utxos = await openApi.getAddressUtxoData(address).then((res) => {
-      console.log(blocks, res);
       return res.utxo
         .filter(
-          ({ height, inscriptions }) => height <= blocks && !inscriptions.length
+          ({ height, inscriptions, satoshi }) =>
+            height <= blocks && !inscriptions.length && satoshi !== 546
         )
         .map((utxo) => ({
           pubkey,

@@ -1,4 +1,5 @@
 export const idlFactory = ({ IDL }: { IDL: any }) => {
+  const DeployArgs = IDL.Variant({ Upgrade: IDL.Null, Init: IDL.Null });
   const Result = IDL.Variant({ Ok: IDL.Null, Err: IDL.Text });
   const FromUserRecord = IDL.Record({ user_id: IDL.Principal });
   const FromCanisterRecord = IDL.Record({
@@ -187,6 +188,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
       []
     ),
     clean_tx_queue_for_pools: IDL.Func([], [Result], []),
+    clear_exchange_pools: IDL.Func([], [Result], []),
     clear_finalized_txs: IDL.Func([], [Result], []),
     clear_last_block: IDL.Func([], [Result], []),
     get_canister_info: IDL.Func([IDL.Nat64], [Result_1], []),

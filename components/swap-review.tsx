@@ -3,6 +3,8 @@ import { ArrowDown, TriangleAlert } from "lucide-react";
 import {
   AddressType,
   Coin,
+  InputCoin,
+  OutputCoin,
   TransactionStatus,
   TransactionType,
   UnspentOutput,
@@ -68,8 +70,13 @@ export function SwapReview({
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [txid, setTxid] = useState("");
 
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
+  const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
+  const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
+  const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
+  const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -152,6 +159,11 @@ export function SwapReview({
 
         setPsbt(tx.psbt);
         setToSpendUtxos(tx.toSpendUtxos);
+        setPoolSpendUtxos(tx.poolSpendUtxos);
+        setPoolReceiveUtxos(tx.poolReceiveUtxos);
+        setTxid(tx.txid);
+        setInputCoins(tx.inputCoins);
+        setOutputCoins(tx.outputCoins);
       } catch (err) {
         console.log(err);
       }
@@ -231,13 +243,23 @@ export function SwapReview({
       !coinB ||
       !poolUtxos?.length ||
       !poolKey ||
-      !toSpendUtxos.length
+      !toSpendUtxos.length ||
+      !poolSpendUtxos.length ||
+      !poolReceiveUtxos.length ||
+      !txid ||
+      !inputCoins.length ||
+      !outputCoins.length
     ) {
       return;
     }
 
     setIsSubmiting(true);
     try {
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+      if (!poolAddress) {
+        return;
+      }
+
       const psbtBase64 = psbt.toBase64();
       setStep(1);
 
@@ -252,47 +274,29 @@ export function SwapReview({
 
       setStep(2);
 
-      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
+      console.log("poolSpendUtxos", poolSpendUtxos);
+      console.log("poolReceiveUtxos", poolReceiveUtxos);
+      console.log("inputCoins", inputCoins);
+      console.log("outputCoins", outputCoins);
 
-      const tx = psbt.extractTransaction();
-      const txid = tx.getId();
-
-      console.log(txid);
-
-      // const txid = await Orchestrator.invoke({
-      //   instruction_set: {
-      //     steps: [
-      //       {
-      //         method: "swap",
-      //         exchange_id: EXCHANGE_ID,
-      //         input_coins: [
-      //           {
-      //             coin_balance: {
-      //               id: coinA.id,
-      //               value: coinAAmountBigInt,
-      //             },
-      //             owner_address:
-      //               coinA.id === BITCOIN.id ? paymentAddress : address,
-      //           },
-      //         ],
-      //         output_coins: [
-      //           {
-      //             coin_balance: {
-      //               id: coinB.id,
-      //               value: coinBAmountBigInt,
-      //             },
-      //             owner_address:
-      //               coinB.id === BITCOIN.id ? paymentAddress : address,
-      //           },
-      //         ],
-      //         pool_key: [poolKey],
-      //         nonce: [BigInt(nonce)],
-      //       },
-      //     ],
-      //   },
-      //   psbt_hex: res.signedPsbtHex,
-      // });
+      await Orchestrator.invoke({
+        intention_set: {
+          initiator_address: paymentAddress,
+          intentions: [
+            {
+              action: "swap",
+              exchange_id: EXCHANGE_ID,
+              input_coins: inputCoins,
+              pool_utxo_spend: poolSpendUtxos,
+              pool_utxo_receive: poolReceiveUtxos,
+              output_coins: outputCoins,
+              pool_address: poolAddress,
+              nonce: BigInt(nonce),
+            },
+          ],
+        },
+        psbt_hex: res.signedPsbtHex,
+      });
 
       addTransaction({
         txid,

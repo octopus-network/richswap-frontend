@@ -1,4 +1,5 @@
 import axios from "axios";
+import { MEMPOOL_URL } from "./constants";
 
 const unisatApi = axios.create({
   baseURL: `https://wallet-api.unisat.io/v5`,
@@ -26,7 +27,7 @@ const unisatQueryApi = axios.create({
 });
 
 const mempoolApi = axios.create({
-  baseURL: `https://mempool.space/api`,
+  baseURL: `${MEMPOOL_URL}/api`,
   headers: {
     "Content-Type": "application/json",
   },

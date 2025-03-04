@@ -40,7 +40,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     vout: IDL.Nat32,
   });
   const PoolInfo = IDL.Record({
-    id: IDL.Text,
+    key: IDL.Text,
     name: IDL.Text,
     btc_reserved: IDL.Nat64,
     coin_reserved: IDL.Vec(CoinBalance),
@@ -54,9 +54,10 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     limit: IDL.Nat32,
   });
   const PoolOverview = IDL.Record({
-    id: IDL.Text,
+    key: IDL.Text,
     name: IDL.Text,
     btc_reserved: IDL.Nat64,
+    coin_reserved: IDL.Vec(CoinBalance),
     address: IDL.Text,
     nonce: IDL.Nat64,
   });
@@ -133,7 +134,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     pre_extract_fee: IDL.Func([IDL.Text], [Result_3], ["query"]),
     pre_swap: IDL.Func([IDL.Text, CoinBalance], [Result_4], ["query"]),
     pre_withdraw_liquidity: IDL.Func(
-      [IDL.Text, IDL.Text, CoinBalance],
+      [IDL.Text, IDL.Text, IDL.Nat],
       [Result_5],
       ["query"]
     ),

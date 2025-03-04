@@ -1,4 +1,4 @@
-import { Coin } from "./coin";
+import { Coin, CoinBalance, CoinWithBalance } from "./coin";
 
 import { UnspentOutput } from "./utxo";
 
@@ -49,10 +49,17 @@ export type PoolInfo = {
   key: string;
   address: string;
   name: string;
-  coinA: Coin;
-  coinB: Coin;
-  btcReserved: string;
-  incomes: string;
+  coinA: CoinWithBalance;
+  coinB: CoinWithBalance;
+};
+
+export type PoolOverview = {
+  key: string;
+  name: string;
+  btc_reserved: bigint;
+  coin_reserved: CoinBalance[];
+  address: string;
+  nonce: bigint;
 };
 
 export interface Position {

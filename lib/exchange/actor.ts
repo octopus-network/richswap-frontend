@@ -1,6 +1,6 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
 import { ICP_HOST } from "../constants";
-import { idlFactory } from "../dids/rich-swap.did";
+import { idlFactory } from "../dids/richswap.did";
 
 const EXCHANGE_CANISTER_ID = process.env.NEXT_PUBLIC_EXCHANGE_CANISTER_ID!;
 
