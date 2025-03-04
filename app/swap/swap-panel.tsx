@@ -115,10 +115,10 @@ export function SwapPanel() {
     if (!coinA || !coinB) {
       return;
     }
-    Exchange.getPoolKey(coinA.id, coinB.id)
-      .then((poolKey) => {
-        if (poolKey) {
-          return Exchange.getPoolData(poolKey);
+    Exchange.getPool(coinA, coinB)
+      .then((pool) => {
+        if (pool) {
+          return Exchange.getPoolData(pool.address);
         }
         return undefined;
       })

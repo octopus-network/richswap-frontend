@@ -15,15 +15,4 @@ export const UNKNOWN_COIN: Coin = {
   decimals: 8,
 };
 
-export const COIN_LIST: Coin[] = [
-  BITCOIN,
-  {
-    id: "840000:846",
-    symbol: "RICH",
-    icon: "/static/icons/rich.png",
-    name: "HOPE•YOU•GET•RICH",
-    runeId: "HOPEYOUGETRICH",
-    decimals: 2,
-    number: 431,
-  },
-];
+export const COIN_LIST: Coin[] = [BITCOIN];

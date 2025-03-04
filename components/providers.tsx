@@ -1,9 +1,11 @@
 "use client";
 
 import { PropsWithChildren, useEffect, useState } from "react";
-import { LaserEyesProvider } from "@omnisat/lasereyes";
+import { LaserEyesProvider, NetworkType } from "@omnisat/lasereyes";
 import { Topbar } from "./topbar";
 import { Loader2 } from "lucide-react";
+
+const NETWORK = process.env.NEXT_PUBLIC_NETWORK!;
 
 export function Providers({ children }: PropsWithChildren) {
   const [isMpunted, setIsMounted] = useState(false);
@@ -24,7 +26,7 @@ export function Providers({ children }: PropsWithChildren) {
   ) : (
     <LaserEyesProvider
       config={{
-        network: "mainnet",
+        network: NETWORK as NetworkType,
       }}
     >
       {children}

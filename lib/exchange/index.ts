@@ -7,9 +7,10 @@ import {
   DepositQuote,
   UnspentOutput,
   PoolInfo,
-  PoolData,
   AddressType,
+  PoolData,
 } from "@/types";
+
 import { BITCOIN } from "../constants";
 import {
   getP2trAressAndScript,
@@ -19,57 +20,43 @@ import {
 import Decimal from "decimal.js";
 
 export class Exchange {
-  public static async getPoolKey(inputCoinId: string, outputCoinId: string) {
+  public static async getPool(inputCoin: Coin, outputCoin: Coin) {
     const poolList = await this.getPoolList();
 
-    const runeId = inputCoinId === BITCOIN.id ? outputCoinId : inputCoinId;
+    const runeId =
+      inputCoin.id === BITCOIN.id ? outputCoin.name : inputCoin.name;
 
-    const poolKey = poolList?.find((p) => p.coinBId === runeId)?.key;
+    const pool = poolList?.find((p) => p.name === runeId);
 
-    return poolKey;
+    return pool;
   }
 
   public static async getPoolList(): Promise<
     {
       key: string;
-      coinAId: string;
-      coinBId: string;
-      coinAAmount: string;
       name: string;
-      incomes: string;
-      coinBAmount: string;
+      btcReserved: string;
+      address: string;
+      nonce: string;
     }[]
   > {
-    const tmpRes = (await actor.list_pools(
-      ["5c9eaaf2e8821d8810c625f5039ed69db13f3e6fb2ed4f3c9194e212bfc88428"],
-      20
-    )) as {
+    const res = (await actor.get_pool_list({
+      from: [],
+      limit: 20,
+    })) as {
       id: string;
       name: string;
+      btc_reserved: bigint;
+      address: string;
+      nonce: bigint;
     }[];
 
-    const res = [
-      {
-        id: "5c9eaaf2e8821d8810c625f5039ed69db13f3e6fb2ed4f3c9194e212bfc88428",
-        name: "HOPE•YOU•GET•RICH",
-      },
-    ].concat(tmpRes);
-
-    const promises = res.map(({ id }) => this.getPoolData(id));
-
-    const poolInfos = await Promise.all(promises);
-
-    const poolList = [];
-
-    for (let i = 0; i < poolInfos.length; i++) {
-      const info = poolInfos[i];
-      const { name } = res[i];
-      if (info) {
-        poolList.push({ ...info, name });
-      }
-    }
-
-    return poolList;
+    return res.map(({ id, btc_reserved, nonce, ...rest }) => ({
+      ...rest,
+      key: id,
+      nonce: nonce.toString(),
+      btcReserved: btc_reserved.toString(),
+    }));
   }
 
   public static async createPool(coinId: string) {
@@ -84,25 +71,47 @@ export class Exchange {
   }
 
   public static async getPoolData(
-    poolKey: string
+    address: string
   ): Promise<PoolData | undefined> {
-    const res: any = await actor.find_pool(poolKey);
+    const res = (await actor.get_pool_info({
+      pool_address: address,
+    })) as [
+      {
+        address: string;
+        attributes: string;
+        btc_reserved: bigint;
+        coin_reserved: [{ id: string; value: bigint }];
+        id: string;
+        name: string;
+        nonce: bigint;
+        utxos: [
+          {
+            sats: bigint;
+            txid: string;
+            vout: number;
+            maybe_rune: [{ id: string; value: bigint }];
+          }
+        ];
+      }
+    ];
+
+    console.log("pool info", res);
 
     if (res?.length) {
       const data = res[0];
-      const meta = data.meta;
-      const state = data.state[0];
 
-      const { utxo } = state ?? { utxo: [], incomes: BigInt(0) };
+      const coinReserved = data.coin_reserved[0];
 
-      const incomes = state?.incomes ?? BigInt(0);
+      const utxo = data.utxos[0];
+
+      const incomes = BigInt(0);
 
       return {
-        key: poolKey,
+        key: "",
         coinAId: BITCOIN.id,
-        coinBId: meta.id,
-        coinAAmount: ((utxo[0]?.satoshis ?? BigInt(0)) - incomes).toString(),
-        coinBAmount: utxo[0]?.balance.value.toString() ?? "0",
+        coinBId: coinReserved.id,
+        coinAAmount: ((utxo.sats ?? BigInt(0)) - incomes).toString(),
+        coinBAmount: utxo.maybe_rune[0].value.toString(),
         incomes: incomes.toString(),
       };
     }
@@ -110,9 +119,8 @@ export class Exchange {
 
   public static async getPosition(pool: PoolInfo, userAddress: string) {
     try {
-      const res = await actor
-        .get_lp(pool.key, userAddress)
-        .then((data: any) => {
+      const [res, poolData] = await Promise.all([
+        actor.get_lp(pool.key, userAddress).then((data: any) => {
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -120,7 +128,13 @@ export class Exchange {
               data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
             );
           }
-        });
+        }),
+        Exchange.getPoolData(pool.address),
+      ]);
+
+      if (!poolData) {
+        return null;
+      }
 
       const { btc_supply, sqrt_k, user_share } = res as {
         btc_supply: bigint;
@@ -137,11 +151,11 @@ export class Exchange {
       );
 
       const coinAAmount = formatCoinAmount(
-        userSharePercentageDecimal.mul(pool.coinAAmount).toFixed(0),
+        userSharePercentageDecimal.mul(poolData.coinAAmount).toFixed(0),
         pool.coinA
       );
       const coinBAmount = formatCoinAmount(
-        userSharePercentageDecimal.mul(pool.coinBAmount).toFixed(0),
+        userSharePercentageDecimal.mul(poolData.coinBAmount).toFixed(0),
         pool.coinB
       );
 
@@ -329,9 +343,9 @@ export class Exchange {
       return undefined;
     }
 
-    const poolKey = await Exchange.getPoolKey(inputCoin.id, outputCoin.id);
+    const pool = await Exchange.getPool(inputCoin, outputCoin);
 
-    if (!poolKey) {
+    if (!pool) {
       return {
         state: SwapState.NO_POOL,
         inputAmount,
@@ -340,7 +354,7 @@ export class Exchange {
 
     try {
       const { output, input, nonce } = await actor
-        .pre_swap(poolKey, {
+        .pre_swap(pool.key, {
           id: inputCoin.id,
           value: BigInt(inputAmount),
         })
@@ -357,7 +371,7 @@ export class Exchange {
 
       const { txid, vout, satoshis, balance } = input;
 
-      const { output: outputScript, address } = getP2trAressAndScript(poolKey);
+      const { output: outputScript, address } = getP2trAressAndScript(pool.key);
 
       const utxo: UnspentOutput = {
         txid,
@@ -375,7 +389,7 @@ export class Exchange {
         ],
       };
 
-      const poolData = await Exchange.getPoolData(poolKey);
+      const poolData = await Exchange.getPoolData(pool.address);
 
       if (!poolData) {
         throw new Error("Invalid pool");

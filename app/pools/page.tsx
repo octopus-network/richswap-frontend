@@ -46,6 +46,12 @@ export default function Pools() {
     [btcPrice, totalPoolsFee]
   );
 
+  const poolsFeeInSats = useMemo(
+    () =>
+      poolsFeeInBtc !== undefined ? poolsFeeInBtc * Math.pow(10, 8) : undefined,
+    [poolsFeeInBtc]
+  );
+
   return (
     <div className="md:pt-6 w-full flex flex-col items-center">
       <div className="w-full max-w-5xl">
@@ -55,7 +61,7 @@ export default function Pools() {
             <div className="md:flex gap-6 hidden">
               <div className="flex flex-col space-y-1">
                 <span className="text-muted-foreground text-xs">TVL</span>
-                {poolsTvlInBtc ? (
+                {poolsTvlInBtc !== undefined ? (
                   <span className="font-semibold">
                     {formatNumber(poolsTvlInBtc)} ₿
                   </span>
@@ -65,9 +71,10 @@ export default function Pools() {
               </div>
               <div className="flex flex-col space-y-1">
                 <span className="text-muted-foreground text-xs">Fee</span>
-                {poolsFeeInBtc ? (
+                {poolsFeeInSats !== undefined ? (
                   <span className="font-semibold">
-                    {formatNumber(poolsFeeInBtc)} ₿
+                    {formatNumber(poolsFeeInSats)}{" "}
+                    <em className="font-normal">sats</em>
                   </span>
                 ) : (
                   <Skeleton className="h-6 w-20" />

@@ -98,6 +98,37 @@ export class OpenApi {
     return response;
   }
 
+  async getBlockchainInfo() {
+    const response = await this.axios.get<
+      null,
+      {
+        blocks: number;
+      }
+    >(`/v1/indexer/blockchain/info`);
+
+    return response;
+  }
+
+  async getRunesInfoList(rune: string) {
+    const response = await this.axios.get<
+      null,
+      {
+        detail: {
+          runeid: string;
+          rune: string;
+          spacedRune: string;
+          symbol: string;
+          divisibility: number;
+          etching: string;
+          number: number;
+        }[];
+      }
+    >(
+      `/v1/indexer/runes/info-list?rune=${rune}&sort=transactions&start=0&limit=50`
+    );
+    return response;
+  }
+
   async getAddressRunesUtxo(address: string, runeid: string) {
     const response = await this.axios.get<
       null,

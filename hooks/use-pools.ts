@@ -42,9 +42,9 @@ export function usePoolsTvl() {
     if (!prices) {
       return tmpObj;
     }
-    poolsList.forEach(({ coinA, coinAAmount, key }) => {
+    poolsList.forEach(({ coinA, btcReserved, key }) => {
       const coinAPrice = prices?.[coinA.id] ?? 0;
-      const coinAValue = new Decimal(formatCoinAmount(coinAAmount, coinA)).mul(
+      const coinAValue = new Decimal(formatCoinAmount(btcReserved, coinA)).mul(
         coinAPrice
       );
       tmpObj[key] = coinAValue.mul(2).toNumber();

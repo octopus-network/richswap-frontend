@@ -3,6 +3,7 @@ import { getAddressType } from "@/lib/utils";
 
 import { OpenApi } from "@/lib/open-api";
 
+const UNISAT_API = process.env.UNISAT_API!;
 const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
 
 export async function GET(req: NextRequest) {
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
     }
 
     const openapi = new OpenApi({
-      baseUrl: "https://open-api.unisat.io",
+      baseUrl: UNISAT_API,
       apiKey: UNISAT_API_KEY,
     });
 

@@ -47,11 +47,11 @@ export type PoolData = {
 
 export type PoolInfo = {
   key: string;
+  address: string;
   name: string;
   coinA: Coin;
   coinB: Coin;
-  coinAAmount: string;
-  coinBAmount: string;
+  btcReserved: string;
   incomes: string;
 };
 
