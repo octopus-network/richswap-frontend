@@ -5,6 +5,8 @@ import {
   TransactionStatus,
   TransactionType,
   UnspentOutput,
+  InputCoin,
+  OutputCoin,
 } from "@/types";
 
 import { formatNumber, withdrawTx } from "@/lib/utils";
@@ -26,7 +28,6 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { parseCoinAmount } from "@/lib/utils";
 
-import { BITCOIN } from "@/lib/constants";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
@@ -62,7 +63,13 @@ export function WithdrawReview({
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [txid, setTxid] = useState("");
+
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
+  const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
+  const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
+  const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
+  const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -121,7 +128,13 @@ export function WithdrawReview({
       });
 
       setPsbt(tx.psbt);
+
       setToSpendUtxos(tx.toSpendUtxos);
+      setPoolSpendUtxos(tx.poolSpendUtxos);
+      setPoolReceiveUtxos(tx.poolReceiveUtxos);
+      setTxid(tx.txid);
+      setInputCoins(tx.inputCoins);
+      setOutputCoins(tx.outputCoins);
     } catch (err) {
       console.log(err);
     }
@@ -145,6 +158,12 @@ export function WithdrawReview({
 
     try {
       const psbtBase64 = psbt.toBase64();
+
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+      if (!poolAddress) {
+        return;
+      }
+
       setStep(1);
 
       const signedRes = await signPsbt(psbtBase64);
@@ -157,34 +176,19 @@ export function WithdrawReview({
 
       setStep(2);
 
-      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
-
-      const txid = await Orchestrator.invoke({
-        instruction_set: {
-          steps: [
+      await Orchestrator.invoke({
+        intention_set: {
+          initiator_address: paymentAddress,
+          intentions: [
             {
-              method: "withdraw_liquidity",
+              action: "withdraw_liquidity",
               exchange_id: EXCHANGE_ID,
-              input_coins: [],
-              output_coins: [
-                {
-                  coin_balance: {
-                    id: BITCOIN.id,
-                    value: coinAAmountBigInt,
-                  },
-                  owner_address: paymentAddress,
-                },
-                {
-                  coin_balance: {
-                    id: coinB.id,
-                    value: coinBAmountBigInt,
-                  },
-                  owner_address: address,
-                },
-              ],
-              pool_key: [poolKey],
-              nonce: [BigInt(nonce)],
+              input_coins: inputCoins,
+              pool_utxo_spend: poolSpendUtxos,
+              pool_utxo_receive: poolReceiveUtxos,
+              output_coins: outputCoins,
+              pool_address: poolAddress,
+              nonce: BigInt(nonce),
             },
           ],
         },

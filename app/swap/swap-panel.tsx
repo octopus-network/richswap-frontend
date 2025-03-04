@@ -106,7 +106,7 @@ export function SwapPanel() {
 
     if (!_coinA && !_coinB) {
       _coinA = BITCOIN;
-      // _coinB = COIN_LIST[1];
+      _coinB = COIN_LIST[1];
     }
     onUpdateCoins(_coinA, _coinB);
   }, [onUpdateCoins, coins]);

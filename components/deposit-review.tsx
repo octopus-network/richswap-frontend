@@ -219,14 +219,7 @@ export function DepositReview({
 
       setStep(2);
 
-      let poolRuneAmount = BigInt(0);
-
-      poolUtxos.forEach((utxo) => {
-        const rune = utxo.runes.find((rune) => rune.id === coinB.id);
-        poolRuneAmount += BigInt(rune!.amount);
-      });
-
-      const txid = await Orchestrator.invoke({
+      await Orchestrator.invoke({
         intention_set: {
           initiator_address: paymentAddress,
           intentions: [

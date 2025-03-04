@@ -26,7 +26,7 @@ export async function GET() {
     );
 
     for (let i = 0; i < res.length; i++) {
-      const { name, address, btcReserved, key } = res[i];
+      const { name, address, btc_reserved, coin_reserved, key } = res[i];
 
       const coinA = BITCOIN;
       const { detail: coinBRes } = coinRes[i];
@@ -58,10 +58,8 @@ export async function GET() {
         key,
         address,
         name,
-        btcReserved,
-        coinA,
-        coinB,
-        incomes: "1000",
+        coinA: { ...coinA, balance: btc_reserved.toString() },
+        coinB: { ...coinB, balance: coin_reserved[0].value.toString() },
       });
     }
 

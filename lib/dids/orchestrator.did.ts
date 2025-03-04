@@ -1,5 +1,4 @@
 export const idlFactory = ({ IDL }: { IDL: any }) => {
-  const DeployArgs = IDL.Variant({ Upgrade: IDL.Null, Init: IDL.Null });
   const Result = IDL.Variant({ Ok: IDL.Null, Err: IDL.Text });
   const FromUserRecord = IDL.Record({ user_id: IDL.Principal });
   const FromCanisterRecord = IDL.Record({
