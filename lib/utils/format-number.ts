@@ -67,6 +67,7 @@ function getFormatterRule(input: number) {
 
 export function formatNumber(
   input: number | string | undefined,
+  noDecimals = false,
   placeholder = "-"
 ): string {
   const locale = "en-US";
@@ -87,7 +88,12 @@ export function formatNumber(
 
   if (!hardCodedInput) {
     // eslint-disable-next-line
-    return new Intl.NumberFormat(locale, formatterOptions as any).format(input);
+    return new Intl.NumberFormat(
+      locale,
+      noDecimals
+        ? { notation: "compact", maximumFractionDigits: 0 }
+        : (formatterOptions as any)
+    ).format(input);
   }
 
   const { input: hardCodedInputValue, prefix } = hardCodedInput;
@@ -96,9 +102,12 @@ export function formatNumber(
   return (
     (prefix ?? "") +
     // eslint-disable-next-line
-    new Intl.NumberFormat(locale, formatterOptions as any).format(
-      hardCodedInputValue
-    )
+    new Intl.NumberFormat(
+      locale,
+      noDecimals
+        ? { notation: "compact", maximumFractionDigits: 0 }
+        : (formatterOptions as any)
+    ).format(hardCodedInputValue)
   );
 }
 

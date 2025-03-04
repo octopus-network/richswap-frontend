@@ -149,7 +149,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                   <ExternalLink className="size-3 text-muted-foreground group-hover:text-foreground" />
                 </div>
                 <span className="text-muted-foreground text-xs">
-                  ${formatNumber(poolTvl)}
+                  ${formatNumber(poolTvl, true)}
                 </span>
               </div>
               <div className="inline-flex sm:hidden flex-col space-y-1">
@@ -159,7 +159,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                   </span>
                 </div>
                 <span className="text-muted-foreground text-xs">
-                  ${formatNumber(poolTvl)}
+                  ${formatNumber(poolTvl, true)}
                 </span>
               </div>
             </>
@@ -171,11 +171,11 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
           {poolFee !== undefined && poolFeeInSats !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
-                {formatNumber(poolFeeInSats)}{" "}
+                {formatNumber(poolFeeInSats, true)}{" "}
                 <em className="font-normal">sats</em>
               </span>
               <span className="text-muted-foreground text-xs">
-                ${formatNumber(poolFee)}
+                ${formatNumber(poolFee, true)}
               </span>
             </div>
           ) : (
@@ -194,7 +194,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                   </span>
                   {positionValue ? (
                     <span className="text-muted-foreground text-xs">
-                      ${formatNumber(positionValue ?? "0")}
+                      ${formatNumber(positionValue ?? "0", true)}
                     </span>
                   ) : null}
                 </>
