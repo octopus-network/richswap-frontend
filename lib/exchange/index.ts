@@ -90,9 +90,9 @@ export class Exchange {
       return {
         key: data.key,
         coinAId: BITCOIN.id,
-        coinBId: coinReserved.id,
-        coinAAmount: ((utxo.sats ?? BigInt(0)) - incomes).toString(),
-        coinBAmount: utxo.maybe_rune[0].value.toString(),
+        coinBId: coinReserved?.id,
+        coinAAmount: ((utxo?.sats ?? BigInt(0)) - incomes).toString(),
+        coinBAmount: utxo?.maybe_rune[0].value.toString(),
         incomes: attributes.incomes.toString(),
       };
     }
