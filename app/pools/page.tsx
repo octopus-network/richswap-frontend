@@ -7,7 +7,9 @@ import { useCoinPrice } from "@/hooks/use-prices";
 import { BITCOIN } from "@/lib/constants";
 import { PoolRow } from "./pool-row";
 import { formatNumber } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 import { useMemo } from "react";
+import { Waves, Coins, ArrowLeftRight } from "lucide-react";
 
 export default function Pools() {
   const poolList = usePoolList();
@@ -57,50 +59,73 @@ export default function Pools() {
       <div className="w-full max-w-5xl">
         <div className="flex justify-between items-center">
           <span className="text-3xl font-semibold">Pools</span>
-          <div className="flex items-center gap-10">
-            <div className="md:flex gap-6 hidden">
-              <div className="flex flex-col space-y-0.5">
-                <span className="text-muted-foreground text-xs">TVL</span>
-                {poolsTvlInBtc ? (
-                  <span className="font-semibold">
-                    {formatNumber(poolsTvlInBtc)} ₿
-                  </span>
-                ) : (
-                  <Skeleton className="h-6 w-20" />
-                )}
-                {totalPoolsTvl ? (
-                  <span className="text-xs text-muted-foreground">
-                    ${formatNumber(totalPoolsTvl, true)}
-                  </span>
-                ) : (
-                  <Skeleton className="h-4 w-12" />
-                )}
-              </div>
-              <div className="flex flex-col space-y-0.5">
-                <span className="text-muted-foreground text-xs">Fee</span>
-                {poolsFeeInSats ? (
-                  <span className="font-semibold">
-                    {formatNumber(poolsFeeInSats, true)}{" "}
-                    <em className="font-normal">sats</em>
-                  </span>
-                ) : (
-                  <Skeleton className="h-6 w-20" />
-                )}
-                {totalPoolsFee ? (
-                  <span className="text-xs text-muted-foreground">
-                    ${formatNumber(totalPoolsFee, true)}
-                  </span>
-                ) : (
-                  <Skeleton className="h-4 w-12" />
-                )}
-              </div>
+          <CreateButton />
+        </div>
+        <div className="hidden md:grid mt-6 md:grid-cols-3 gap-4">
+          <div className="py-3 px-4 border bg-secondary/50 rounded-xl items-center flex">
+            <div className="size-8 rounded-xl flex items-center justify-center bg-green-400/10">
+              <Waves className="size-4 text-green-400" />
             </div>
-            <CreateButton />
+            <div className="flex flex-col space-y-0.5 ml-4">
+              <span className="text-muted-foreground text-xs">TVL</span>
+              {poolsTvlInBtc ? (
+                <span className="font-semibold text-xl">
+                  {formatNumber(poolsTvlInBtc)} ₿
+                </span>
+              ) : (
+                <Skeleton className="h-6 w-20" />
+              )}
+              {totalPoolsTvl ? (
+                <span className="text-xs text-muted-foreground">
+                  ${formatNumber(totalPoolsTvl, true)}
+                </span>
+              ) : (
+                <Skeleton className="h-4 w-12" />
+              )}
+            </div>
+          </div>
+          <div className="py-3 px-4 border bg-secondary/50 rounded-xl items-center flex">
+            <div className="size-8 rounded-xl flex items-center justify-center bg-purple-400/10">
+              <Coins className="size-4 text-purple-400" />
+            </div>
+            <div className="flex flex-col space-y-0.5 ml-4">
+              <span className="text-muted-foreground text-xs">Fee</span>
+              {poolsFeeInSats ? (
+                <span className="font-semibold text-xl">
+                  {formatNumber(poolsFeeInSats, true)}{" "}
+                  <em className="font-normal">sats</em>
+                </span>
+              ) : (
+                <Skeleton className="h-6 w-20" />
+              )}
+              {totalPoolsFee ? (
+                <span className="text-xs text-muted-foreground">
+                  ${formatNumber(totalPoolsFee, true)}
+                </span>
+              ) : (
+                <Skeleton className="h-4 w-12" />
+              )}
+            </div>
+          </div>
+          <div className="py-3 px-4 border bg-secondary/50 rounded-xl items-center flex">
+            <div className="size-8 rounded-xl flex items-center justify-center bg-primary/10">
+              <ArrowLeftRight className="size-4 text-primary" />
+            </div>
+            <div className="flex flex-col space-y-0.5 ml-4">
+              <span className="text-muted-foreground text-xs">Trades</span>
+              {poolsFeeInSats ? (
+                <span className="font-semibold text-xl">
+                  {formatNumber(0, true)}{" "}
+                </span>
+              ) : (
+                <Skeleton className="h-6 w-20" />
+              )}
+            </div>
           </div>
         </div>
-        <div className="mt-6 flex flex-col space-y-2 md:hidden p-4 border bg-secondary/40 rounded-xl">
+        <div className="mt-6 flex flex-col space-y-2 md:hidden px-4 py-3 border bg-secondary/50 rounded-xl">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">TVL</span>
+            <span className="text-muted-foreground text-sm">TVL</span>
             <div className="flex flex-col space-y-0.5 items-end">
               {poolsTvlInBtc ? (
                 <span className="font-semibold">
@@ -118,8 +143,9 @@ export default function Pools() {
               )}
             </div>
           </div>
+          <Separator />
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Fee</span>
+            <span className="text-muted-foreground text-sm">Fee</span>
             <div className="flex flex-col space-y-0.5 items-end">
               {poolsFeeInSats ? (
                 <span className="font-semibold">
@@ -138,9 +164,20 @@ export default function Pools() {
               )}
             </div>
           </div>
+          <Separator />
+          <div className="flex justify-between">
+            <span className="text-muted-foreground text-sm">Trades</span>
+            <div className="flex flex-col space-y-0.5 items-end">
+              {poolsFeeInSats ? (
+                <span className="font-semibold">{formatNumber(0, true)}</span>
+              ) : (
+                <Skeleton className="h-6 w-20" />
+              )}
+            </div>
+          </div>
         </div>
         <div className="mt-6 border rounded-xl overflow-hidden">
-          <div className="grid px-4 bg-secondary/40 text-sm rounded-t-xl md:grid-cols-12 grid-cols-9 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
+          <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl md:grid-cols-12 grid-cols-9 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
             <div className="col-span-3">Pool</div>
             <div className="col-span-3">
               <span>TVL</span>
@@ -156,7 +193,7 @@ export default function Pools() {
             : [1, 2, 3, 4, 5].map((idx) => (
                 <div
                   key={idx}
-                  className="grid md:grid-cols-12 grid-cols-9 h-[66px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3"
+                  className="grid md:grid-cols-12 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3 bg-secondary/20"
                 >
                   <div className="col-span-3 flex items-center space-x-3">
                     <Skeleton className="size-10 rounded-full hidden sm:block" />
