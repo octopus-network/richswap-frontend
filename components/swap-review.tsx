@@ -291,6 +291,7 @@ export function SwapReview({
               pool_utxo_spend: poolSpendUtxos,
               pool_utxo_receive: poolReceiveUtxos,
               output_coins: outputCoins,
+              action_params: "",
               pool_address: poolAddress,
               nonce: BigInt(nonce),
             },

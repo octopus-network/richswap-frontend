@@ -18,9 +18,8 @@ export class Orchestrator {
           throw new Error(
             message
               ? key === "ErrorOccurredDuringExecution"
-                ? `${key}: ${
-                    message.execution_steps?.[0]?.result?.Err ?? "Unknown Error"
-                  }`
+                ? `${key}: ${message.execution_steps?.[0]?.result?.Err ?? "Unknown Error"
+                }`
                 : `Invoke Error: ${JSON.stringify(data)}`
               : `Invoke Error: ${JSON.stringify(data)}`
           );
@@ -53,7 +52,12 @@ export class Orchestrator {
   }
 
   static async getRecommendedFee() {
-    const res = (await actor.get_recommended_tx_fee_per_vbyte([])) as bigint;
-    return res ? Number(res) : 5;
+    const res = await actor.get_mempool_tx_fee_rate() as {
+      low: bigint;
+      high: bigint;
+      update_time: string;
+      medium: bigint;
+    };
+    return Number(res.medium);
   }
 }

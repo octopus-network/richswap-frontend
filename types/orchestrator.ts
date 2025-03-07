@@ -15,6 +15,7 @@ export type Intention = {
   output_coins: OutputCoin[];
   action: string;
   exchange_id: string;
+  action_params: string;
   pool_utxo_spend: string[];
   nonce: bigint;
   pool_utxo_receive: string[];

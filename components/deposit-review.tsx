@@ -231,6 +231,7 @@ export function DepositReview({
               pool_utxo_receive: poolReceiveUtxos,
               output_coins: outputCoins,
               pool_address: poolAddress,
+              action_params: "",
               nonce: BigInt(nonce),
             },
           ],
@@ -369,8 +370,8 @@ export function DepositReview({
               {!psbt
                 ? "Insufficient Utxos"
                 : invalidAddressType
-                ? "Unsupported Address Type"
-                : "Sign PSBT"}
+                  ? "Unsupported Address Type"
+                  : "Sign PSBT"}
             </Button>
             {showCancelButton && (
               <Button

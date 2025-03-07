@@ -44,6 +44,7 @@ export function WithdrawReview({
   onSuccess,
   onBack,
   nonce,
+  sqrtK,
   showCancelButton = false,
 }: {
   coinA: Coin | null;
@@ -55,6 +56,7 @@ export function WithdrawReview({
   onSuccess: () => void;
   onBack: () => void;
   nonce: string;
+  sqrtK: bigint | undefined;
   showCancelButton?: boolean;
 }) {
   const { address, paymentAddress, signPsbt } = useLaserEyes();
@@ -151,7 +153,7 @@ export function WithdrawReview({
   ]);
 
   const onSubmit = async () => {
-    if (!psbt || !coinA || !coinB || !poolUtxos || !toSpendUtxos.length) {
+    if (!psbt || !coinA || !coinB || !poolUtxos || !toSpendUtxos.length || !sqrtK) {
       return;
     }
 
@@ -187,6 +189,7 @@ export function WithdrawReview({
               pool_utxo_receive: poolReceiveUtxos,
               output_coins: outputCoins,
               pool_address: poolAddress,
+              action_params: sqrtK.toString(),
               nonce: BigInt(nonce),
             },
           ],
@@ -326,8 +329,8 @@ export function WithdrawReview({
               {!psbt
                 ? "Insufficient Utxos"
                 : invalidAddressType
-                ? "Unsupported Address Type"
-                : "Sign Transaction"}
+                  ? "Unsupported Address Type"
+                  : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button
