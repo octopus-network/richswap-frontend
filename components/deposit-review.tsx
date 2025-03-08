@@ -16,6 +16,7 @@ import { AddressType } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
+import { Loader2 } from "lucide-react";
 
 import {
   formatNumber,
@@ -117,67 +118,70 @@ export function DepositReview({
       return;
     }
 
-    const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-    const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
+    const genPsbt = async () => {
+      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
+      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
 
-    const _runeUtxos: UnspentOutput[] = [];
-    const runeAmount = coinBAmountBigInt;
-    const runeid = coinB.id;
+      const _runeUtxos: UnspentOutput[] = [];
+      const runeAmount = coinBAmountBigInt;
+      const runeid = coinB.id;
 
-    for (let i = 0; i < runeUtxos.length; i++) {
-      const v = runeUtxos[i];
-      if (v.runes.length) {
-        const balance = v.runes.find((r) => r.id == runeid);
-        if (balance && BigInt(balance.amount) == runeAmount) {
-          _runeUtxos.push(v);
-          break;
-        }
-      }
-    }
-
-    if (_runeUtxos.length == 0) {
-      let total = BigInt(0);
       for (let i = 0; i < runeUtxos.length; i++) {
         const v = runeUtxos[i];
-        v.runes.forEach((r) => {
-          if (r.id == runeid) {
-            total = total + BigInt(r.amount);
+        if (v.runes.length) {
+          const balance = v.runes.find((r) => r.id == runeid);
+          if (balance && BigInt(balance.amount) == runeAmount) {
+            _runeUtxos.push(v);
+            break;
           }
-        });
-        _runeUtxos.push(v);
-        if (total >= runeAmount) {
-          break;
         }
       }
+
+      if (_runeUtxos.length == 0) {
+        let total = BigInt(0);
+        for (let i = 0; i < runeUtxos.length; i++) {
+          const v = runeUtxos[i];
+          v.runes.forEach((r) => {
+            if (r.id == runeid) {
+              total = total + BigInt(r.amount);
+            }
+          });
+          _runeUtxos.push(v);
+          if (total >= runeAmount) {
+            break;
+          }
+        }
+      }
+
+      try {
+        const tx = await depositTx({
+          runeid: coinB.id,
+          runeAmount,
+          btcAmount: coinAAmountBigInt,
+          btcUtxos,
+          runeUtxos: _runeUtxos,
+          poolUtxos,
+          poolAddress,
+          address,
+          paymentAddress,
+          feeRate: recommendedFeeRate,
+        });
+
+        console.log("tx", tx);
+
+        setPsbt(tx.psbt);
+        setToSpendUtxos(tx.toSpendUtxos);
+        setToSpendUtxos(tx.toSpendUtxos);
+        setPoolSpendUtxos(tx.poolSpendUtxos);
+        setPoolReceiveUtxos(tx.poolReceiveUtxos);
+        setTxid(tx.txid);
+        setInputCoins(tx.inputCoins);
+        setOutputCoins(tx.outputCoins);
+      } catch (err) {
+        console.log(err);
+      }
     }
-
-    try {
-      const tx = depositTx({
-        runeid: coinB.id,
-        runeAmount,
-        btcAmount: coinAAmountBigInt,
-        btcUtxos,
-        runeUtxos: _runeUtxos,
-        poolUtxos,
-        poolAddress,
-        address,
-        paymentAddress,
-        feeRate: recommendedFeeRate,
-      });
-
-      console.log("tx", tx);
-
-      setPsbt(tx.psbt);
-      setToSpendUtxos(tx.toSpendUtxos);
-      setToSpendUtxos(tx.toSpendUtxos);
-      setPoolSpendUtxos(tx.poolSpendUtxos);
-      setPoolReceiveUtxos(tx.poolReceiveUtxos);
-      setTxid(tx.txid);
-      setInputCoins(tx.inputCoins);
-      setOutputCoins(tx.outputCoins);
-    } catch (err) {
-      console.log(err);
-    }
+    genPsbt();
   }, [
     poolKey,
     coinA,
@@ -367,8 +371,11 @@ export function DepositReview({
               onClick={onSubmit}
               disabled={!psbt || invalidAddressType}
             >
+              {
+                !psbt && <Loader2 className="size-4 animate-spin" />
+              }
               {!psbt
-                ? "Insufficient Utxos"
+                ? "Generating PSBT"
                 : invalidAddressType
                   ? "Unsupported Address Type"
                   : "Sign PSBT"}

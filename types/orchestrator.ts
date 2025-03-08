@@ -31,3 +31,11 @@ export type InvokeArgs = {
   intention_set: IntentionSet;
   psbt_hex: string;
 };
+
+export type TxOutputType = { P2WPKH: null } | { P2TR: null } | { OpReturn: bigint };
+
+export type EstimateMinTxFeeArgs = {
+  input_types: TxOutputType[];
+  pool_address: string;
+  output_types: TxOutputType[];
+}

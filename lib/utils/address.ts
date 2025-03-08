@@ -1,5 +1,5 @@
 import * as bitcoin from "bitcoinjs-lib";
-import { AddressType } from "@/types";
+import { AddressType, TxOutputType } from "@/types";
 import { toPsbtNetwork } from "./network";
 
 import { NETWORK } from "../constants";
@@ -73,7 +73,7 @@ export function decodeAddress(address: string) {
       return {
         addressType,
       };
-    } catch {}
+    } catch { }
   } else {
     try {
       decodeBase58 = bitcoin.address.fromBase58Check(address);
@@ -97,7 +97,7 @@ export function decodeAddress(address: string) {
       return {
         addressType,
       };
-    } catch {}
+    } catch { }
   }
 
   return {
@@ -108,4 +108,13 @@ export function decodeAddress(address: string) {
 
 export function getAddressType(address: string): AddressType {
   return decodeAddress(address).addressType;
+}
+
+
+export function addressTypeToString(addressType: AddressType): TxOutputType {
+  if (addressType === AddressType.P2WPKH) {
+    return { P2WPKH: null };
+  } else {
+    return { P2TR: null };
+  }
 }

@@ -13,6 +13,7 @@ import { formatNumber, withdrawTx } from "@/lib/utils";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import { Loader2 } from "lucide-react";
 import { AddressType } from "@/types";
 import { getAddressType } from "@/lib/utils";
 import { DoubleIcon } from "@/components/double-icon";
@@ -107,38 +108,41 @@ export function WithdrawReview({
       return;
     }
 
-    const { address: poolAddress } = getP2trAressAndScript(poolKey);
-    if (!poolAddress) {
-      return;
+    const genPsbt = async () => {
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+      if (!poolAddress) {
+        return;
+      }
+
+      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
+      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
+
+      try {
+        const tx = await withdrawTx({
+          btcAmount: coinAAmountBigInt,
+          runeid: coinB.id,
+          runeAmount: coinBAmountBigInt,
+          btcUtxos,
+          poolUtxos,
+          poolAddress,
+          address,
+          paymentAddress,
+          feeRate: recommendedFeeRate,
+        });
+
+        setPsbt(tx.psbt);
+
+        setToSpendUtxos(tx.toSpendUtxos);
+        setPoolSpendUtxos(tx.poolSpendUtxos);
+        setPoolReceiveUtxos(tx.poolReceiveUtxos);
+        setTxid(tx.txid);
+        setInputCoins(tx.inputCoins);
+        setOutputCoins(tx.outputCoins);
+      } catch (err) {
+        console.log(err);
+      }
     }
-
-    const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-    const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
-
-    try {
-      const tx = withdrawTx({
-        btcAmount: coinAAmountBigInt,
-        runeid: coinB.id,
-        runeAmount: coinBAmountBigInt,
-        btcUtxos,
-        poolUtxos,
-        poolAddress,
-        address,
-        paymentAddress,
-        feeRate: recommendedFeeRate,
-      });
-
-      setPsbt(tx.psbt);
-
-      setToSpendUtxos(tx.toSpendUtxos);
-      setPoolSpendUtxos(tx.poolSpendUtxos);
-      setPoolReceiveUtxos(tx.poolReceiveUtxos);
-      setTxid(tx.txid);
-      setInputCoins(tx.inputCoins);
-      setOutputCoins(tx.outputCoins);
-    } catch (err) {
-      console.log(err);
-    }
+    genPsbt();
   }, [
     poolKey,
     coinA,
@@ -326,8 +330,11 @@ export function WithdrawReview({
               onClick={onSubmit}
               disabled={!psbt || invalidAddressType}
             >
+              {
+                !psbt && <Loader2 className="size-4 animate-spin" />
+              }
               {!psbt
-                ? "Insufficient Utxos"
+                ? "Generating PSBT"
                 : invalidAddressType
                   ? "Unsupported Address Type"
                   : "Sign Transaction"}

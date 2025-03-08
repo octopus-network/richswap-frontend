@@ -1,5 +1,5 @@
 import { actor } from "./actor";
-import { InvokeArgs } from "@/types";
+import { InvokeArgs, EstimateMinTxFeeArgs } from "@/types";
 
 export class Orchestrator {
   static async invoke(args: InvokeArgs) {
@@ -59,5 +59,10 @@ export class Orchestrator {
       medium: bigint;
     };
     return Number(res.medium);
+  }
+
+  static async getEstimateMinTxFee(args: EstimateMinTxFeeArgs) {
+    const res = await actor.estimate_min_tx_fee(args) as { Ok: bigint };
+    return BigInt(res.Ok);
   }
 }

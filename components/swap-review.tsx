@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowDown, TriangleAlert } from "lucide-react";
+import { ArrowDown, Loader2, TriangleAlert } from "lucide-react";
 import {
   AddressType,
   Coin,
@@ -132,102 +132,106 @@ export function SwapReview({
       return;
     }
 
-    const { address: poolAddress } = getP2trAressAndScript(poolKey);
-    if (!poolAddress) {
-      return;
-    }
-
-    const isSwapRune = coinA.id === BITCOIN.id;
-    const involvedRune = isSwapRune ? coinB : coinA;
-
-    const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-    const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
-
-    if (isSwapRune) {
-      try {
-        const tx = swapRuneTx({
-          btcAmount: coinAAmountBigInt,
-          runeid: involvedRune.id,
-          runeAmount: coinBAmountBigInt,
-          btcUtxos,
-          poolUtxos,
-          poolAddress,
-          address,
-          paymentAddress,
-          feeRate: recommendedFeeRate,
-        });
-
-        setPsbt(tx.psbt);
-        setToSpendUtxos(tx.toSpendUtxos);
-        setPoolSpendUtxos(tx.poolSpendUtxos);
-        setPoolReceiveUtxos(tx.poolReceiveUtxos);
-        setTxid(tx.txid);
-        setInputCoins(tx.inputCoins);
-        setOutputCoins(tx.outputCoins);
-      } catch (err) {
-        console.log(err);
-      }
-    } else {
-      if (!runeUtxos?.length) {
+    const genPsbt = async () => {
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+      if (!poolAddress) {
         return;
       }
-      const _runeUtxos: UnspentOutput[] = [];
 
-      const runeAmount = coinAAmountBigInt;
+      const isSwapRune = coinA.id === BITCOIN.id;
+      const involvedRune = isSwapRune ? coinB : coinA;
 
-      for (let i = 0; i < runeUtxos.length; i++) {
-        const v = runeUtxos[i];
-        if (v.runes.length) {
-          const balance = v.runes.find((r) => r.id == involvedRune.id);
-          if (balance && BigInt(balance.amount) == runeAmount) {
-            _runeUtxos.push(v);
-            break;
-          }
+      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
+      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
+
+      if (isSwapRune) {
+        try {
+          const tx = await swapRuneTx({
+            btcAmount: coinAAmountBigInt,
+            runeid: involvedRune.id,
+            runeAmount: coinBAmountBigInt,
+            btcUtxos,
+            poolUtxos,
+            poolAddress,
+            address,
+            paymentAddress,
+            feeRate: recommendedFeeRate,
+          });
+
+          setPsbt(tx.psbt);
+          setToSpendUtxos(tx.toSpendUtxos);
+          setPoolSpendUtxos(tx.poolSpendUtxos);
+          setPoolReceiveUtxos(tx.poolReceiveUtxos);
+          setTxid(tx.txid);
+          setInputCoins(tx.inputCoins);
+          setOutputCoins(tx.outputCoins);
+        } catch (err) {
+          console.log(err);
         }
-      }
+      } else {
+        if (!runeUtxos?.length) {
+          return;
+        }
+        const _runeUtxos: UnspentOutput[] = [];
 
-      if (_runeUtxos.length == 0) {
-        let total = BigInt(0);
+        const runeAmount = coinAAmountBigInt;
+
         for (let i = 0; i < runeUtxos.length; i++) {
           const v = runeUtxos[i];
-          v.runes.forEach((r) => {
-            if (r.id == involvedRune.id) {
-              total = total + BigInt(r.amount);
+          if (v.runes.length) {
+            const balance = v.runes.find((r) => r.id == involvedRune.id);
+            if (balance && BigInt(balance.amount) == runeAmount) {
+              _runeUtxos.push(v);
+              break;
             }
-          });
-          _runeUtxos.push(v);
-          if (total >= runeAmount) {
-            break;
           }
         }
-      }
 
-      try {
-        const tx = swapBtcTx({
-          runeid: involvedRune.id,
-          runeAmount: runeAmount,
-          btcAmount: coinBAmountBigInt,
-          btcUtxos,
-          runeUtxos: _runeUtxos,
-          poolUtxos,
-          poolAddress,
-          address,
-          paymentAddress,
-          feeRate: recommendedFeeRate,
-        });
+        if (_runeUtxos.length == 0) {
+          let total = BigInt(0);
+          for (let i = 0; i < runeUtxos.length; i++) {
+            const v = runeUtxos[i];
+            v.runes.forEach((r) => {
+              if (r.id == involvedRune.id) {
+                total = total + BigInt(r.amount);
+              }
+            });
+            _runeUtxos.push(v);
+            if (total >= runeAmount) {
+              break;
+            }
+          }
+        }
 
-        setPsbt(tx.psbt);
+        try {
+          const tx = await swapBtcTx({
+            runeid: involvedRune.id,
+            runeAmount: runeAmount,
+            btcAmount: coinBAmountBigInt,
+            btcUtxos,
+            runeUtxos: _runeUtxos,
+            poolUtxos,
+            poolAddress,
+            address,
+            paymentAddress,
+            feeRate: recommendedFeeRate,
+          });
 
-        setToSpendUtxos(tx.toSpendUtxos);
-        setPoolSpendUtxos(tx.poolSpendUtxos);
-        setPoolReceiveUtxos(tx.poolReceiveUtxos);
-        setTxid(tx.txid);
-        setInputCoins(tx.inputCoins);
-        setOutputCoins(tx.outputCoins);
-      } catch (err) {
-        console.log(err);
+          setPsbt(tx.psbt);
+
+          setToSpendUtxos(tx.toSpendUtxos);
+          setPoolSpendUtxos(tx.poolSpendUtxos);
+          setPoolReceiveUtxos(tx.poolReceiveUtxos);
+          setTxid(tx.txid);
+          setInputCoins(tx.inputCoins);
+          setOutputCoins(tx.outputCoins);
+        } catch (err) {
+          console.log(err);
+        }
       }
     }
+
+    genPsbt();
   }, [
     poolKey,
     coinA,
@@ -400,9 +404,9 @@ export function SwapReview({
                 <span className="text-primary/80 text-xs">
                   {btcPrice
                     ? `$${new Decimal(runePriceInSats)
-                        .mul(btcPrice)
-                        .div(Math.pow(10, 8))
-                        .toFixed(4)}`
+                      .mul(btcPrice)
+                      .div(Math.pow(10, 8))
+                      .toFixed(4)}`
                     : ""}
                 </span>
               </div>
@@ -426,11 +430,14 @@ export function SwapReview({
               onClick={onSubmit}
               disabled={!psbt || invalidAddressType}
             >
+              {
+                !psbt && <Loader2 className="size-4 animate-spin" />
+              }
               {!psbt
-                ? "Insufficient Utxos"
+                ? "Generating PSBT"
                 : invalidAddressType
-                ? "Unsupported Address Type"
-                : "Sign Transaction"}
+                  ? "Unsupported Address Type"
+                  : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button
