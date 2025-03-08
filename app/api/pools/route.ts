@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const cache = await fetch(
-    "https://vquok3pr3bhc6tui.public.blob.vercel-storage.com/pool-list.json",
+    "https://fi6i9edbitdozcsw.public.blob.vercel-storage.com/pool-list.json",
     {
       cache: "no-store",
     }
