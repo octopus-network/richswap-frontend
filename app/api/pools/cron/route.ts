@@ -40,6 +40,8 @@ export async function GET() {
       )
     );
 
+    console.log(res);
+
     for (let i = 0; i < res.length; i++) {
       const { ...rest } = res[i];
 

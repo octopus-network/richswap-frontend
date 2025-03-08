@@ -40,20 +40,10 @@ export class Exchange {
       coinBAmount: string;
     }[]
   > {
-    const tmpRes = (await actor.list_pools(
-      ["5c9eaaf2e8821d8810c625f5039ed69db13f3e6fb2ed4f3c9194e212bfc88428"],
-      20
-    )) as {
+    const res = (await actor.list_pools([], 20)) as {
       id: string;
       name: string;
     }[];
-
-    const res = [
-      {
-        id: "5c9eaaf2e8821d8810c625f5039ed69db13f3e6fb2ed4f3c9194e212bfc88428",
-        name: "HOPE•YOU•GET•RICH",
-      },
-    ].concat(tmpRes);
 
     const promises = res.map(({ id }) => this.getPoolData(id));
 

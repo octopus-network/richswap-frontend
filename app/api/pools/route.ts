@@ -3,16 +3,16 @@ import { BITCOIN, UNKNOWN_COIN } from "@/lib/constants";
 import { Exchange } from "@/lib/exchange";
 import { put } from "@vercel/blob";
 import { queryRunes } from "@/lib/chain-api";
+import axios from "axios";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const cache = await fetch(
-    "https://fi6i9edbitdozcsw.public.blob.vercel-storage.com/pool-list.json",
-    {
-      cache: "no-store",
-    }
-  ).then((res) => res.json());
+  const cache = await axios
+    .get(
+      "https://fi6i9edbitdozcsw.public.blob.vercel-storage.com/pool-list.json"
+    )
+    .then((res) => res.data);
 
   if (cache?.length) {
     return NextResponse.json({
