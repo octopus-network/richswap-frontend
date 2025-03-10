@@ -180,7 +180,7 @@ export function DepositReview({
       } catch (err) {
         console.log(err);
       }
-    }
+    };
     genPsbt();
   }, [
     poolKey,
@@ -371,14 +371,12 @@ export function DepositReview({
               onClick={onSubmit}
               disabled={!psbt || invalidAddressType}
             >
-              {
-                !psbt && <Loader2 className="size-4 animate-spin" />
-              }
+              {!psbt && <Loader2 className="size-4 animate-spin" />}
               {!psbt
                 ? "Generating PSBT"
                 : invalidAddressType
-                  ? "Unsupported Address Type"
-                  : "Sign PSBT"}
+                ? "Unsupported Address Type"
+                : "Sign PSBT"}
             </Button>
             {showCancelButton && (
               <Button
