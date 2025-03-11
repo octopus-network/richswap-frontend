@@ -11,7 +11,6 @@ const nextConfig = {
     ],
   },
   transpilePackages: ["geist"],
-  reactStrictMode: false,
 };
 
 export default nextConfig;

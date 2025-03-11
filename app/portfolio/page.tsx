@@ -9,7 +9,7 @@ import { useSetAtom } from "jotai";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 
 export default function Portolios() {
-  const { address } = useLaserEyes();
+  const { address } = useLaserEyes((x) => ({ address: x.address }));
   const portfolios = usePortfolios(address);
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
 

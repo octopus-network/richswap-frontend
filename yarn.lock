@@ -321,6 +321,11 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@magiceden-oss/runestone-lib@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@magiceden-oss/runestone-lib/-/runestone-lib-1.0.2.tgz#524394b49119d1acace0edc351f9cd5d7ed1ad73"
+  integrity sha512-C4XoE7tHxxaWQNzovBIEndXGrTesotshnKQA8DXlnoVDvriD6G26ezUoj9AlEb2UAPbEijSga4Dtwd86Z0a1jg==
+
 "@nanostores/persistent@^0.10.2":
   version "0.10.2"
   resolved "https://registry.yarnpkg.com/@nanostores/persistent/-/persistent-0.10.2.tgz#5c8ecbd5213599df474459243aadaf5a8697cd33"
@@ -431,14 +436,15 @@
   resolved "https://registry.yarnpkg.com/@nolyfill/is-core-module/-/is-core-module-1.0.39.tgz#3dc35ba0f1e66b403c00b39344f870298ebb1c8e"
   integrity sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==
 
-"@omnisat/lasereyes-core@0.0.56":
-  version "0.0.56"
-  resolved "https://registry.yarnpkg.com/@omnisat/lasereyes-core/-/lasereyes-core-0.0.56.tgz#232833c8a3294d8f2c03b8c7957ccc8152707a9a"
-  integrity sha512-MG3P3YT68EVYVqH54XcADrM/sFaVCFRjQmctQnKaGmvsJknvRvwyKf1NYpHr5TWPy0ymSZiWl3Ts66PGSNIPeQ==
+"@omnisat/lasereyes-core@0.0.62":
+  version "0.0.62"
+  resolved "https://registry.yarnpkg.com/@omnisat/lasereyes-core/-/lasereyes-core-0.0.62.tgz#604e340384af43c1e2febd4f3a07f8dd1591e917"
+  integrity sha512-PoFW+99hdCPsPh0u1cZ3m4x3rOVSED06IGByIOqm2xn2jmnui9/qI92V9p/DSJ0jZMPsrXAanBC4xEKOkT7++Q==
   dependencies:
     "@bitcoinerlab/secp256k1" "^1.1.1"
     "@cmdcode/crypto-utils" "^2.4.6"
     "@cmdcode/tapscript" "^1.4.6"
+    "@magiceden-oss/runestone-lib" "^1.0.2"
     "@nanostores/persistent" "^0.10.2"
     "@orangecrypto/orange-connect" "^1.2.2"
     axios "^1.7.7"
@@ -449,24 +455,24 @@
     nanostores "^0.11.3"
     sats-connect "^2.8.0"
 
-"@omnisat/lasereyes-react@0.0.51":
-  version "0.0.51"
-  resolved "https://registry.yarnpkg.com/@omnisat/lasereyes-react/-/lasereyes-react-0.0.51.tgz#0a45edb0caebf71eff651f56ef60aaa5c7ccd259"
-  integrity sha512-t/MmygTiHaB2Ck4KMts9nBbG2V9580mZrw3XeX/795T7QbxQ5CBit28/ZJJ+CjI5RrEDIKebn/0YcDL/ErT1rg==
+"@omnisat/lasereyes-react@0.0.57":
+  version "0.0.57"
+  resolved "https://registry.yarnpkg.com/@omnisat/lasereyes-react/-/lasereyes-react-0.0.57.tgz#0e2c77dfa135bcf794938117158703e7bcef57c2"
+  integrity sha512-1NzN//Bf3hdw/8szkNKsPuSnBEcdZ9yy8W3nJH5TYmwETQClKN0qFz09HqZqD/Lan4Ld7i525xLSIg9KJXhsow==
   dependencies:
     "@nanostores/react" "^0.7.3"
-    "@omnisat/lasereyes-core" "0.0.56"
+    "@omnisat/lasereyes-core" "0.0.62"
     bootstrap "^5.3.3"
     nanostores "^0.11.3"
     vite-plugin-ssr "^0.4.142"
 
-"@omnisat/lasereyes@^0.0.134":
-  version "0.0.134"
-  resolved "https://registry.yarnpkg.com/@omnisat/lasereyes/-/lasereyes-0.0.134.tgz#fa14c4d59ceca4763d0d7f0586cc6e903fb9009f"
-  integrity sha512-s9zx3NihreI0zP+jLXs7U+budXcRPUFzgWiVLezBrfzk8rPyNoOhOTRohFUBivs2aF6f3FlKKv8uhlsAErW5uA==
+"@omnisat/lasereyes@^0.0.140":
+  version "0.0.140"
+  resolved "https://registry.yarnpkg.com/@omnisat/lasereyes/-/lasereyes-0.0.140.tgz#ff5d9e456ea74df6afce8a0e840118261b3f1c00"
+  integrity sha512-oRpfIzc6BD6shiUU+y4KrhwZ5OQpqLEVtYMTpfpSbuKU+KK4LmtutFqQPd2+Kk2cMzPSpWXNeVSLxexY5tRvGQ==
   dependencies:
-    "@omnisat/lasereyes-core" "0.0.56"
-    "@omnisat/lasereyes-react" "0.0.51"
+    "@omnisat/lasereyes-core" "0.0.62"
+    "@omnisat/lasereyes-react" "0.0.57"
     bip39 "^3.1.0"
 
 "@orangecrypto/orange-connect@^1.2.2":

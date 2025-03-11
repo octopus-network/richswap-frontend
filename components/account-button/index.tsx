@@ -9,7 +9,10 @@ import { AccountSheetContent } from "./account-sheet-content";
 import { usePendingTransactions } from "@/store/transactions";
 
 export function AccountButton() {
-  const { address, provider } = useLaserEyes();
+  const { address, provider } = useLaserEyes((x) => ({
+    address: x.address,
+    provider: x.provider,
+  }));
 
   const pendingTransactions = usePendingTransactions();
 
