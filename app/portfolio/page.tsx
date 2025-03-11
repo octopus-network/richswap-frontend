@@ -17,7 +17,7 @@ export default function Portolios() {
     <div className="md:pt-6 w-full flex flex-col items-center">
       <div className="w-full max-w-4xl">
         <div className="flex justify-between items-center">
-          <span className="text-3xl font-semibold">Portolios</span>
+          <span className="text-3xl font-semibold">Portolio</span>
         </div>
         <div className="mt-6 border rounded-xl overflow-hidden">
           <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl grid-cols-10 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">

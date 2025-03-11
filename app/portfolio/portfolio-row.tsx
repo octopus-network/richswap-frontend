@@ -173,7 +173,9 @@ export function PortfolioRow({ position }: { position: Position }) {
           {positionYield !== undefined && positionYieldInSats !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
-                {formatNumber(positionYieldInSats, true)}{" "}
+                {positionYieldInSats === 0
+                  ? "-"
+                  : formatNumber(positionYieldInSats, true)}{" "}
                 <em className="font-normal">sats</em>
               </span>
               <span className="text-muted-foreground text-xs">
