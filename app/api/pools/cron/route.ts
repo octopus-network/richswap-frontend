@@ -24,7 +24,7 @@ export async function GET() {
 
     const limitGetRunesInfoList = limitFunction(
       async (coinId: string) => openApi.getRunesInfoList(coinId),
-      { concurrency: 4 }
+      { concurrency: 3 }
     );
 
     const coinRes = await Promise.all(
