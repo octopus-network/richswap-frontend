@@ -2,17 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAddressType } from "@/lib/utils";
 
 import { OpenApi } from "@/lib/open-api";
-import axios from "axios";
 
+const UNISAT_API = process.env.UNISAT_API!;
 const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
-
-async function getLatestBlockHeight() {
-  const data = await axios
-    .get("https://blockchain.info/q/getblockcount")
-    .then((res) => res.data);
-
-  return data;
-}
 
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get("address");
@@ -22,20 +14,20 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const openapi = new OpenApi({
-      baseUrl: "https://open-api.unisat.io",
+    const openApi = new OpenApi({
+      baseUrl: UNISAT_API,
       apiKey: UNISAT_API_KEY,
     });
 
     const addressType = getAddressType(address);
 
-    const blockHeight = await getLatestBlockHeight();
+    const { blocks } = await openApi.getBlockchainInfo();
 
-    const utxos = await openapi.getAddressUtxoData(address).then((res) =>
-      res.utxo
+    const utxos = await openApi.getAddressUtxoData(address).then((res) => {
+      return res.utxo
         .filter(
-          ({ height, inscriptions }) =>
-            height <= Number(blockHeight) && !inscriptions.length
+          ({ height, inscriptions, satoshi }) =>
+            height <= blocks && !inscriptions.length && satoshi !== 546
         )
         .map((utxo) => ({
           pubkey,
@@ -46,8 +38,8 @@ export async function GET(req: NextRequest) {
           scriptPk: utxo.scriptPk,
           address,
           runes: [],
-        }))
-    );
+        }));
+    });
 
     return NextResponse.json({
       success: true,

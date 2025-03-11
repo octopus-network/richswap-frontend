@@ -10,7 +10,16 @@ export interface Coin {
   number?: number;
 }
 
+export type CoinWithBalance = Coin & {
+  balance: string;
+};
+
 export enum Field {
   INPUT = "INPUT",
   OUTPUT = "OUTPUT",
 }
+
+export type CoinBalance = {
+  id: string;
+  value: bigint;
+};

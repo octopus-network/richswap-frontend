@@ -3,6 +3,8 @@ import { cn } from "@/lib/utils";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+const ORDINALS_URL = process.env.NEXT_PUBLIC_ORDINALS_URL!;
+
 export function CoinIcon({
   coin,
   className,
@@ -20,7 +22,7 @@ export function CoinIcon({
       )}
     >
       <AvatarImage
-        src={coin.icon ?? `https://ordinals.com/content/${coin.etching}i0`}
+        src={coin.icon ?? `${ORDINALS_URL}/content/${coin.etching}i0`}
       />
       <AvatarFallback className="bg-accent">
         {coin.runeSymbol ?? coin.symbol?.slice(0, 2)}

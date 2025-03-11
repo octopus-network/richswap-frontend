@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { Nav } from "./nav";
@@ -35,10 +34,10 @@ export function Topbar() {
         />
         <span className="font-bold sm:text-lg">RichSwap</span>
       </div>
-      <div className="flex-none hidden">
+      <div className="flex-none hidden md:flex">
         <Nav />
       </div>
-      <div className="flex-1 justify-end space-x-2 hidden">
+      <div className="flex-1 justify-end space-x-2 flex">
         {!initialized ? (
           <Skeleton className="h-9 w-24 rounded-full" />
         ) : !address ? (
@@ -54,18 +53,6 @@ export function Topbar() {
         )}
         <MenuButton />
       </div>
-      <Link
-        href="https://oc.app/community/o5uz6-dqaaa-aaaar-bhnia-cai/channel/1529837122/"
-        target="_blank"
-      >
-        <Button
-          variant="outline"
-          className="rounded-full"
-          onClick={() => updateConnectWalletModalOpen(true)}
-        >
-          Support
-        </Button>
-      </Link>
     </div>
   );
 }

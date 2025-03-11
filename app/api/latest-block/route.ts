@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
-import { getLatestBlockHeight } from "@/lib/chain-api";
+
+import { OpenApi } from "@/lib/open-api";
 
 export const dynamic = "force-dynamic";
 
+const UNISAT_API = process.env.UNISAT_API!;
+const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
+
 export async function GET() {
   try {
-    const blockHeight = await getLatestBlockHeight();
+    const openApi = new OpenApi({
+      baseUrl: UNISAT_API,
+      apiKey: UNISAT_API_KEY,
+    });
+
+    const { blocks } = await openApi.getBlockchainInfo();
 
     return NextResponse.json({
       success: true,
-      data: blockHeight,
+      data: blocks,
     });
   } catch (error) {
     return NextResponse.json({

@@ -1,11 +1,12 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as bitcoin from "bitcoinjs-lib";
-import { BITCOIN, UNKNOWN_COIN } from "../constants";
+import { BITCOIN, UNKNOWN_COIN, NETWORK } from "../constants";
 import * as ecc from "@bitcoinerlab/secp256k1";
 import { Coin } from "@/types";
 import axios from "axios";
 import Decimal from "decimal.js";
+import { toPsbtNetwork } from "./network";
 
 bitcoin.initEccLib(ecc);
 
@@ -57,6 +58,7 @@ export function hexToBytes(hex: string) {
 export function getP2trAressAndScript(pubkey: string) {
   const { address, output } = bitcoin.payments.p2tr({
     internalPubkey: hexToBytes(pubkey),
+    network: toPsbtNetwork(NETWORK),
   });
 
   return { address, output: output ? bytesToHex(output) : "" };

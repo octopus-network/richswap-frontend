@@ -5,12 +5,16 @@ import { LaserEyesProvider } from "@omnisat/lasereyes";
 import { Topbar } from "./topbar";
 import { Loader2 } from "lucide-react";
 
+import { NETWORK } from "@/lib/constants";
+
 export function Providers({ children }: PropsWithChildren) {
   const [isMpunted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  console.log("network", NETWORK);
 
   return !isMpunted ? (
     <div className="flex min-h-screen w-screen flex-col">
@@ -24,7 +28,7 @@ export function Providers({ children }: PropsWithChildren) {
   ) : (
     <LaserEyesProvider
       config={{
-        network: "mainnet",
+        network: NETWORK,
       }}
     >
       {children}
