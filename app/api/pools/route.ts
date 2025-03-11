@@ -4,6 +4,8 @@ import { OpenApi } from "@/lib/open-api";
 import { UNKNOWN_COIN, BITCOIN } from "@/lib/constants";
 import { PoolInfo } from "@/types";
 
+import { limitFunction } from "p-limit";
+
 export const dynamic = "force-dynamic";
 
 const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
@@ -22,10 +24,15 @@ export async function GET() {
       apiKey: UNISAT_API_KEY,
     });
 
+    const limitGetRunesInfoList = limitFunction(
+      async (coinId: string) => openApi.getRunesInfoList(coinId),
+      { concurrency: 5 }
+    );
+
     const coinRes = await Promise.all(
-      res.map(({ coin_reserved }) =>
+      res.map(({ coin_reserved }, idx) =>
         coin_reserved.length
-          ? openApi.getRunesInfoList(coin_reserved[0].id)
+          ? limitGetRunesInfoList(coin_reserved[0].id)
           : { detail: [] }
       )
     );
