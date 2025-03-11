@@ -8,19 +8,14 @@ import { AccountButton } from "../account-button";
 import { useSetAtom } from "jotai";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { Skeleton } from "../ui/skeleton";
-import { useEffect, useState } from "react";
+
 import { MenuButton } from "./menu-button";
 
 export function Topbar() {
-  const { address, isInitializing } = useLaserEyes();
+  const { address, isInitializing } = useLaserEyes(
+    ({ address, isInitializing }) => ({ address, isInitializing })
+  );
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
-  const [initialized, setInitialized] = useState(false);
-
-  useEffect(() => {
-    if (!isInitializing) {
-      setInitialized(true);
-    }
-  }, [isInitializing]);
 
   return (
     <div className="flex justify-between items-cetner sm:p-4 p-3">
@@ -38,7 +33,7 @@ export function Topbar() {
         <Nav />
       </div>
       <div className="flex-1 flex justify-end space-x-2">
-        {!initialized ? (
+        {isInitializing ? (
           <Skeleton className="h-9 w-24 rounded-full" />
         ) : !address ? (
           <Button

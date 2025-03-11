@@ -63,7 +63,11 @@ export function DepositReview({
   nonce: string;
   showCancelButton?: boolean;
 }) {
-  const { address, paymentAddress, signPsbt } = useLaserEyes();
+  const { address, paymentAddress, signPsbt } = useLaserEyes((x) => ({
+    address: x.address,
+    paymentAddress: x.paymentAddress,
+    signPsbt: x.signPsbt,
+  }));
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 

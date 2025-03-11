@@ -31,7 +31,7 @@ import { BITCOIN, COIN_LIST } from "@/lib/constants";
 import { Exchange } from "@/lib/exchange";
 
 export function SwapPanel() {
-  const { address } = useLaserEyes();
+  const { address } = useLaserEyes((x) => ({ address: x.address }));
   const searchParams = useSearchParams();
 
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);

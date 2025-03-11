@@ -108,7 +108,7 @@ export function CoinField({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectCoinModalOpen, setSelectCoinModalOpen] = useState(false);
-  const { address } = useLaserEyes();
+  const { address } = useLaserEyes((x) => ({ address: x.address }));
   const balance = useCoinBalance(coin);
 
   const beautifiedValue = beautify(value);

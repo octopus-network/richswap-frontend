@@ -17,7 +17,9 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
     useState(false);
 
-  const { paymentAddress } = useLaserEyes();
+  const { paymentAddress } = useLaserEyes((x) => ({
+    paymentAddress: x.paymentAddress,
+  }));
 
   const [position, setPosition] = useState<Position | null>();
 

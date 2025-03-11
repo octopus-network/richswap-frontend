@@ -60,7 +60,13 @@ export function WithdrawReview({
   sqrtK: bigint | undefined;
   showCancelButton?: boolean;
 }) {
-  const { address, paymentAddress, signPsbt } = useLaserEyes();
+  const { address, paymentAddress, signPsbt } = useLaserEyes(
+    ({ address, paymentAddress, signPsbt }) => ({
+      address,
+      paymentAddress,
+      signPsbt,
+    })
+  );
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -141,7 +147,7 @@ export function WithdrawReview({
       } catch (err) {
         console.log(err);
       }
-    }
+    };
     genPsbt();
   }, [
     poolKey,
@@ -157,7 +163,14 @@ export function WithdrawReview({
   ]);
 
   const onSubmit = async () => {
-    if (!psbt || !coinA || !coinB || !poolUtxos || !toSpendUtxos.length || !sqrtK) {
+    if (
+      !psbt ||
+      !coinA ||
+      !coinB ||
+      !poolUtxos ||
+      !toSpendUtxos.length ||
+      !sqrtK
+    ) {
       return;
     }
 
@@ -330,14 +343,12 @@ export function WithdrawReview({
               onClick={onSubmit}
               disabled={!psbt || invalidAddressType}
             >
-              {
-                !psbt && <Loader2 className="size-4 animate-spin" />
-              }
+              {!psbt && <Loader2 className="size-4 animate-spin" />}
               {!psbt
                 ? "Generating PSBT"
                 : invalidAddressType
-                  ? "Unsupported Address Type"
-                  : "Sign Transaction"}
+                ? "Unsupported Address Type"
+                : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button

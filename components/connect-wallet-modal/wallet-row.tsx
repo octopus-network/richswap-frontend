@@ -25,7 +25,25 @@ export function WalletRow({ wallet }: { wallet: string }) {
     hasPhantom,
     hasXverse,
     hasMagicEden,
-  } = useLaserEyes();
+  } = useLaserEyes(
+    ({
+      connect,
+      isConnecting,
+      hasOkx,
+      hasUnisat,
+      hasPhantom,
+      hasXverse,
+      hasMagicEden,
+    }) => ({
+      connect,
+      isConnecting,
+      hasOkx,
+      hasUnisat,
+      hasPhantom,
+      hasXverse,
+      hasMagicEden,
+    })
+  );
 
   const [connectingWallet, setConnectingWallet] = useState<string>();
 

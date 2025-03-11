@@ -43,7 +43,7 @@ export function DepositForm({
     poolUtxos: UnspentOutput[]
   ) => void;
 }) {
-  const { address } = useLaserEyes();
+  const { address } = useLaserEyes(({ address }) => ({ address }));
 
   const { onUserInput } = useDepositActionHandlers();
   const depositState = useDepositState();

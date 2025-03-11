@@ -65,7 +65,11 @@ export function SwapReview({
   showCancelButton?: boolean;
   setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
-  const { address, signPsbt, paymentAddress } = useLaserEyes();
+  const { address, signPsbt, paymentAddress } = useLaserEyes((x) => ({
+    address: x.address,
+    signPsbt: x.signPsbt,
+    paymentAddress: x.paymentAddress,
+  }));
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -229,7 +233,7 @@ export function SwapReview({
           console.log(err);
         }
       }
-    }
+    };
 
     genPsbt();
   }, [
@@ -404,9 +408,9 @@ export function SwapReview({
                 <span className="text-primary/80 text-xs">
                   {btcPrice
                     ? `$${new Decimal(runePriceInSats)
-                      .mul(btcPrice)
-                      .div(Math.pow(10, 8))
-                      .toFixed(4)}`
+                        .mul(btcPrice)
+                        .div(Math.pow(10, 8))
+                        .toFixed(4)}`
                     : ""}
                 </span>
               </div>
@@ -430,14 +434,12 @@ export function SwapReview({
               onClick={onSubmit}
               disabled={!psbt || invalidAddressType}
             >
-              {
-                !psbt && <Loader2 className="size-4 animate-spin" />
-              }
+              {!psbt && <Loader2 className="size-4 animate-spin" />}
               {!psbt
                 ? "Generating PSBT"
                 : invalidAddressType
-                  ? "Unsupported Address Type"
-                  : "Sign Transaction"}
+                ? "Unsupported Address Type"
+                : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button
