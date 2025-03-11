@@ -26,7 +26,7 @@ export function usePoolList() {
 
 export function usePortfolios(address: string | undefined) {
   const { data } = useSWR(
-    `/api/portfolios?address=${address}`,
+    address && `/api/portfolios?address=${address}`,
     (url: string) =>
       axios
         .get<{
