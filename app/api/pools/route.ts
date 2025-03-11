@@ -15,8 +15,6 @@ export async function GET() {
   try {
     const res = await Exchange.getPoolList();
 
-    console.log("pool res", res);
-
     const pools: PoolInfo[] = [];
 
     const openApi = new OpenApi({
@@ -30,7 +28,7 @@ export async function GET() {
     );
 
     const coinRes = await Promise.all(
-      res.map(({ coin_reserved }, idx) =>
+      res.map(({ coin_reserved }) =>
         coin_reserved.length
           ? limitGetRunesInfoList(coin_reserved[0].id)
           : { detail: [] }
