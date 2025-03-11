@@ -36,7 +36,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
   const yieldTvl = useMemo(
     () =>
       poolTvl !== undefined && poolFee !== undefined
-        ? (poolFee * 100) / poolTvl
+        ? ((poolFee * 100) / poolTvl).toFixed(2)
         : undefined,
     [poolTvl, poolFee]
   );
@@ -175,17 +175,17 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
             <div className="flex gap-2 items-center">
               {yieldTvl ? (
                 <>
-                  <span className="font-semibold">
-                    {formatNumber(yieldTvl)}%
-                  </span>
-                  <Circle
-                    progress={yieldTvl}
-                    size="18"
-                    lineWidth="60"
-                    progressColor="#f6d75a"
-                    bgColor="#4c9aff"
-                    showPercentage={false}
-                  />
+                  <span>{Number(yieldTvl) === 0 ? "-" : `${yieldTvl}%`}</span>
+                  {Number(yieldTvl) !== 0 && (
+                    <Circle
+                      progress={Number(yieldTvl)}
+                      size="18"
+                      lineWidth="60"
+                      progressColor="#f6d75a"
+                      bgColor="#4c9aff"
+                      showPercentage={false}
+                    />
+                  )}
                 </>
               ) : (
                 "-"
