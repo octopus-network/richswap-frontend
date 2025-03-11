@@ -54,6 +54,8 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
     { refreshInterval: 15 * 1000 }
   );
 
+  console.log(pendingUtxos, apiUtxos);
+
   return useMemo(
     () =>
       apiUtxos

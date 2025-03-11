@@ -111,7 +111,7 @@ export function formatNumber(
   );
 }
 
-export function parseCoinAmount(value: string, coin: Coin | null) {
+export function parseCoinAmount(value: string, coin: Coin | null | undefined) {
   if (!coin || !value) {
     return "";
   }
@@ -119,7 +119,7 @@ export function parseCoinAmount(value: string, coin: Coin | null) {
   return new Decimal(value).mul(Math.pow(10, coin.decimals)).toFixed();
 }
 
-export function formatCoinAmount(value: string, coin: Coin | null) {
+export function formatCoinAmount(value: string, coin: Coin | null | undefined) {
   if (!coin || !value) {
     return "";
   }

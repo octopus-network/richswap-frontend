@@ -8,9 +8,9 @@ import { useDebounce } from "./use-debounce";
 const DEBOUNCE_TIME = 350;
 
 export function useDebouncedDeposit(
-  poolKey: string,
+  poolKey: string | undefined,
   inputAmount: string,
-  inputCoin: Coin | null
+  inputCoin: Coin | null | undefined
 ): DepositQuote | undefined {
   const inputs = useMemo(
     () => [inputAmount, inputCoin],
@@ -24,7 +24,7 @@ export function useDebouncedDeposit(
   const skipFetch = isDebouncing;
 
   useEffect(() => {
-    if (skipFetch || !inputCoin || !inputAmount) {
+    if (skipFetch || !inputCoin || !inputAmount || !poolKey) {
       return;
     }
     setDepositQuote({

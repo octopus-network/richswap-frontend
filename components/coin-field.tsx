@@ -29,7 +29,7 @@ const CoinButton = ({
   coin,
   onClick,
 }: {
-  coin: Coin | null;
+  coin: Coin | null | undefined;
   onClick: () => void;
 }) => {
   const [isMounted, setIsMounted] = useState(false);
@@ -95,7 +95,7 @@ export function CoinField({
   disabled,
 }: {
   label: string;
-  coin: Coin | null;
+  coin: Coin | null | undefined;
   className?: string;
   autoFocus?: boolean;
   pulsing?: boolean;

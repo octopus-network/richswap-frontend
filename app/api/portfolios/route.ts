@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Exchange } from "@/lib/exchange";
 import { OpenApi } from "@/lib/open-api";
 import { UNKNOWN_COIN, BITCOIN } from "@/lib/constants";
@@ -9,11 +9,15 @@ export const dynamic = "force-dynamic";
 const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
 const UNISAT_API = process.env.UNISAT_API!;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const res = await Exchange.getPoolList();
+    const address = req.nextUrl.searchParams.get("address");
 
-    console.log("pool res", res);
+    if (!address) {
+      throw new Error("Missing parameter(s)");
+    }
+
+    const res = await Exchange.getPoolList();
 
     const pools: PoolInfo[] = [];
 
@@ -68,9 +72,13 @@ export async function GET() {
       });
     }
 
+    const portfolios = await Promise.all(
+      pools.map((pool) => Exchange.getPosition(pool, address))
+    ).then((res) => res.filter((position) => !!position));
+
     return NextResponse.json({
       success: true,
-      data: pools,
+      data: portfolios,
     });
   } catch (error) {
     console.log(error);

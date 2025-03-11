@@ -34,7 +34,7 @@ export function DepositForm({
   poolData,
   onReview,
 }: {
-  pool: PoolInfo;
+  pool: PoolInfo | undefined;
   poolData: PoolData | undefined;
   onReview: (
     coinAAmount: string,
@@ -56,8 +56,8 @@ export function DepositForm({
   const [outputAmount, setOutputAmount] = useState("");
   const [isEmptyPool, setIsEmptyPool] = useState(false);
 
-  const coinABalance = useCoinBalance(pool.coinA);
-  const coinBBalance = useCoinBalance(pool.coinB);
+  const coinABalance = useCoinBalance(pool?.coinA);
+  const coinBBalance = useCoinBalance(pool?.coinB);
 
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
 
@@ -85,21 +85,20 @@ export function DepositForm({
     independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT;
 
   const dependentCoin =
-    independentField === Field.INPUT ? pool.coinB : pool.coinA;
+    independentField === Field.INPUT ? pool?.coinB : pool?.coinA;
 
   const formattedAmounts = useMemo(
     () => ({
       [independentField]: typedValue,
-      [dependentField]: formatCoinAmount(
-        parsedAmounts[dependentField],
-        dependentCoin
-      ),
+      [dependentField]: dependentCoin
+        ? formatCoinAmount(parsedAmounts[dependentField], dependentCoin)
+        : "",
     }),
     [parsedAmounts, typedValue, dependentField, independentField, dependentCoin]
   );
 
-  const coinAPrice = useCoinPrice(pool.coinA?.id);
-  const coinBPrice = useCoinPrice(pool.coinB?.id);
+  const coinAPrice = useCoinPrice(pool?.coinA?.id);
+  const coinBPrice = useCoinPrice(pool?.coinB?.id);
 
   const coinAFiatValue = useMemo(
     () => Number(formattedAmounts[Field.INPUT]) * coinAPrice,
@@ -133,14 +132,16 @@ export function DepositForm({
 
   const tooSmallFunds = useMemo(
     () =>
-      Boolean(
-        pool.coinA &&
-          new Decimal(
-            isEmptyPool
-              ? inputAmount || "0"
-              : formattedAmounts[Field.INPUT] || "0"
-          ).lt(0.0001)
-      ),
+      pool
+        ? Boolean(
+            pool.coinA &&
+              new Decimal(
+                isEmptyPool
+                  ? inputAmount || "0"
+                  : formattedAmounts[Field.INPUT] || "0"
+              ).lt(0.0001)
+          )
+        : false,
     [pool, inputAmount, isEmptyPool, formattedAmounts]
   );
 
@@ -157,7 +158,7 @@ export function DepositForm({
 
   const runePriceInSats = useMemo(
     () =>
-      poolData
+      poolData && pool
         ? getRunePriceInSats(
             formatCoinAmount(poolData.coinAAmount, pool.coinA),
             formatCoinAmount(poolData.coinBAmount, pool.coinB)
@@ -166,12 +167,12 @@ export function DepositForm({
     [poolData, pool]
   );
 
-  const btcPrice = useCoinPrice(pool.coinA.id);
+  const btcPrice = useCoinPrice(pool?.coinA.id);
 
   return (
     <>
       <CoinField
-        coin={pool.coinA}
+        coin={pool?.coinA ?? null}
         label="Bitcoin"
         pulsing={
           independentField === Field.OUTPUT &&
@@ -191,7 +192,7 @@ export function DepositForm({
         <div className="absolute inset-x-0 top-[50%] bg-border/60 h-[1px]" />
       </div>
       <CoinField
-        coin={pool.coinB}
+        coin={pool?.coinB}
         label="Rune"
         pulsing={
           independentField === Field.INPUT &&
@@ -241,9 +242,9 @@ export function DepositForm({
             {deposit?.state === DepositState.INVALID
               ? deposit?.errorMessage ?? "Review"
               : insufficientCoinABalance
-              ? `Insufficient ${getCoinSymbol(pool.coinA)} Balance`
+              ? `Insufficient ${getCoinSymbol(pool?.coinA)} Balance`
               : insufficientCoinBBalance
-              ? `Insufficient ${getCoinSymbol(pool.coinB)} Balance`
+              ? `Insufficient ${getCoinSymbol(pool?.coinB)} Balance`
               : tooSmallFunds
               ? "Too Small Funds"
               : "Deposit"}
@@ -255,12 +256,16 @@ export function DepositForm({
           <span className="text-muted-foreground">Currency Reserves</span>
           <div className="flex flex-col items-end text-muted-foreground">
             <span>
-              {formatCoinAmount(poolData?.coinAAmount ?? "0", pool.coinA)}{" "}
-              {getCoinSymbol(pool.coinA)}
+              {pool
+                ? formatCoinAmount(poolData?.coinAAmount ?? "0", pool.coinA)
+                : "-"}{" "}
+              {getCoinSymbol(pool?.coinA)}
             </span>
             <span>
-              {formatCoinAmount(poolData?.coinBAmount ?? "0", pool.coinB)}{" "}
-              {getCoinSymbol(pool.coinB)}
+              {pool
+                ? formatCoinAmount(poolData?.coinBAmount ?? "0", pool.coinB)
+                : "-"}{" "}
+              {getCoinSymbol(pool?.coinB)}
             </span>
           </div>
         </div>

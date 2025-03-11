@@ -129,12 +129,12 @@ export function SwapPanel() {
   const coinBPrice = useCoinPrice(coinB?.id);
 
   const coinAFiatValue = useMemo(
-    () => Number(formattedAmounts[Field.INPUT]) * coinAPrice,
+    () => Number(formattedAmounts[Field.INPUT] || 0) * coinAPrice,
     [coinAPrice, formattedAmounts]
   );
 
   const coinBFiatValue = useMemo(
-    () => Number(formattedAmounts[Field.OUTPUT]) * coinBPrice,
+    () => Number(formattedAmounts[Field.OUTPUT] || 0) * coinBPrice,
     [coinBPrice, formattedAmounts]
   );
 

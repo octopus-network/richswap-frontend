@@ -26,21 +26,23 @@ export function useDepositActionHandlers() {
   };
 }
 
-export function useDerivedDepositInfo(poolInfo: PoolInfo) {
+export function useDerivedDepositInfo(poolInfo: PoolInfo | undefined) {
   const { typedValue, independentField } = useDepositState();
-
-  const { coinA, coinB } = poolInfo;
 
   const isExactIn: boolean = independentField === Field.INPUT;
 
   const parsedAmount = useMemo(
-    () => parseCoinAmount(typedValue, isExactIn ? coinA : coinB),
-    [typedValue, isExactIn, coinA, coinB]
+    () =>
+      parseCoinAmount(
+        typedValue,
+        isExactIn ? poolInfo?.coinA : poolInfo?.coinB
+      ),
+    [typedValue, isExactIn, poolInfo]
   );
 
-  const inputCoin = isExactIn ? coinA : coinB;
+  const inputCoin = isExactIn ? poolInfo?.coinA : poolInfo?.coinB;
 
-  const deposit = useDebouncedDeposit(poolInfo.key, parsedAmount, inputCoin);
+  const deposit = useDebouncedDeposit(poolInfo?.key, parsedAmount, inputCoin);
 
   return useMemo(
     () => ({

@@ -29,7 +29,7 @@ function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
   return formatCoinAmount(amount.toString(), coin);
 }
 
-export function useCoinBalance(coin: Coin | null) {
+export function useCoinBalance(coin: Coin | null | undefined) {
   const btcUtxos = useWalletBtcUtxos();
   const runeUtxos = useWalletRuneUtxos(coin?.id);
   return useMemo(

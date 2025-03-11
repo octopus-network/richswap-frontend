@@ -63,7 +63,7 @@ export type PoolOverview = {
 };
 
 export interface Position {
-  poolKey: string;
+  pool: PoolInfo;
   coinA: Coin | undefined;
   coinAAmount: string;
   coinB: Coin | undefined;
