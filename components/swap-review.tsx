@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { ArrowDown, TriangleAlert } from "lucide-react";
+import { ArrowDown, Loader2, TriangleAlert } from "lucide-react";
 import {
   AddressType,
   Coin,
+  InputCoin,
+  OutputCoin,
   TransactionStatus,
   TransactionType,
   UnspentOutput,
@@ -32,7 +34,7 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
-import { EXCHANGE_ID } from "@/lib/constants/canister";
+import { EXCHANGE_ID } from "@/lib/constants";
 import { useAddTransaction } from "@/store/transactions";
 
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -68,8 +70,13 @@ export function SwapReview({
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [txid, setTxid] = useState("");
 
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
+  const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
+  const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
+  const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
+  const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -125,91 +132,106 @@ export function SwapReview({
       return;
     }
 
-    const { address: poolAddress } = getP2trAressAndScript(poolKey);
-    if (!poolAddress) {
-      return;
-    }
-
-    const isSwapRune = coinA.id === BITCOIN.id;
-    const involvedRune = isSwapRune ? coinB : coinA;
-
-    const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-    const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
-
-    if (isSwapRune) {
-      try {
-        const tx = swapRuneTx({
-          btcAmount: coinAAmountBigInt,
-          runeid: involvedRune.id,
-          runeAmount: coinBAmountBigInt,
-          btcUtxos,
-          poolUtxos,
-          poolAddress,
-          address,
-          paymentAddress,
-          feeRate: recommendedFeeRate,
-        });
-
-        setPsbt(tx.psbt);
-        setToSpendUtxos(tx.toSpendUtxos);
-      } catch (err) {
-        console.log(err);
-      }
-    } else {
-      if (!runeUtxos?.length) {
+    const genPsbt = async () => {
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+      if (!poolAddress) {
         return;
       }
-      const _runeUtxos: UnspentOutput[] = [];
 
-      const runeAmount = coinAAmountBigInt;
+      const isSwapRune = coinA.id === BITCOIN.id;
+      const involvedRune = isSwapRune ? coinB : coinA;
 
-      for (let i = 0; i < runeUtxos.length; i++) {
-        const v = runeUtxos[i];
-        if (v.runes.length) {
-          const balance = v.runes.find((r) => r.id == involvedRune.id);
-          if (balance && BigInt(balance.amount) == runeAmount) {
-            _runeUtxos.push(v);
-            break;
-          }
+      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
+      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
+
+      if (isSwapRune) {
+        try {
+          const tx = await swapRuneTx({
+            btcAmount: coinAAmountBigInt,
+            runeid: involvedRune.id,
+            runeAmount: coinBAmountBigInt,
+            btcUtxos,
+            poolUtxos,
+            poolAddress,
+            address,
+            paymentAddress,
+            feeRate: recommendedFeeRate,
+          });
+
+          setPsbt(tx.psbt);
+          setToSpendUtxos(tx.toSpendUtxos);
+          setPoolSpendUtxos(tx.poolSpendUtxos);
+          setPoolReceiveUtxos(tx.poolReceiveUtxos);
+          setTxid(tx.txid);
+          setInputCoins(tx.inputCoins);
+          setOutputCoins(tx.outputCoins);
+        } catch (err) {
+          console.log(err);
         }
-      }
+      } else {
+        if (!runeUtxos?.length) {
+          return;
+        }
+        const _runeUtxos: UnspentOutput[] = [];
 
-      if (_runeUtxos.length == 0) {
-        let total = BigInt(0);
+        const runeAmount = coinAAmountBigInt;
+
         for (let i = 0; i < runeUtxos.length; i++) {
           const v = runeUtxos[i];
-          v.runes.forEach((r) => {
-            if (r.id == involvedRune.id) {
-              total = total + BigInt(r.amount);
+          if (v.runes.length) {
+            const balance = v.runes.find((r) => r.id == involvedRune.id);
+            if (balance && BigInt(balance.amount) == runeAmount) {
+              _runeUtxos.push(v);
+              break;
             }
-          });
-          _runeUtxos.push(v);
-          if (total >= runeAmount) {
-            break;
           }
         }
-      }
 
-      try {
-        const tx = swapBtcTx({
-          runeid: involvedRune.id,
-          runeAmount: runeAmount,
-          btcAmount: coinBAmountBigInt,
-          btcUtxos,
-          runeUtxos: _runeUtxos,
-          poolUtxos,
-          poolAddress,
-          address,
-          paymentAddress,
-          feeRate: recommendedFeeRate,
-        });
+        if (_runeUtxos.length == 0) {
+          let total = BigInt(0);
+          for (let i = 0; i < runeUtxos.length; i++) {
+            const v = runeUtxos[i];
+            v.runes.forEach((r) => {
+              if (r.id == involvedRune.id) {
+                total = total + BigInt(r.amount);
+              }
+            });
+            _runeUtxos.push(v);
+            if (total >= runeAmount) {
+              break;
+            }
+          }
+        }
 
-        setPsbt(tx.psbt);
-        setToSpendUtxos(tx.toSpendUtxos);
-      } catch (err) {
-        console.log(err);
+        try {
+          const tx = await swapBtcTx({
+            runeid: involvedRune.id,
+            runeAmount: runeAmount,
+            btcAmount: coinBAmountBigInt,
+            btcUtxos,
+            runeUtxos: _runeUtxos,
+            poolUtxos,
+            poolAddress,
+            address,
+            paymentAddress,
+            feeRate: recommendedFeeRate,
+          });
+
+          setPsbt(tx.psbt);
+
+          setToSpendUtxos(tx.toSpendUtxos);
+          setPoolSpendUtxos(tx.poolSpendUtxos);
+          setPoolReceiveUtxos(tx.poolReceiveUtxos);
+          setTxid(tx.txid);
+          setInputCoins(tx.inputCoins);
+          setOutputCoins(tx.outputCoins);
+        } catch (err) {
+          console.log(err);
+        }
       }
     }
+
+    genPsbt();
   }, [
     poolKey,
     coinA,
@@ -231,13 +253,23 @@ export function SwapReview({
       !coinB ||
       !poolUtxos?.length ||
       !poolKey ||
-      !toSpendUtxos.length
+      !toSpendUtxos.length ||
+      !poolSpendUtxos.length ||
+      !poolReceiveUtxos.length ||
+      !txid ||
+      !inputCoins.length ||
+      !outputCoins.length
     ) {
       return;
     }
 
     setIsSubmiting(true);
     try {
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+      if (!poolAddress) {
+        return;
+      }
+
       const psbtBase64 = psbt.toBase64();
       setStep(1);
 
@@ -252,37 +284,20 @@ export function SwapReview({
 
       setStep(2);
 
-      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
-
-      const txid = await Orchestrator.invoke({
-        instruction_set: {
-          steps: [
+      await Orchestrator.invoke({
+        intention_set: {
+          initiator_address: paymentAddress,
+          intentions: [
             {
-              method: "swap",
+              action: "swap",
               exchange_id: EXCHANGE_ID,
-              input_coins: [
-                {
-                  coin_balance: {
-                    id: coinA.id,
-                    value: coinAAmountBigInt,
-                  },
-                  owner_address:
-                    coinA.id === BITCOIN.id ? paymentAddress : address,
-                },
-              ],
-              output_coins: [
-                {
-                  coin_balance: {
-                    id: coinB.id,
-                    value: coinBAmountBigInt,
-                  },
-                  owner_address:
-                    coinB.id === BITCOIN.id ? paymentAddress : address,
-                },
-              ],
-              pool_key: [poolKey],
-              nonce: [BigInt(nonce)],
+              input_coins: inputCoins,
+              pool_utxo_spend: poolSpendUtxos,
+              pool_utxo_receive: poolReceiveUtxos,
+              output_coins: outputCoins,
+              action_params: "",
+              pool_address: poolAddress,
+              nonce: BigInt(nonce),
             },
           ],
         },
@@ -389,9 +404,9 @@ export function SwapReview({
                 <span className="text-primary/80 text-xs">
                   {btcPrice
                     ? `$${new Decimal(runePriceInSats)
-                        .mul(btcPrice)
-                        .div(Math.pow(10, 8))
-                        .toFixed(4)}`
+                      .mul(btcPrice)
+                      .div(Math.pow(10, 8))
+                      .toFixed(4)}`
                     : ""}
                 </span>
               </div>
@@ -415,11 +430,14 @@ export function SwapReview({
               onClick={onSubmit}
               disabled={!psbt || invalidAddressType}
             >
+              {
+                !psbt && <Loader2 className="size-4 animate-spin" />
+              }
               {!psbt
-                ? "Insufficient Utxos"
+                ? "Generating PSBT"
                 : invalidAddressType
-                ? "Unsupported Address Type"
-                : "Sign Transaction"}
+                  ? "Unsupported Address Type"
+                  : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button

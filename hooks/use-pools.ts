@@ -1,10 +1,10 @@
 import axios from "axios";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCoinPrice, useCoinPrices } from "./use-prices";
 
 import Decimal from "decimal.js";
 import { formatCoinAmount } from "@/lib/utils";
-
+import { Exchange } from "@/lib/exchange";
 import { BITCOIN } from "@/lib/constants";
 import useSWR from "swr";
 import { PoolInfo } from "@/types";
@@ -21,7 +21,7 @@ export function usePoolList() {
     { refreshInterval: 30 * 1000 }
   );
 
-  return data ?? [];
+  return useMemo(() => data ?? [], [data]);
 }
 
 export function usePoolsTvl() {
@@ -42,11 +42,11 @@ export function usePoolsTvl() {
     if (!prices) {
       return tmpObj;
     }
-    poolsList.forEach(({ coinA, coinAAmount, key }) => {
+    poolsList.forEach(({ coinA, key }) => {
       const coinAPrice = prices?.[coinA.id] ?? 0;
-      const coinAValue = new Decimal(formatCoinAmount(coinAAmount, coinA)).mul(
-        coinAPrice
-      );
+      const coinAValue = new Decimal(
+        formatCoinAmount(coinA.balance, coinA)
+      ).mul(coinAPrice);
       tmpObj[key] = coinAValue.mul(2).toNumber();
     });
     return tmpObj;
@@ -59,19 +59,29 @@ export function usePoolsFee() {
   const poolsList = usePoolList();
 
   const btcPrice = useCoinPrice(BITCOIN.id);
+  const [fees, setFees] = useState<Record<string, number>>({});
 
-  const fees = useMemo(() => {
-    const tmpObj: Record<string, number> = {};
+  useEffect(() => {
     if (!btcPrice) {
-      return tmpObj;
+      return;
     }
-    poolsList.forEach(({ incomes, key }) => {
-      const fees = new Decimal(formatCoinAmount(incomes, BITCOIN)).mul(
-        btcPrice
-      );
-      tmpObj[key] = fees.toNumber();
+    const promises = poolsList.map(({ address }) =>
+      Exchange.getPoolData(address)
+    );
+
+    Promise.all(promises).then((poolDatas) => {
+      const tmpObj: Record<string, number> = {};
+      poolDatas.forEach((data) => {
+        if (!data) {
+          return;
+        }
+        const fees = new Decimal(formatCoinAmount(data.incomes, BITCOIN)).mul(
+          btcPrice
+        );
+        tmpObj[data.key] = fees.toNumber();
+      });
+      setFees(tmpObj);
     });
-    return tmpObj;
   }, [poolsList, btcPrice]);
 
   return fees;

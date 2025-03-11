@@ -5,6 +5,8 @@ import {
   TransactionStatus,
   TransactionType,
   UnspentOutput,
+  InputCoin,
+  OutputCoin,
 } from "@/types";
 
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
@@ -14,6 +16,7 @@ import { AddressType } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
 import { CoinIcon } from "@/components/coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
+import { Loader2 } from "lucide-react";
 
 import {
   formatNumber,
@@ -34,7 +37,7 @@ import { parseCoinAmount } from "@/lib/utils";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
-import { EXCHANGE_ID } from "@/lib/constants/canister";
+import { EXCHANGE_ID } from "@/lib/constants";
 import { useAddTransaction } from "@/store/transactions";
 
 export function DepositReview({
@@ -65,8 +68,13 @@ export function DepositReview({
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [txid, setTxid] = useState("");
 
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
+  const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
+  const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
+  const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
+  const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -110,61 +118,70 @@ export function DepositReview({
       return;
     }
 
-    const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-    const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
+    const genPsbt = async () => {
+      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
+      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
 
-    const _runeUtxos: UnspentOutput[] = [];
-    const runeAmount = coinBAmountBigInt;
-    const runeid = coinB.id;
+      const _runeUtxos: UnspentOutput[] = [];
+      const runeAmount = coinBAmountBigInt;
+      const runeid = coinB.id;
 
-    for (let i = 0; i < runeUtxos.length; i++) {
-      const v = runeUtxos[i];
-      if (v.runes.length) {
-        const balance = v.runes.find((r) => r.id == runeid);
-        if (balance && BigInt(balance.amount) == runeAmount) {
-          _runeUtxos.push(v);
-          break;
-        }
-      }
-    }
-
-    if (_runeUtxos.length == 0) {
-      let total = BigInt(0);
       for (let i = 0; i < runeUtxos.length; i++) {
         const v = runeUtxos[i];
-        v.runes.forEach((r) => {
-          if (r.id == runeid) {
-            total = total + BigInt(r.amount);
+        if (v.runes.length) {
+          const balance = v.runes.find((r) => r.id == runeid);
+          if (balance && BigInt(balance.amount) == runeAmount) {
+            _runeUtxos.push(v);
+            break;
           }
-        });
-        _runeUtxos.push(v);
-        if (total >= runeAmount) {
-          break;
         }
       }
-    }
 
-    try {
-      const tx = depositTx({
-        runeid: coinB.id,
-        runeAmount,
-        btcAmount: coinAAmountBigInt,
-        btcUtxos,
-        runeUtxos: _runeUtxos,
-        poolUtxos,
-        poolAddress,
-        address,
-        paymentAddress,
-        feeRate: recommendedFeeRate,
-      });
+      if (_runeUtxos.length == 0) {
+        let total = BigInt(0);
+        for (let i = 0; i < runeUtxos.length; i++) {
+          const v = runeUtxos[i];
+          v.runes.forEach((r) => {
+            if (r.id == runeid) {
+              total = total + BigInt(r.amount);
+            }
+          });
+          _runeUtxos.push(v);
+          if (total >= runeAmount) {
+            break;
+          }
+        }
+      }
 
-      console.log("tx", tx);
+      try {
+        const tx = await depositTx({
+          runeid: coinB.id,
+          runeAmount,
+          btcAmount: coinAAmountBigInt,
+          btcUtxos,
+          runeUtxos: _runeUtxos,
+          poolUtxos,
+          poolAddress,
+          address,
+          paymentAddress,
+          feeRate: recommendedFeeRate,
+        });
 
-      setPsbt(tx.psbt);
-      setToSpendUtxos(tx.toSpendUtxos);
-    } catch (err) {
-      console.log(err);
-    }
+        console.log("tx", tx);
+
+        setPsbt(tx.psbt);
+        setToSpendUtxos(tx.toSpendUtxos);
+        setToSpendUtxos(tx.toSpendUtxos);
+        setPoolSpendUtxos(tx.poolSpendUtxos);
+        setPoolReceiveUtxos(tx.poolReceiveUtxos);
+        setTxid(tx.txid);
+        setInputCoins(tx.inputCoins);
+        setOutputCoins(tx.outputCoins);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    genPsbt();
   }, [
     poolKey,
     coinA,
@@ -187,11 +204,14 @@ export function DepositReview({
     try {
       const psbtBase64 = psbt.toBase64();
 
+      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+      if (!poolAddress) {
+        return;
+      }
+
       console.log("Deposit Liquidity PSBT:", psbtBase64);
 
       setStep(1);
-
-      const { address: poolAddress } = getP2trAressAndScript(poolKey);
 
       const signedRes = await signPsbt(psbtBase64);
 
@@ -203,43 +223,20 @@ export function DepositReview({
 
       setStep(2);
 
-      const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
-
-      let poolRuneAmount = BigInt(0);
-
-      poolUtxos.forEach((utxo) => {
-        const rune = utxo.runes.find((rune) => rune.id === coinB.id);
-        poolRuneAmount += BigInt(rune!.amount);
-      });
-
-      const txid = await Orchestrator.invoke({
-        instruction_set: {
-          steps: [
+      await Orchestrator.invoke({
+        intention_set: {
+          initiator_address: paymentAddress,
+          intentions: [
             {
-              method: "add_liquidity",
+              action: "add_liquidity",
               exchange_id: EXCHANGE_ID,
-              input_coins: [
-                {
-                  coin_balance: { id: coinA.id, value: coinAAmountBigInt },
-                  owner_address: paymentAddress,
-                },
-                {
-                  coin_balance: { id: coinB.id, value: coinBAmountBigInt },
-                  owner_address: address,
-                },
-              ],
-              output_coins: [
-                {
-                  coin_balance: {
-                    id: coinB.id,
-                    value: coinBAmountBigInt + poolRuneAmount,
-                  },
-                  owner_address: poolAddress!,
-                },
-              ],
-              pool_key: [poolKey],
-              nonce: [BigInt(nonce)],
+              input_coins: inputCoins,
+              pool_utxo_spend: poolSpendUtxos,
+              pool_utxo_receive: poolReceiveUtxos,
+              output_coins: outputCoins,
+              pool_address: poolAddress,
+              action_params: "",
+              nonce: BigInt(nonce),
             },
           ],
         },
@@ -374,8 +371,9 @@ export function DepositReview({
               onClick={onSubmit}
               disabled={!psbt || invalidAddressType}
             >
+              {!psbt && <Loader2 className="size-4 animate-spin" />}
               {!psbt
-                ? "Insufficient Utxos"
+                ? "Generating PSBT"
                 : invalidAddressType
                 ? "Unsupported Address Type"
                 : "Sign PSBT"}

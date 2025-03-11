@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { queryRunes } from "@/lib/chain-api";
+
+import { OpenApi } from "@/lib/open-api";
+
+const UNISAT_API = process.env.UNISAT_API!;
+const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
 
 export async function GET(req: NextRequest) {
   const keyword = req.nextUrl.searchParams.get("keyword");
@@ -7,12 +11,18 @@ export async function GET(req: NextRequest) {
     if (!keyword) {
       throw new Error("Missing parameter(s)");
     }
-    const res = await queryRunes(keyword);
+
+    const openApi = new OpenApi({
+      baseUrl: UNISAT_API,
+      apiKey: UNISAT_API_KEY,
+    });
+
+    const { detail } = await openApi.getRunesInfoList(keyword);
 
     return NextResponse.json({
       success: true,
-      data: res?.length
-        ? res.map(
+      data: detail?.length
+        ? detail.map(
             ({
               runeid,
               spacedRune,

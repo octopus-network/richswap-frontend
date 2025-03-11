@@ -1,6 +1,6 @@
 import { UnspentOutput } from "@/types";
 import { useState, useEffect, useMemo } from "react";
-import { getUtxoByOutpoint } from "@/lib/utils";
+
 import { Orchestrator } from "@/lib/orchestrator";
 import { useAtomValue } from "jotai";
 import { spentUtxosAtom } from "@/store/spent-utxos";
@@ -19,19 +19,9 @@ export function usePendingUtxos(address: string | undefined) {
     if (!address) {
       return;
     }
-    Orchestrator.getUnconfirmedOutpoints(address)
-      .then((outpoints: string[]) =>
-        Promise.all(
-          outpoints.map((outpoint) => {
-            const [txid, vout] = outpoint.split(":");
-            return getUtxoByOutpoint(txid, Number(vout));
-          })
-        )
-      )
-      .then((utxos) => {
-        const filteredUtxos = utxos.filter((utxo) => !!utxo);
-        setUtxos(filteredUtxos);
-      });
+    Orchestrator.getUnconfirmedUtxos(address).then((_utxos) => {
+      setUtxos(_utxos);
+    });
   }, [address, timer, transactions]);
 
   useEffect(() => {

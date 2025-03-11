@@ -13,6 +13,7 @@ import { Orchestrator } from "@/lib/orchestrator";
 import { useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { formatNumber } from "@/lib/utils";
 import { PopupStatus, useAddPopup } from "@/store/popups";
+import { MEMPOOL_URL } from "@/lib/constants";
 
 export function TransactionUpdater() {
   const transactions = useTransactions();
@@ -47,11 +48,9 @@ export function TransactionUpdater() {
         if (res) {
           return res;
         } else {
-          return axios
-            .get(`https://mempool.space/api/tx/${txid}`)
-            .then((res) => {
-              return res.data;
-            });
+          return axios.get(`${MEMPOOL_URL}/api/tx/${txid}`).then((res) => {
+            return res.data;
+          });
         }
       });
     }, retryOptions);

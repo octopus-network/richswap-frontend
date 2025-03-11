@@ -1,4 +1,10 @@
-import { PoolInfo, Field, DepositState, UnspentOutput } from "@/types";
+import {
+  PoolInfo,
+  PoolData,
+  Field,
+  DepositState,
+  UnspentOutput,
+} from "@/types";
 import { CoinField } from "@/components/coin-field";
 import { Plus } from "lucide-react";
 
@@ -25,9 +31,11 @@ import {
 
 export function DepositForm({
   pool,
+  poolData,
   onReview,
 }: {
   pool: PoolInfo;
+  poolData: PoolData | undefined;
   onReview: (
     coinAAmount: string,
     coinBAmount: string,
@@ -149,11 +157,13 @@ export function DepositForm({
 
   const runePriceInSats = useMemo(
     () =>
-      getRunePriceInSats(
-        formatCoinAmount(pool.coinAAmount, pool.coinA),
-        formatCoinAmount(pool.coinBAmount, pool.coinB)
-      ),
-    [pool]
+      poolData
+        ? getRunePriceInSats(
+            formatCoinAmount(poolData.coinAAmount, pool.coinA),
+            formatCoinAmount(poolData.coinBAmount, pool.coinB)
+          )
+        : undefined,
+    [poolData, pool]
   );
 
   const btcPrice = useCoinPrice(pool.coinA.id);
@@ -221,10 +231,8 @@ export function DepositForm({
             }
             onClick={() =>
               onReview(
-                formattedAmounts[Field.INPUT],
-                deposit?.state === DepositState.EMPTY
-                  ? outputAmount
-                  : formattedAmounts[Field.OUTPUT],
+                isEmptyPool ? inputAmount : formattedAmounts[Field.INPUT],
+                isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT],
                 deposit?.nonce ?? "0",
                 deposit?.utxos ?? []
               )
@@ -247,11 +255,11 @@ export function DepositForm({
           <span className="text-muted-foreground">Currency Reserves</span>
           <div className="flex flex-col items-end text-muted-foreground">
             <span>
-              {formatCoinAmount(pool.coinAAmount, pool.coinA)}{" "}
+              {formatCoinAmount(poolData?.coinAAmount ?? "0", pool.coinA)}{" "}
               {getCoinSymbol(pool.coinA)}
             </span>
             <span>
-              {formatCoinAmount(pool.coinBAmount, pool.coinB)}{" "}
+              {formatCoinAmount(poolData?.coinBAmount ?? "0", pool.coinB)}{" "}
               {getCoinSymbol(pool.coinB)}
             </span>
           </div>

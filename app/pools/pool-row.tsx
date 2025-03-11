@@ -86,10 +86,11 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
     const { address } = getP2trAressAndScript(pool.key);
     return address;
   }, [pool]);
+
   return (
     <>
       <div
-        className="grid md:grid-cols-12 grid-cols-9 h-[66px] items-center gap-1 sm:gap-3 md:gap-6 hover:bg-secondary cursor-pointer px-4 py-3"
+        className="grid md:grid-cols-12 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors"
         onClick={() => setManageLiquidityModalOpen(true)}
       >
         <div className="col-span-3 flex items-center">

@@ -27,18 +27,18 @@ export async function getUtxoByOutpoint(
     getTxInfo(txid),
     getRawTx(txid),
   ])) as [
-    {
-      vout: {
-        scriptpubkey: string;
-        scriptpubkey_address: string;
-        scriptpubkey_asm: string;
-        scriptpubkey_type: string;
-        value: number;
-      }[];
-      status: { confirmed: boolean; block_height: number };
-    },
-    string
-  ];
+      {
+        vout: {
+          scriptpubkey: string;
+          scriptpubkey_address: string;
+          scriptpubkey_asm: string;
+          scriptpubkey_type: string;
+          value: number;
+        }[];
+        status: { confirmed: boolean; block_height: number };
+      },
+      string
+    ];
 
   if (!outputs) {
     return;
@@ -72,11 +72,11 @@ export async function getUtxoByOutpoint(
     addressType: getAddressType(scriptpubkey_address),
     runes: edict
       ? [
-          {
-            id: `${edict.id.block}:${edict.id.idx}`,
-            amount: edict.amount.toString(),
-          },
-        ]
+        {
+          id: `${edict.id.block}:${edict.id.idx}`,
+          amount: edict.amount.toString(),
+        },
+      ]
       : [],
   };
 }
@@ -103,6 +103,7 @@ export function selectBtcUtxos(utxos: UnspentOutput[], targetAmount: bigint) {
     remainingUtxos,
   };
 }
+
 
 export function selectRuneUtxos(
   utxos: UnspentOutput[],

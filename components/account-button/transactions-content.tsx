@@ -6,6 +6,7 @@ import { useTransactions } from "@/store/transactions";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TxStatusBadge } from "../tx-status-badge";
 import moment from "moment";
+import { MEMPOOL_URL } from "@/lib/constants";
 import { useUpdateTransactionStatus } from "@/store/transactions";
 import { useLatestBlock } from "@/hooks/use-latest-block";
 
@@ -66,7 +67,7 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
       transaction.status === TransactionStatus.FINALIZED ||
       transaction.status === TransactionStatus.BROADCASTED
     ) {
-      window.open(`https://mempool.space/tx/${transaction.txid}`, "_blank");
+      window.open(`${MEMPOOL_URL}/tx/${transaction.txid}`, "_blank");
     } else if (transaction.status === TransactionStatus.REJECTED) {
       setShowErrorMessage((prev) => !prev);
     }
@@ -97,7 +98,9 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
         </div>
       )}
       <div className="flex justify-between items-center gap-3">
-        <span className="text-xs text-muted-foreground truncate">{description}</span>
+        <span className="text-xs text-muted-foreground truncate">
+          {description}
+        </span>
         <span className="text-xs text-muted-foreground truncate">
           {moment(transaction.timestamp).fromNow()}
         </span>

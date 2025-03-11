@@ -1,8 +1,11 @@
 export const idlFactory = ({ IDL }: { IDL: any }) => {
   const ExchangeError = IDL.Variant({
+    InvalidSignPsbtArgs: IDL.Text,
     InvalidNumeric: IDL.Null,
     Overflow: IDL.Null,
     InvalidInput: IDL.Null,
+    PoolAddressNotFound: IDL.Null,
+    PoolStateExpired: IDL.Nat64,
     TooSmallFunds: IDL.Null,
     InvalidRuneId: IDL.Null,
     InvalidPool: IDL.Null,
@@ -19,36 +22,8 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   });
   const Result = IDL.Variant({ Ok: IDL.Text, Err: ExchangeError });
   const FinalizeTxArgs = IDL.Record({
-    tx_id: IDL.Text,
-    pool_key: IDL.Text,
-  });
-  const CoinMeta = IDL.Record({
-    id: IDL.Text,
-    min_amount: IDL.Nat,
-    symbol: IDL.Text,
-  });
-  const CoinBalance = IDL.Record({ id: IDL.Text, value: IDL.Nat });
-  const Utxo = IDL.Record({
-    satoshis: IDL.Nat64,
-    balance: CoinBalance,
     txid: IDL.Text,
-    vout: IDL.Nat32,
-  });
-  const PoolState = IDL.Record({
-    k: IDL.Nat,
-    id: IDL.Opt(IDL.Text),
-    lp: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
-    utxo: IDL.Opt(Utxo),
-    incomes: IDL.Nat64,
-    nonce: IDL.Nat64,
-  });
-  const LiquidityPoolWithState = IDL.Record({
-    addr: IDL.Text,
-    meta: CoinMeta,
-    pubkey: IDL.Text,
-    state: IDL.Opt(PoolState),
-    fee_rate: IDL.Nat64,
-    tweaked: IDL.Text,
+    pool_key: IDL.Text,
   });
   const Liquidity = IDL.Record({
     user_share: IDL.Nat,
@@ -56,11 +31,35 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     btc_supply: IDL.Nat64,
   });
   const Result_1 = IDL.Variant({ Ok: Liquidity, Err: ExchangeError });
-  const PoolMeta = IDL.Record({
-    id: IDL.Text,
+  const GetPoolInfoArgs = IDL.Record({ pool_address: IDL.Text });
+  const CoinBalance = IDL.Record({ id: IDL.Text, value: IDL.Nat });
+  const Utxo = IDL.Record({
+    maybe_rune: IDL.Opt(CoinBalance),
+    sats: IDL.Nat64,
+    txid: IDL.Text,
+    vout: IDL.Nat32,
+  });
+  const PoolInfo = IDL.Record({
+    key: IDL.Text,
     name: IDL.Text,
-    coins: IDL.Vec(IDL.Text),
+    btc_reserved: IDL.Nat64,
+    coin_reserved: IDL.Vec(CoinBalance),
+    attributes: IDL.Text,
     address: IDL.Text,
+    nonce: IDL.Nat64,
+    utxos: IDL.Vec(Utxo),
+  });
+  const GetPoolListArgs = IDL.Record({
+    from: IDL.Opt(IDL.Text),
+    limit: IDL.Nat32,
+  });
+  const PoolOverview = IDL.Record({
+    key: IDL.Text,
+    name: IDL.Text,
+    btc_reserved: IDL.Nat64,
+    coin_reserved: IDL.Vec(CoinBalance),
+    address: IDL.Text,
+    nonce: IDL.Nat64,
   });
   const LiquidityOffer = IDL.Record({
     output: CoinBalance,
@@ -95,64 +94,47 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     Ok: WithdrawalOffer,
     Err: ExchangeError,
   });
-  const InputRune = IDL.Record({
-    tx_id: IDL.Text,
-    coin_balance: IDL.Opt(CoinBalance),
-    vout: IDL.Nat32,
-    btc_amount: IDL.Nat64,
-  });
-  const OutputRune = IDL.Record({
-    coin_balance: IDL.Opt(CoinBalance),
-    btc_amount: IDL.Nat64,
-  });
-  const AssetWithOwner = IDL.Record({
-    coin_balance: CoinBalance,
-    owner_address: IDL.Text,
-  });
-  const ReeInstruction = IDL.Record({
-    input_coins: IDL.Vec(AssetWithOwner),
-    method: IDL.Text,
-    output_coins: IDL.Vec(AssetWithOwner),
+  const InputCoin = IDL.Record({ coin: CoinBalance, from: IDL.Text });
+  const OutputCoin = IDL.Record({ to: IDL.Text, coin: CoinBalance });
+  const Intention = IDL.Record({
+    input_coins: IDL.Vec(InputCoin),
+    output_coins: IDL.Vec(OutputCoin),
+    action: IDL.Text,
     exchange_id: IDL.Text,
-    nonce: IDL.Opt(IDL.Nat64),
-    pool_key: IDL.Opt(IDL.Text),
+    pool_utxo_spend: IDL.Vec(IDL.Text),
+    nonce: IDL.Nat64,
+    pool_utxo_receive: IDL.Vec(IDL.Text),
+    pool_address: IDL.Text,
+  });
+  const IntentionSet = IDL.Record({
+    initiator_address: IDL.Text,
+    intentions: IDL.Vec(Intention),
   });
   const SignPsbtArgs = IDL.Record({
-    tx_id: IDL.Text,
     zero_confirmed_tx_count_in_queue: IDL.Nat32,
-    instruction_index: IDL.Nat32,
-    input_runes: IDL.Vec(InputRune),
-    output_runes: IDL.Vec(OutputRune),
-    all_instructions: IDL.Vec(ReeInstruction),
+    txid: IDL.Text,
+    intention_set: IntentionSet,
+    intention_index: IDL.Nat32,
     psbt_hex: IDL.Text,
   });
   const Result_6 = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
   return IDL.Service({
     create: IDL.Func([IDL.Text], [Result], []),
     finalize_tx: IDL.Func([FinalizeTxArgs], [], []),
-    find_pool: IDL.Func(
-      [IDL.Text],
-      [IDL.Opt(LiquidityPoolWithState)],
-      ["query"]
-    ),
     get_fee_collector: IDL.Func([], [IDL.Text], ["query"]),
     get_lp: IDL.Func([IDL.Text, IDL.Text], [Result_1], ["query"]),
     get_min_tx_value: IDL.Func([], [IDL.Nat64], ["query"]),
-    list_pools: IDL.Func(
-      [IDL.Opt(IDL.Text), IDL.Nat32],
-      [IDL.Vec(PoolMeta)],
+    get_pool_info: IDL.Func([GetPoolInfoArgs], [IDL.Opt(PoolInfo)], ["query"]),
+    get_pool_list: IDL.Func(
+      [GetPoolListArgs],
+      [IDL.Vec(PoolOverview)],
       ["query"]
-    ),
-    manually_transfer: IDL.Func(
-      [IDL.Text, IDL.Nat32, IDL.Nat64],
-      [IDL.Opt(IDL.Text)],
-      []
     ),
     pre_add_liquidity: IDL.Func([IDL.Text, CoinBalance], [Result_2], ["query"]),
     pre_extract_fee: IDL.Func([IDL.Text], [Result_3], ["query"]),
     pre_swap: IDL.Func([IDL.Text, CoinBalance], [Result_4], ["query"]),
     pre_withdraw_liquidity: IDL.Func(
-      [IDL.Text, IDL.Text, CoinBalance],
+      [IDL.Text, IDL.Text, IDL.Nat],
       [Result_5],
       ["query"]
     ),

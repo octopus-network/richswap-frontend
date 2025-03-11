@@ -192,7 +192,7 @@ export function CoinField({
             />
           ) : (
             <div className="flex gap-2 items-center w-36 sm:w-40">
-              <CoinIcon coin={coin!} />
+              {coin && <CoinIcon coin={coin} />}
               <div className="flex flex-col text-left w-[calc(100%_-_32px)]">
                 <span className="truncate">{getCoinSymbol(coin)}</span>
                 <span className="text-xs w-full text-muted-foreground font-normal truncate">

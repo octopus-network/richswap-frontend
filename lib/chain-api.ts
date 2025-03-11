@@ -1,4 +1,5 @@
 import axios from "axios";
+import { MEMPOOL_URL } from "./constants";
 
 const unisatApi = axios.create({
   baseURL: `https://wallet-api.unisat.io/v5`,
@@ -18,15 +19,8 @@ const unisatOpenApi = axios.create({
   },
 });
 
-const unisatQueryApi = axios.create({
-  baseURL: `https://api.unisat.space/query-v4`,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
 const mempoolApi = axios.create({
-  baseURL: `https://mempool.space/api`,
+  baseURL: `${MEMPOOL_URL}/api`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -163,56 +157,6 @@ export async function getRuneUtxos(address: string, runeId: string) {
     })),
   }));
 }
-// export async function getAddressUtxos(address: string) {
-//   const data = await ordScanApi
-//     .get<{
-//       data: {
-//         outpoint: string;
-//         value: number;
-//         runes: {
-//           name: string;
-//           balance: string;
-//         }[];
-//         inscriptions: string[];
-//       }[];
-//     }>(`address/${address}/utxos`)
-//     .then((res) => res.data.data ?? []);
-
-//   console.log("utxos", data);
-
-//   const scripts = data.length
-//     ? await Promise.all(data.map(({ outpoint }) => getTxScript(outpoint)))
-//     : [];
-
-//   console.log("scripts", scripts);
-//   const validUtxos: UnspentOutput[] = [];
-
-//   data.forEach(({ outpoint, runes, value, inscriptions }, idx) => {
-//     const [txid, vout] = outpoint.split(":");
-//     if (inscriptions.length) {
-//       return;
-//     }
-//     const utxo: UnspentOutput = {
-//       txid,
-//       vout: Number(vout),
-//       satoshis: String(value),
-//       scriptPk: scripts[idx]?.scriptPk,
-//       address: scripts[idx]?.address,
-//       runes: runes.map(({ name, balance }) => {
-//         const runeId =
-//           COIN_LIST.find((coin) => coin.runeId === name)?.id ?? "UNKNOWN";
-//         return {
-//           id: runeId,
-//           amount: balance,
-//         };
-//       }),
-//     };
-
-//     validUtxos.push(utxo);
-//   });
-
-//   return validUtxos;
-// }
 
 export async function getBtcPrice() {
   const { price } = await unisatApi
@@ -267,26 +211,4 @@ export async function getRawTx(txid: string) {
     .catch(() => "");
 
   return data;
-}
-
-export async function queryRunes(rune: string) {
-  const runeList = await unisatQueryApi
-    .get<{
-      data: {
-        detail: {
-          runeid: string;
-          divisibility: number;
-          symbol: string;
-          rune: string;
-          spacedRune: string;
-          etching: string;
-          number: number;
-        }[];
-      };
-    }>(
-      `/runes/info-list?rune=${rune}&start=0&limit=10&complete=&sort=oneDayMints`
-    )
-    .then((res) => res.data?.data?.detail || []);
-
-  return runeList;
 }

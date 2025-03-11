@@ -17,8 +17,9 @@ export function WithdrawContent({
 }) {
   const [coinAAmount, setCoinAAmount] = useState("");
   const [coinBAmount, setCoinBAmount] = useState("");
-  const [outputBtc, setOutputBtc] = useState(BigInt(0));
+
   const [nonce, setNonce] = useState("0");
+  const [sqrtK, setSqrtK] = useState<bigint>();
   const [poolUtxos, setPoolUtxos] = useState<UnspentOutput[]>();
 
   const [showReview, setShowReview] = useState(false);
@@ -27,15 +28,15 @@ export function WithdrawContent({
     coinBAmount: string,
     nonce: string,
     poolUtxos: UnspentOutput[],
-    outputBtc: bigint
+    sqrtK: bigint
   ) => {
     setCoinAAmount(coinAAmount);
     setCoinBAmount(coinBAmount);
     setNonce(nonce);
     setPoolUtxos(poolUtxos);
+    setSqrtK(sqrtK);
     setShowReview(true);
     setOnReview(true);
-    setOutputBtc(outputBtc);
   };
 
   const onBack = () => {
@@ -63,9 +64,9 @@ export function WithdrawContent({
             onSuccess={onSuccess}
             showCancelButton
             nonce={nonce}
-            outputBtc={outputBtc}
             poolUtxos={poolUtxos}
             onBack={onBack}
+            sqrtK={sqrtK}
           />
         ) : (
           <WithdrawForm position={position} onReview={onReview} />

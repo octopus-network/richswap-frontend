@@ -1,13 +1,14 @@
-import { UnspentOutput } from "@/types";
+import { UnspentOutput, ToSignInput, InputCoin, OutputCoin } from "@/types";
 
-import { ToSignInput } from "@/types";
-import { UTXO_DUST } from "@/lib/constants";
+import { UTXO_DUST, BITCOIN } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
-import { NetworkType } from "../network";
 
+import { Orchestrator } from "@/lib/orchestrator";
+import { addressTypeToString, getAddressType } from "../address";
 import { RuneId, Runestone, none, Edict } from "runelib";
+import { selectBtcUtxos } from "./common";
 
-export function withdrawTx({
+export async function withdrawTx({
   btcAmount,
   runeid,
   runeAmount,
@@ -31,10 +32,8 @@ export function withdrawTx({
   let poolRuneAmount = BigInt(0),
     poolBtcAmount = BigInt(0);
 
-  const networkType = NetworkType.MAINNET;
-
   const tx = new Transaction();
-  tx.setNetworkType(networkType);
+
   tx.setFeeRate(feeRate);
   tx.setEnableRBF(false);
   tx.setChangeAddress(paymentAddress);
@@ -57,29 +56,33 @@ export function withdrawTx({
 
   const edicts = needChange
     ? [
-        new Edict(
-          new RuneId(Number(runeBlock), Number(runeIdx)),
-          changeRuneAmount,
-          0
-        ),
-        new Edict(
-          new RuneId(Number(runeBlock), Number(runeIdx)),
-          runeAmount,
-          1
-        ),
-      ]
+      new Edict(
+        new RuneId(Number(runeBlock), Number(runeIdx)),
+        changeRuneAmount,
+        0
+      ),
+      new Edict(
+        new RuneId(Number(runeBlock), Number(runeIdx)),
+        runeAmount,
+        1
+      ),
+    ]
     : [
-        new Edict(
-          new RuneId(Number(runeBlock), Number(runeIdx)),
-          runeAmount,
-          0
-        ),
-      ];
+      new Edict(
+        new RuneId(Number(runeBlock), Number(runeIdx)),
+        runeAmount,
+        0
+      ),
+    ];
 
   const runestone = new Runestone(edicts, none(), none(), none());
 
+  const poolSpendUtxos = poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`);
+  const poolVouts: number[] = [];
+
   if (needChange) {
     tx.addOutput(poolAddress, poolBtcAmount - btcAmount);
+    poolVouts.push(0);
   }
 
   // send rune to user
@@ -88,22 +91,127 @@ export function withdrawTx({
   // send btc to user
   tx.addOutput(paymentAddress, btcAmount);
 
+  const opReturnScript = runestone.encipher();
   // OP_RETURN
-  tx.addScriptOutput(runestone.encipher(), BigInt(0));
+  tx.addScriptOutput(opReturnScript, BigInt(0));
 
-  const _toSignInputs = tx.addSufficientUtxosForFee(btcUtxos, true);
-  toSignInputs.push(..._toSignInputs);
+  let inputTypes = [
+    ...poolUtxos.map(utxo => addressTypeToString(getAddressType(utxo.address))),
+  ];
 
+  const outputTypes = [
+    ...Array(needChange ? 1 : 0).fill(addressTypeToString(getAddressType(poolAddress))),
+    addressTypeToString(getAddressType(address)),
+    addressTypeToString(getAddressType(paymentAddress)),
+    { OpReturn: BigInt(opReturnScript.length) },
+    // fee output
+    addressTypeToString(getAddressType(paymentAddress))
+  ];
+
+  let lastFee = BigInt(0);
+  let currentFee = BigInt(0);
+  let selectedUtxos: UnspentOutput[] = [];
+  let targetBtcAmount = BigInt(0);
+
+  do {
+    lastFee = currentFee;
+
+    currentFee = await Orchestrator.getEstimateMinTxFee({
+      input_types: inputTypes,
+      pool_address: poolAddress,
+      output_types: outputTypes,
+    });
+
+    currentFee += BigInt(1);
+
+    if (currentFee > lastFee) {
+      outputTypes.pop();
+
+      targetBtcAmount = currentFee + UTXO_DUST;
+
+      const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(btcUtxos, targetBtcAmount);
+      if (_selectedUtxos.length === 0) {
+        throw new Error("INSUFFICIENT_BTC_UTXO");
+      }
+
+      inputTypes = [
+        ...poolUtxos.map(utxo => addressTypeToString(getAddressType(utxo.address))),
+        ..._selectedUtxos.map(() => addressTypeToString(getAddressType(paymentAddress)))
+      ];
+
+      const totalBtcAmount = _selectedUtxos.reduce((total, curr) => total + BigInt(curr.satoshis), BigInt(0));
+
+      if ((totalBtcAmount - targetBtcAmount) > 0 && (totalBtcAmount - targetBtcAmount) > UTXO_DUST) {
+        outputTypes.push(addressTypeToString(getAddressType(paymentAddress)));
+      }
+
+      selectedUtxos = _selectedUtxos;
+    }
+
+  } while (currentFee > lastFee);
+
+  let totalBtcAmount = BigInt(0);
+
+  selectedUtxos.forEach(utxo => {
+    tx.addInput(utxo);
+    totalBtcAmount += BigInt(utxo.satoshis);
+  });
+
+  const changeBtcAmount = totalBtcAmount - targetBtcAmount;
+
+  if (changeBtcAmount > 0 && changeBtcAmount > UTXO_DUST) {
+    tx.addOutput(paymentAddress, changeBtcAmount);
+  }
   const inputs = tx.getInputs();
 
   const psbt = tx.toPsbt();
+
+  //@ts-expect-error: todo
+  const unsignedTx = psbt.__CACHE.__TX;
+  const txid = unsignedTx.getId();
+
+  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
   const toSpendUtxos = inputs
     .filter(
       (input) =>
         input.utxo.address === address || input.utxo.address === paymentAddress
     )
-    .map((input) => input.utxo);
+    .map((input) => {
+      toSignInputs.push({
+        publicKey: input.utxo.pubkey,
+        index: input.utxo.vout,
+      });
+      return input.utxo;
+    });
 
-  return { psbt, toSignInputs, toSpendUtxos };
+  const inputCoins: InputCoin[] = [];
+
+  const outputCoins: OutputCoin[] = [
+    {
+      to: paymentAddress,
+      coin: {
+        id: BITCOIN.id,
+        value: btcAmount,
+      },
+    },
+    {
+      to: address,
+      coin: {
+        id: runeid,
+        value: runeAmount,
+      },
+    },
+  ];
+
+  return {
+    psbt,
+    toSignInputs,
+    poolSpendUtxos,
+    poolReceiveUtxos,
+    toSpendUtxos,
+    txid,
+    inputCoins,
+    outputCoins,
+  };
 }

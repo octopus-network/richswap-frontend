@@ -22,7 +22,7 @@ export function WithdrawForm({
     coinBAmount: string,
     nonce: string,
     poolUtxos: UnspentOutput[],
-    outputBtc: bigint
+    sqrtK: bigint
   ) => void;
 }) {
   const coinAPrice = useCoinPrice(position?.coinA?.id);
@@ -31,7 +31,8 @@ export function WithdrawForm({
   const [withdrawPercentage, setWithdrawPercentage] = useState(0);
   const [nonce, setNonce] = useState("0");
   const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
-  const [outputBtc, setOutputBtc] = useState(BigInt(0));
+  const [sqrtK, setSqrtK] = useState<bigint>();
+
   const [output, setOutput] = useState<{
     coinA: Coin;
     coinB: Coin;
@@ -48,18 +49,17 @@ export function WithdrawForm({
       setOutput(undefined);
       return;
     }
-    const btc =
-      (BigInt(debouncedPercentage) *
-        BigInt(position.userShare) *
-        BigInt(position.btcSupply)) /
-      (BigInt(position.sqrtK) * BigInt(100));
 
-    setOutputBtc(btc);
+    const _sqrtK =
+      (BigInt(debouncedPercentage) * BigInt(position.userShare)) / BigInt(100);
 
-    Exchange.preWithdrawLiquidity(position.poolKey, position.userAddress, {
-      id: "0:0",
-      value: btc,
-    }).then((res) => {
+    setSqrtK(_sqrtK);
+
+    Exchange.preWithdrawLiquidity(
+      position.poolKey,
+      position.userAddress,
+      _sqrtK
+    ).then((res) => {
       if (res) {
         setNonce(res.nonce);
         setUtxos(res.utxos);
@@ -67,6 +67,8 @@ export function WithdrawForm({
       }
     });
   }, [debouncedPercentage, position]);
+
+  console.log(output);
 
   return (
     <div>
@@ -82,10 +84,10 @@ export function WithdrawForm({
                 <span className="text-sm text-muted-foreground">
                   {coinAPrice
                     ? `$${formatNumber(
-                        new Decimal(position.coinAAmount)
-                          .mul(coinAPrice)
-                          .toNumber()
-                      )}`
+                      new Decimal(position.coinAAmount)
+                        .mul(coinAPrice)
+                        .toNumber()
+                    )}`
                     : "-"}
                 </span>
               </div>
@@ -101,10 +103,10 @@ export function WithdrawForm({
                 <span className="text-sm text-muted-foreground">
                   {coinBPrice
                     ? `$${formatNumber(
-                        new Decimal(position.coinBAmount)
-                          .mul(coinBPrice)
-                          .toNumber()
-                      )}`
+                      new Decimal(position.coinBAmount)
+                        .mul(coinBPrice)
+                        .toNumber()
+                    )}`
                     : "-"}
                 </span>
               </div>
@@ -130,14 +132,8 @@ export function WithdrawForm({
             size="xl"
             disabled={!position || !Number(nonce) || !output || !utxos.length}
             onClick={() =>
-              output
-                ? onReview(
-                    output.coinAAmount,
-                    output.coinBAmount,
-                    nonce,
-                    utxos,
-                    outputBtc
-                  )
+              output && sqrtK
+                ? onReview(output.coinAAmount, output.coinBAmount, nonce, utxos, sqrtK)
                 : null
             }
           >
