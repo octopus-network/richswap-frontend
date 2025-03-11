@@ -1,28 +1,38 @@
 import { NextResponse } from "next/server";
-import { BITCOIN, UNKNOWN_COIN } from "@/lib/constants";
 import { Exchange } from "@/lib/exchange";
-import { put } from "@vercel/blob";
-
 import { OpenApi } from "@/lib/open-api";
+import { UNKNOWN_COIN, BITCOIN } from "@/lib/constants";
+import { PoolInfo } from "@/types";
+import { put } from "@vercel/blob";
+import { limitFunction } from "p-limit";
+
+export const dynamic = "force-dynamic";
 
 const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
 const UNISAT_API = process.env.UNISAT_API!;
-
-export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
     const res = await Exchange.getPoolList();
 
-    const pools = [];
+    const pools: PoolInfo[] = [];
 
     const openApi = new OpenApi({
       baseUrl: UNISAT_API,
       apiKey: UNISAT_API_KEY,
     });
 
+    const limitGetRunesInfoList = limitFunction(
+      async (coinId: string) => openApi.getRunesInfoList(coinId),
+      { concurrency: 2 }
+    );
+
     const coinRes = await Promise.all(
-      res.map(({ name }) => openApi.getRunesInfoList(name))
+      res.map(({ coin_reserved }) =>
+        coin_reserved.length
+          ? limitGetRunesInfoList(coin_reserved[0].id)
+          : { detail: [] }
+      )
     );
 
     for (let i = 0; i < res.length; i++) {
@@ -59,14 +69,13 @@ export async function GET() {
         address,
         name,
         coinA: { ...coinA, balance: btc_reserved.toString() },
-        coinB: { ...coinB, balance: coin_reserved[0].value.toString() },
+        coinB: { ...coinB, balance: coin_reserved[0]?.value.toString() ?? "0" },
       });
     }
 
     await put("pool-list.json", JSON.stringify(pools), {
       access: "public",
       addRandomSuffix: false,
-      cacheControlMaxAge: 15,
     });
 
     return NextResponse.json({
@@ -74,12 +83,18 @@ export async function GET() {
       data: pools,
     });
   } catch (error) {
-    return NextResponse.json({
-      error:
-        error instanceof Error
-          ? error.message || error.toString()
-          : "Unkown Error",
-      success: false,
-    });
+    console.log(error);
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message || error.toString()
+            : "Unkown Error",
+        success: false,
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }

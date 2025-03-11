@@ -44,6 +44,7 @@ export function usePoolsTvl() {
     }
     poolsList.forEach(({ coinA, key }) => {
       const coinAPrice = prices?.[coinA.id] ?? 0;
+
       const coinAValue = new Decimal(
         formatCoinAmount(coinA.balance, coinA)
       ).mul(coinAPrice);

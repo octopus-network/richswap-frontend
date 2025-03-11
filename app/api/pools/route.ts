@@ -1,81 +1,18 @@
 import { NextResponse } from "next/server";
-import { Exchange } from "@/lib/exchange";
-import { OpenApi } from "@/lib/open-api";
-import { UNKNOWN_COIN, BITCOIN } from "@/lib/constants";
-import { PoolInfo } from "@/types";
-
-import { limitFunction } from "p-limit";
-
+import axios from "axios";
 export const dynamic = "force-dynamic";
-
-const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
-const UNISAT_API = process.env.UNISAT_API!;
 
 export async function GET() {
   try {
-    const res = await Exchange.getPoolList();
-
-    const pools: PoolInfo[] = [];
-
-    const openApi = new OpenApi({
-      baseUrl: UNISAT_API,
-      apiKey: UNISAT_API_KEY,
-    });
-
-    const limitGetRunesInfoList = limitFunction(
-      async (coinId: string) => openApi.getRunesInfoList(coinId),
-      { concurrency: 5 }
-    );
-
-    const coinRes = await Promise.all(
-      res.map(({ coin_reserved }) =>
-        coin_reserved.length
-          ? limitGetRunesInfoList(coin_reserved[0].id)
-          : { detail: [] }
+    const cache = await axios
+      .get(
+        "https://vquok3pr3bhc6tui.public.blob.vercel-storage.com/pool-list.json"
       )
-    );
-
-    for (let i = 0; i < res.length; i++) {
-      const { name, address, btc_reserved, coin_reserved, key } = res[i];
-
-      const coinA = BITCOIN;
-      const { detail: coinBRes } = coinRes[i];
-
-      let coinB = UNKNOWN_COIN;
-      if (coinBRes.length) {
-        const {
-          spacedRune,
-          rune,
-          symbol,
-          divisibility,
-          etching,
-          runeid,
-          number,
-        } = coinBRes[0];
-
-        coinB = {
-          id: runeid,
-          name: spacedRune,
-          runeId: rune,
-          runeSymbol: symbol,
-          decimals: divisibility,
-          etching,
-          number,
-        };
-      }
-
-      pools.push({
-        key,
-        address,
-        name,
-        coinA: { ...coinA, balance: btc_reserved.toString() },
-        coinB: { ...coinB, balance: coin_reserved[0]?.value.toString() ?? "0" },
-      });
-    }
+      .then((res) => res.data);
 
     return NextResponse.json({
       success: true,
-      data: pools,
+      data: cache ?? [],
     });
   } catch (error) {
     console.log(error);
