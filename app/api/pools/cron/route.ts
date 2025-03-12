@@ -5,6 +5,7 @@ import { UNKNOWN_COIN, BITCOIN } from "@/lib/constants";
 import { PoolInfo } from "@/types";
 import { put } from "@vercel/blob";
 import { limitFunction } from "p-limit";
+import { original } from "@reduxjs/toolkit";
 
 export const dynamic = "force-dynamic";
 
@@ -84,6 +85,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: pools,
+      originalData: errorData,
     });
   } catch (error) {
     console.log(error);
