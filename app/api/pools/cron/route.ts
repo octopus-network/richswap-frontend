@@ -12,9 +12,12 @@ const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
 const UNISAT_API = process.env.UNISAT_API!;
 
 export async function GET() {
+  let errorData: any;
   try {
+    errorData = "loading pool";
     const res = await Exchange.getPoolList();
 
+    errorData = res;
     const pools: PoolInfo[] = [];
 
     const openApi = new OpenApi({
@@ -24,7 +27,7 @@ export async function GET() {
 
     const limitGetRunesInfoList = limitFunction(
       async (coinId: string) => openApi.getRunesInfoList(coinId),
-      { concurrency: 3 }
+      { concurrency: 2 }
     );
 
     const coinRes = await Promise.all(
@@ -91,6 +94,7 @@ export async function GET() {
             ? error.message || error.toString()
             : "Unkown Error",
         success: false,
+        errorData,
       },
       {
         status: 500,
