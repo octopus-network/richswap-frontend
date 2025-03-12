@@ -54,6 +54,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     limit: IDL.Nat32,
   });
   const PoolOverview = IDL.Record({
+    key: IDL.Text,
     name: IDL.Text,
     btc_reserved: IDL.Nat64,
     coin_reserved: IDL.Vec(CoinBalance),
