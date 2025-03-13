@@ -84,7 +84,6 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: pools,
-      originalData: res,
     });
   } catch (error) {
     console.log(error);
