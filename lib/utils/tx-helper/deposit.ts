@@ -83,24 +83,24 @@ export async function depositTx({
 
   const edicts = needChange
     ? [
-      new Edict(
-        new RuneId(Number(runeBlock), Number(runeIdx)),
-        changeRuneAmount,
-        0
-      ),
-      new Edict(
-        new RuneId(Number(runeBlock), Number(runeIdx)),
-        poolRuneAmount + runeAmount,
-        1
-      ),
-    ]
+        new Edict(
+          new RuneId(Number(runeBlock), Number(runeIdx)),
+          changeRuneAmount,
+          0
+        ),
+        new Edict(
+          new RuneId(Number(runeBlock), Number(runeIdx)),
+          poolRuneAmount + runeAmount,
+          1
+        ),
+      ]
     : [
-      new Edict(
-        new RuneId(Number(runeBlock), Number(runeIdx)),
-        poolRuneAmount + runeAmount,
-        0
-      ),
-    ];
+        new Edict(
+          new RuneId(Number(runeBlock), Number(runeIdx)),
+          poolRuneAmount + runeAmount,
+          0
+        ),
+      ];
 
   const runestone = new Runestone(edicts, none(), none(), none());
 
@@ -122,16 +122,22 @@ export async function depositTx({
   tx.addScriptOutput(opReturnScript, BigInt(0));
 
   let inputTypes = [
-    ...poolUtxos.map(utxo => addressTypeToString(getAddressType(utxo.address))),
-    ...runeUtxos.map(utxo => addressTypeToString(getAddressType(utxo.address))),
+    ...poolUtxos.map((utxo) =>
+      addressTypeToString(getAddressType(utxo.address))
+    ),
+    ...runeUtxos.map((utxo) =>
+      addressTypeToString(getAddressType(utxo.address))
+    ),
   ];
 
   const outputTypes = [
-    ...Array(needChange ? 1 : 0).fill(addressTypeToString(getAddressType(address))),
+    ...Array(needChange ? 1 : 0).fill(
+      addressTypeToString(getAddressType(address))
+    ),
     addressTypeToString(getAddressType(poolAddress)),
     { OpReturn: BigInt(opReturnScript.length) },
     // btc output
-    addressTypeToString(getAddressType(paymentAddress))
+    addressTypeToString(getAddressType(paymentAddress)),
   ];
 
   let lastFee = BigInt(0);
@@ -151,40 +157,55 @@ export async function depositTx({
     });
 
     currentFee += BigInt(1);
-    targetBtcAmount = btcAmount + currentFee + utxoDust - inputUtxoDusts;
+    targetBtcAmount = btcAmount + currentFee + utxoDust;
     if (currentFee > lastFee && targetBtcAmount > 0) {
       outputTypes.pop();
 
-      const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(btcUtxos, targetBtcAmount);
+      const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(
+        btcUtxos,
+        targetBtcAmount
+      );
       if (_selectedUtxos.length === 0) {
         throw new Error("INSUFFICIENT_BTC_UTXO");
       }
 
       inputTypes = [
-        ...poolUtxos.map(utxo => addressTypeToString(getAddressType(utxo.address))),
-        ...runeUtxos.map(utxo => addressTypeToString(getAddressType(utxo.address))),
-        ..._selectedUtxos.map(() => addressTypeToString(getAddressType(paymentAddress)))
+        ...poolUtxos.map((utxo) =>
+          addressTypeToString(getAddressType(utxo.address))
+        ),
+        ...runeUtxos.map((utxo) =>
+          addressTypeToString(getAddressType(utxo.address))
+        ),
+        ..._selectedUtxos.map(() =>
+          addressTypeToString(getAddressType(paymentAddress))
+        ),
       ];
 
-      const totalBtcAmount = _selectedUtxos.reduce((total, curr) => total + BigInt(curr.satoshis), BigInt(0));
+      const totalBtcAmount = _selectedUtxos.reduce(
+        (total, curr) => total + BigInt(curr.satoshis),
+        BigInt(0)
+      );
 
-      if ((totalBtcAmount - targetBtcAmount) > 0 && (totalBtcAmount - targetBtcAmount) > UTXO_DUST) {
+      if (
+        totalBtcAmount - targetBtcAmount > 0 &&
+        totalBtcAmount - targetBtcAmount > UTXO_DUST
+      ) {
         outputTypes.push(addressTypeToString(getAddressType(paymentAddress)));
       }
 
       selectedUtxos = _selectedUtxos;
     }
-
   } while (currentFee > lastFee && targetBtcAmount > 0);
 
   let totalBtcAmount = BigInt(0);
 
-  selectedUtxos.forEach(utxo => {
+  selectedUtxos.forEach((utxo) => {
     tx.addInput(utxo);
     totalBtcAmount += BigInt(utxo.satoshis);
   });
 
-  const changeBtcAmount = totalBtcAmount - targetBtcAmount;
+  const changeBtcAmount =
+    totalBtcAmount - targetBtcAmount + (inputUtxoDusts - utxoDust);
 
   console.log(changeBtcAmount, targetBtcAmount, totalBtcAmount);
 
