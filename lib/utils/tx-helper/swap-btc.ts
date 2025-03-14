@@ -209,7 +209,11 @@ export async function swapBtcTx({
 
   const changeBtcAmount = totalBtcAmount - currentFee;
 
-  if (changeBtcAmount > 0 && changeBtcAmount > UTXO_DUST) {
+  if (changeBtcAmount < 0) {
+    throw new Error("Inssuficient UTXO(s)");
+  }
+
+  if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   }
 
@@ -267,6 +271,7 @@ export async function swapBtcTx({
     toSpendUtxos,
     toSignInputs,
     txid,
+    fee: currentFee,
     inputCoins,
     outputCoins,
   };

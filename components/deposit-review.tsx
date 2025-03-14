@@ -12,6 +12,7 @@ import {
 
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import Decimal from "decimal.js";
 import { OKX } from "@omnisat/lasereyes";
 import { getAddressType } from "@/lib/utils";
 import { AddressType } from "@/types";
@@ -39,7 +40,7 @@ import { parseCoinAmount } from "@/lib/utils";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
-import { EXCHANGE_ID } from "@/lib/constants";
+import { BITCOIN, EXCHANGE_ID } from "@/lib/constants";
 import { useAddTransaction } from "@/store/transactions";
 
 export function DepositReview({
@@ -79,6 +80,7 @@ export function DepositReview({
   const [errorMessage, setErrorMessage] = useState("");
   const [txid, setTxid] = useState("");
 
+  const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
   const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
   const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
@@ -186,6 +188,7 @@ export function DepositReview({
         setInputCoins(tx.inputCoins);
         setOutputCoins(tx.outputCoins);
         setToSignInputs(tx.toSignInputs);
+        setFee(tx.fee);
       } catch (err) {
         console.log(err);
       }
@@ -300,6 +303,8 @@ export function DepositReview({
     );
   }, [paymentAddress]);
 
+  const btcPrice = useCoinPrice(BITCOIN.id);
+
   return errorMessage ? (
     <div className="mt-4 flex flex-col gap-4">
       <div className="p-4 border rounded-lg flex flex-col items-center">
@@ -380,7 +385,20 @@ export function DepositReview({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Network cost</span>
-              <span>$ -</span>
+              <div className="flex flex-col items-end">
+                <span>
+                  {fee > 0 ? Number(fee) : "-"}{" "}
+                  <em className="text-muted-foreground">sats</em>
+                </span>
+                <span className="text-primary/80 text-xs">
+                  {btcPrice && fee > 0
+                    ? `$${new Decimal(fee.toString())
+                        .mul(btcPrice)
+                        .div(Math.pow(10, 8))
+                        .toFixed(4)}`
+                    : ""}
+                </span>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex flex-col space-y-3">

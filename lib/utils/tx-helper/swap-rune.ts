@@ -165,7 +165,11 @@ export async function swapRuneTx({
 
   const changeBtcAmount = totalBtcAmount - targetBtcAmount;
 
-  if (changeBtcAmount > 0 && changeBtcAmount > UTXO_DUST) {
+  if (changeBtcAmount < 0) {
+    throw new Error("Inssuficient UTXO(s)");
+  }
+
+  if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   }
 
@@ -186,7 +190,7 @@ export async function swapRuneTx({
     .filter(({ utxo }, index) => {
       const isUserInput =
         utxo.address === address || utxo.address === paymentAddress;
-      console.log("toSignInputs", utxo);
+
       if (isUserInput) {
         toSignInputs.push({
           publicKey: utxo.pubkey,
@@ -224,6 +228,7 @@ export async function swapRuneTx({
     poolSpendUtxos,
     poolReceiveUtxos,
     txid,
+    fee: currentFee,
     inputCoins,
     outputCoins,
   };

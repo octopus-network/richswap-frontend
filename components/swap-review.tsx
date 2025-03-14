@@ -99,6 +99,7 @@ export function SwapReview({
   const [errorMessage, setErrorMessage] = useState("");
   const [txid, setTxid] = useState("");
 
+  const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
   const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
   const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
@@ -131,12 +132,12 @@ export function SwapReview({
     [coinBAmount, coinBPrice]
   );
 
-  const [, btc, runeAmount, btcAmount] = useMemo(
+  const [runeAmount, btcAmount] = useMemo(
     () =>
       coinA?.id === BITCOIN.id
-        ? [coinB, coinA, coinBAmount, coinAAmount]
-        : [coinA, coinB, coinAAmount, coinBAmount],
-    [coinA, coinB, coinAAmount, coinBAmount]
+        ? [coinBAmount, coinAAmount]
+        : [coinAAmount, coinBAmount],
+    [coinA, coinAAmount, coinBAmount]
   );
 
   const runePriceInSats = useMemo(
@@ -145,7 +146,7 @@ export function SwapReview({
     [runeAmount, btcAmount]
   );
 
-  const btcPrice = useCoinPrice(btc?.id);
+  const btcPrice = useCoinPrice(BITCOIN.id);
 
   useEffect(() => {
     if (
@@ -194,7 +195,9 @@ export function SwapReview({
           setInputCoins(tx.inputCoins);
           setOutputCoins(tx.outputCoins);
           setToSignInputs(tx.toSignInputs);
-        } catch (err) {
+          setFee(tx.fee);
+        } catch (err: any) {
+          setErrorMessage(err?.message || "Unknown Error");
           console.log(err);
         }
       } else {
@@ -255,7 +258,9 @@ export function SwapReview({
           setInputCoins(tx.inputCoins);
           setOutputCoins(tx.outputCoins);
           setToSignInputs(tx.toSignInputs);
-        } catch (err) {
+          setFee(tx.fee);
+        } catch (err: any) {
+          setErrorMessage(err?.message || "Unknown Error");
           console.log(err);
         }
       }
@@ -462,7 +467,20 @@ export function SwapReview({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Network cost</span>
-              <span>-</span>
+              <div className="flex flex-col items-end">
+                <span>
+                  {fee > 0 ? Number(fee) : "-"}{" "}
+                  <em className="text-muted-foreground">sats</em>
+                </span>
+                <span className="text-primary/80 text-xs">
+                  {btcPrice && fee > 0
+                    ? `$${new Decimal(fee.toString())
+                        .mul(btcPrice)
+                        .div(Math.pow(10, 8))
+                        .toFixed(4)}`
+                    : ""}
+                </span>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex flex-col space-y-3">

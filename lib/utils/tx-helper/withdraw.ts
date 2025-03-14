@@ -173,7 +173,11 @@ export async function withdrawTx({
 
   const changeBtcAmount = totalBtcAmount - targetBtcAmount;
 
-  if (changeBtcAmount > 0 && changeBtcAmount > UTXO_DUST) {
+  if (changeBtcAmount < 0) {
+    throw new Error("Inssuficient UTXO(s)");
+  }
+
+  if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   }
   const inputs = tx.getInputs();
@@ -228,6 +232,7 @@ export async function withdrawTx({
     toSpendUtxos,
     toSignInputs,
     txid,
+    fee: currentFee,
     inputCoins,
     outputCoins,
   };

@@ -14,6 +14,7 @@ import { formatNumber, withdrawTx } from "@/lib/utils";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import { BITCOIN } from "@/lib/constants";
 import { OKX } from "@omnisat/lasereyes";
 import { Loader2 } from "lucide-react";
 import { AddressType } from "@/types";
@@ -31,6 +32,7 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { parseCoinAmount } from "@/lib/utils";
 
+import Decimal from "decimal.js";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
@@ -76,6 +78,7 @@ export function WithdrawReview({
   const [errorMessage, setErrorMessage] = useState("");
   const [txid, setTxid] = useState("");
 
+  const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
   const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
   const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
@@ -141,7 +144,7 @@ export function WithdrawReview({
         });
 
         setPsbt(tx.psbt);
-
+        setFee(tx.fee);
         setToSpendUtxos(tx.toSpendUtxos);
         setPoolSpendUtxos(tx.poolSpendUtxos);
         setPoolReceiveUtxos(tx.poolReceiveUtxos);
@@ -268,6 +271,8 @@ export function WithdrawReview({
     );
   }, [paymentAddress]);
 
+  const btcPrice = useCoinPrice(BITCOIN.id);
+
   return errorMessage ? (
     <div className="mt-4 flex flex-col gap-4">
       <div className="p-4 border rounded-lg flex flex-col items-center">
@@ -350,7 +355,20 @@ export function WithdrawReview({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Network cost</span>
-              <span>$ -</span>
+              <div className="flex flex-col items-end">
+                <span>
+                  {fee > 0 ? Number(fee) : "-"}{" "}
+                  <em className="text-muted-foreground">sats</em>
+                </span>
+                <span className="text-primary/80 text-xs">
+                  {btcPrice && fee > 0
+                    ? `$${new Decimal(fee.toString())
+                        .mul(btcPrice)
+                        .div(Math.pow(10, 8))
+                        .toFixed(4)}`
+                    : ""}
+                </span>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex flex-col space-y-3">

@@ -201,12 +201,13 @@ export async function depositTx({
     totalBtcAmount += BigInt(utxo.satoshis);
   });
 
-  const changeBtcAmount =
-    totalBtcAmount - targetBtcAmount + (inputUtxoDusts - utxoDust);
+  const changeBtcAmount = totalBtcAmount - targetBtcAmount + inputUtxoDusts;
 
-  console.log(changeBtcAmount, targetBtcAmount, totalBtcAmount);
+  if (changeBtcAmount < 0) {
+    throw new Error("Inssuficient UTXO(s)");
+  }
 
-  if (changeBtcAmount > 0 && changeBtcAmount > UTXO_DUST) {
+  if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   }
 
@@ -262,6 +263,7 @@ export async function depositTx({
     poolSpendUtxos,
     poolReceiveUtxos,
     txid,
+    fee: currentFee,
     inputCoins,
     outputCoins,
   };
