@@ -204,6 +204,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
       <ManageLiquidityModal
         open={manageLiquidityModalOpen}
         position={position}
+        pool={pool}
         setOpen={setManageLiquidityModalOpen}
       />
     </>

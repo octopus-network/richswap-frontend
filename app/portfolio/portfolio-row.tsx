@@ -193,6 +193,7 @@ export function PortfolioRow({ position }: { position: Position }) {
       <ManageLiquidityModal
         open={manageLiquidityModalOpen}
         position={position}
+        pool={position.pool}
         setOpen={setManageLiquidityModalOpen}
       />
     </>
