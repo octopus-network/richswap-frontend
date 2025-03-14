@@ -3,7 +3,7 @@ import { Exchange } from "@/lib/exchange";
 
 import { PoolInfo } from "@/types";
 
-const STORAGE_URL = process.env.UNISAT_API!;
+const STORAGE_URL = process.env.STORAGE_URL!;
 
 export const dynamic = "force-dynamic";
 
