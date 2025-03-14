@@ -126,48 +126,17 @@ export function useRuneUtxos(
 }
 
 export function useWalletBtcUtxos() {
-  const { address, paymentAddress, publicKey, paymentPublicKey } =
-    useLaserEyes();
+  const { paymentAddress, paymentPublicKey } = useLaserEyes();
 
-  const utxos = useBtcUtxos(address, publicKey);
-  const paymentUtxos = useBtcUtxos(
-    paymentAddress !== address ? paymentAddress : undefined,
-    paymentPublicKey
-  );
+  const paymentUtxos = useBtcUtxos(paymentAddress, paymentPublicKey);
 
-  return useMemo(
-    () =>
-      utxos
-        ? paymentAddress !== address
-          ? paymentUtxos
-            ? utxos.concat(paymentUtxos)
-            : undefined
-          : utxos
-        : undefined,
-    [utxos, paymentUtxos, address, paymentAddress]
-  );
+  return useMemo(() => paymentUtxos, [paymentUtxos]);
 }
 
 export function useWalletRuneUtxos(runeid: string | undefined) {
-  const { address, paymentAddress, publicKey, paymentPublicKey } =
-    useLaserEyes();
+  const { address, publicKey } = useLaserEyes();
 
   const utxos = useRuneUtxos(address, runeid, publicKey);
-  const paymentUtxos = useRuneUtxos(
-    paymentAddress !== address ? paymentAddress : undefined,
-    runeid,
-    paymentPublicKey
-  );
 
-  return useMemo(
-    () =>
-      utxos
-        ? paymentAddress !== address
-          ? paymentUtxos
-            ? utxos.concat(paymentUtxos)
-            : undefined
-          : utxos
-        : undefined,
-    [utxos, paymentUtxos, address, paymentAddress]
-  );
+  return useMemo(() => utxos, [utxos]);
 }
