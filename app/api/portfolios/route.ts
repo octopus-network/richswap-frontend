@@ -3,6 +3,8 @@ import { Exchange } from "@/lib/exchange";
 
 import { PoolInfo } from "@/types";
 
+const STORAGE_URL = process.env.UNISAT_API!;
+
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
@@ -13,12 +15,9 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const pools = (await fetch(
-      "https://vquok3pr3bhc6tui.public.blob.vercel-storage.com/pool-list.json",
-      {
-        cache: "no-cache",
-      }
-    ).then((res) => res.json())) as PoolInfo[];
+    const pools = (await fetch(`${STORAGE_URL}/pool-list.json`, {
+      cache: "no-cache",
+    }).then((res) => res.json())) as PoolInfo[];
 
     const portfolios = await Promise.all(
       pools.map((pool) => Exchange.getPosition(pool, address))

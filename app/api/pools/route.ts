@@ -3,10 +3,12 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const STORAGE_URL = process.env.UNISAT_API!;
+
 export async function GET() {
   try {
     const cache = (await fetch(
-      "https://vquok3pr3bhc6tui.public.blob.vercel-storage.com/pool-list.json",
+      `${STORAGE_URL}/pool-list.json`,
       {
         cache: "no-cache",
       }
