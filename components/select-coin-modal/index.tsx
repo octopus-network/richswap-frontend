@@ -76,7 +76,12 @@ export function SelectCoinModal({
       coinFilter(debouncedQuery)
     );
 
-    return filteredCoins;
+    return filteredCoins.sort((a, b) => {
+      const [blockA] = a.id.split(":");
+      const [blockB] = b.id.split(":");
+
+      return Number(blockA) - Number(blockB);
+    });
   }, [defaultCoins, debouncedQuery]);
 
   const handleCoinSelect = (coin: Coin, hasWarning?: boolean) => {

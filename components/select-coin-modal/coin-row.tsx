@@ -1,10 +1,11 @@
 import { Coin } from "@/types";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { CoinIcon } from "../coin-icon";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { Skeleton } from "../ui/skeleton";
-
+import { useCoinPrice } from "@/hooks/use-prices";
+import { useMemo } from "react";
 import { getCoinSymbol, getCoinName } from "@/lib/utils";
 
 export function CoinRow({
@@ -16,6 +17,14 @@ export function CoinRow({
 }) {
   const { address } = useLaserEyes(({ address }) => ({ address }));
   const coinBalance = useCoinBalance(coin);
+
+  const coinPrice = useCoinPrice(coin?.id);
+
+  const coinFiatValue = useMemo(
+    () =>
+      coinBalance && coinPrice ? Number(coinBalance) * coinPrice : undefined,
+    [coinBalance, coinPrice]
+  );
 
   return (
     <div
@@ -43,8 +52,12 @@ export function CoinRow({
           </>
         ) : coinBalance !== undefined ? (
           <>
-            <span className="text-sm">{coinBalance}</span>
-            <span className="text-xs text-muted-foreground">-</span>
+            <span className="text-sm">{formatNumber(coinBalance)}</span>
+            <span className="text-xs text-muted-foreground">
+              {coinFiatValue !== undefined && coinFiatValue !== 0
+                ? "$" + formatNumber(coinFiatValue)
+                : "-"}
+            </span>
           </>
         ) : null}
       </div>

@@ -22,7 +22,7 @@ export function usePendingUtxos(address: string | undefined, pubkey?: string) {
     Orchestrator.getUnconfirmedUtxos(address, pubkey).then((_utxos) => {
       setUtxos(_utxos);
     });
-  }, [address, timer, transactions]);
+  }, [address, timer, pubkey, transactions]);
 
   useEffect(() => {
     const interval = setInterval(() => {
