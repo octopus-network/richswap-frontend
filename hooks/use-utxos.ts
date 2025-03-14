@@ -55,8 +55,6 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
     { refreshInterval: 15 * 1000 }
   );
 
-  console.log("useBtcUtxos", pubkey, apiUtxos, pendingUtxos);
-
   return useMemo(
     () =>
       apiUtxos
@@ -86,7 +84,7 @@ export function useRuneUtxos(
   runeid?: string | undefined,
   pubkey?: string
 ) {
-  const pendingUtxos = usePendingUtxos(address);
+  const pendingUtxos = usePendingUtxos(address, pubkey);
   const spentUtxos = useAtomValue(spentUtxosAtom);
   const { data: apiUtxos } = useSWR(
     address && runeid
@@ -129,7 +127,12 @@ export function useRuneUtxos(
 }
 
 export function useWalletBtcUtxos() {
-  const { paymentAddress, paymentPublicKey } = useLaserEyes();
+  const { paymentAddress, paymentPublicKey } = useLaserEyes(
+    ({ paymentAddress, paymentPublicKey }) => ({
+      paymentAddress,
+      paymentPublicKey,
+    })
+  );
 
   const paymentUtxos = useBtcUtxos(paymentAddress, paymentPublicKey);
 
@@ -137,7 +140,10 @@ export function useWalletBtcUtxos() {
 }
 
 export function useWalletRuneUtxos(runeid: string | undefined) {
-  const { address, publicKey } = useLaserEyes();
+  const { address, publicKey } = useLaserEyes(({ address, publicKey }) => ({
+    address,
+    publicKey,
+  }));
 
   const utxos = useRuneUtxos(address, runeid, publicKey);
 

@@ -29,7 +29,7 @@ const CoinButton = ({
   coin,
   onClick,
 }: {
-  coin: Coin | null;
+  coin: Coin | null | undefined;
   onClick: () => void;
 }) => {
   const [isMounted, setIsMounted] = useState(false);
@@ -95,7 +95,7 @@ export function CoinField({
   disabled,
 }: {
   label: string;
-  coin: Coin | null;
+  coin: Coin | null | undefined;
   className?: string;
   autoFocus?: boolean;
   pulsing?: boolean;
@@ -108,7 +108,7 @@ export function CoinField({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectCoinModalOpen, setSelectCoinModalOpen] = useState(false);
-  const { address } = useLaserEyes();
+  const { address } = useLaserEyes((x) => ({ address: x.address }));
   const balance = useCoinBalance(coin);
 
   const beautifiedValue = beautify(value);

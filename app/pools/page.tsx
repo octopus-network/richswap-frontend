@@ -114,7 +114,7 @@ export default function Pools() {
             <div className="flex flex-col space-y-0.5 ml-4">
               <span className="text-muted-foreground text-xs">Trades</span>
               {poolsFeeInSats ? (
-                <span className="font-semibold text-xl">-</span>
+                <span className="font-semibold text-xl">- </span>
               ) : (
                 <Skeleton className="h-6 w-20" />
               )}
@@ -183,7 +183,7 @@ export default function Pools() {
             <div className="col-span-3">
               <span>Fee</span>
             </div>
-            <div className="col-span-2 hidden md:flex">Your share</div>
+            <div className="col-span-2 hidden md:flex">Yiel/TVL</div>
             <div className="col-span-1 hidden md:flex" />
           </div>
           {poolList?.length

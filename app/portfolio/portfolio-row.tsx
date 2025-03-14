@@ -1,90 +1,102 @@
-import { Position, PoolInfo } from "@/types";
-import { Exchange } from "@/lib/exchange";
-import { useEffect, useState, useMemo } from "react";
+import { Position } from "@/types";
+
+import { useState, useMemo } from "react";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import { usePoolFee, usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
-import { useLaserEyes } from "@omnisat/lasereyes";
-import { useCoinPrice } from "@/hooks/use-prices";
-import Circle from "react-circle";
 
+import { useCoinPrice } from "@/hooks/use-prices";
+
+import Decimal from "decimal.js";
 import { CoinIcon } from "@/components/coin-icon";
 import { BITCOIN } from "@/lib/constants";
 
-export function PoolRow({ pool }: { pool: PoolInfo }) {
+export function PortfolioRow({ position }: { position: Position }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
     useState(false);
 
-  const { paymentAddress } = useLaserEyes((x) => ({
-    paymentAddress: x.paymentAddress,
-  }));
-
-  const [position, setPosition] = useState<Position | null>();
-
-  const poolTvl = usePoolTvl(pool.key);
-  const poolFee = usePoolFee(pool.key);
+  const poolTvl = usePoolTvl(position.pool.key);
+  const poolFee = usePoolFee(position.pool.key);
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
-  useEffect(() => {
-    if (!paymentAddress) {
-      setPosition(undefined);
-    }
-    Exchange.getPosition(pool, paymentAddress).then(setPosition);
-  }, [pool, paymentAddress]);
-
-  const yieldTvl = useMemo(
+  const positionPercentage = useMemo(
     () =>
-      poolTvl === 0
-        ? 0
-        : poolTvl !== undefined && poolFee !== undefined
-        ? ((poolFee * 100) / poolTvl).toFixed(2)
+      position
+        ? new Decimal(position.userShare)
+            .mul(100)
+            .div(position.sqrtK)
+            .toFixed(4)
+        : position === null
+        ? null
         : undefined,
-    [poolTvl, poolFee]
+    [position]
   );
 
-  const poolTvlInBtc = useMemo(
+  const positionValue = useMemo(() => {
+    return positionPercentage === undefined
+      ? undefined
+      : positionPercentage === null
+      ? undefined
+      : poolTvl
+      ? new Decimal(poolTvl).mul(positionPercentage).div(100).toNumber()
+      : undefined;
+  }, [poolTvl, positionPercentage]);
+
+  const positionYield = useMemo(() => {
+    return positionPercentage === undefined
+      ? undefined
+      : positionPercentage === null
+      ? undefined
+      : poolFee !== undefined
+      ? new Decimal(poolFee).mul(positionPercentage).div(100).toNumber()
+      : undefined;
+  }, [poolFee, positionPercentage]);
+
+  const positionValueInBtc = useMemo(
     () =>
-      poolTvl !== undefined && btcPrice !== undefined
-        ? poolTvl / btcPrice
+      positionValue !== undefined && btcPrice !== undefined
+        ? positionValue / btcPrice
         : btcPrice
-        ? poolTvl ?? 0 / btcPrice
+        ? positionValue ?? 0 / btcPrice
         : undefined,
-    [btcPrice, poolTvl]
+    [btcPrice, positionValue]
   );
 
-  const poolFeeInBtc = useMemo(
+  const positionYieldInBtc = useMemo(
     () =>
-      poolFee !== undefined && btcPrice !== undefined
-        ? poolFee / btcPrice
+      positionYield !== undefined && btcPrice !== undefined
+        ? positionYield / btcPrice
         : btcPrice
-        ? poolFee ?? 0 / btcPrice
+        ? positionYield ?? 0 / btcPrice
         : undefined,
-    [btcPrice, poolFee]
+    [btcPrice, positionYield]
   );
 
-  const poolFeeInSats = useMemo(
+  const positionYieldInSats = useMemo(
     () =>
-      poolFeeInBtc !== undefined ? poolFeeInBtc * Math.pow(10, 8) : undefined,
-    [poolFeeInBtc]
+      positionYieldInBtc !== undefined
+        ? positionYieldInBtc * Math.pow(10, 8)
+        : undefined,
+    [positionYieldInBtc]
   );
 
   const poolAddress = useMemo(() => {
-    const { address } = getP2trAressAndScript(pool.key);
+    const { address } = getP2trAressAndScript(position.pool.key);
     return address;
-  }, [pool]);
+  }, [position]);
 
   return (
     <>
       <div
-        className="grid md:grid-cols-12 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors"
+        className="grid grid-cols-10 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors"
         onClick={() => setManageLiquidityModalOpen(true)}
       >
         <div className="col-span-3 flex items-center">
           <div className="hidden sm:block mr-3">
-            <CoinIcon size="lg" coin={pool.coinB} />
+            <CoinIcon size="lg" coin={position.pool.coinB} />
           </div>
           <div
             className="hidden sm:inline-flex flex-col space-y-1 w-full group"
@@ -92,34 +104,34 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
               e.stopPropagation();
               e.preventDefault();
               window.open(
-                `https://www.runescan.net/runes/${pool.coinB.number}`,
+                `https://www.runescan.net/runes/${position.pool.coinB.number}`,
                 "_blank"
               );
             }}
           >
             <div className="flex w-full items-center space-x-1 group-hover:underline">
               <span className="font-semibold text-sm truncate max-w-[85%]">
-                {pool.name}
+                {position.pool.name}
               </span>
               <ExternalLink className="size-3 text-muted-foreground group-hover:text-foreground" />
             </div>
             <span className="text-xs text-muted-foreground truncate">
-              {pool.coinB.id}
+              {position.pool.coinB.id}
             </span>
           </div>
           <div className="inline-flex sm:hidden flex-col space-y-1 w-full group">
             <div className="flex w-full items-center space-x-1">
               <span className="font-semibold text-sm truncate max-w-[85%]">
-                {pool.name}
+                {position.pool.name}
               </span>
             </div>
             <span className="text-xs text-muted-foreground truncate">
-              {pool.coinB.id}
+              {position.pool.coinB.id}
             </span>
           </div>
         </div>
         <div className="col-span-3">
-          {poolTvl !== undefined && poolTvlInBtc !== undefined ? (
+          {positionValue !== undefined && positionValueInBtc !== undefined ? (
             <>
               <div
                 className="hidden sm:inline-flex flex-col space-y-1 group"
@@ -134,22 +146,22 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
               >
                 <div className="flex w-full items-center space-x-1 group-hover:underline">
                   <span className="font-semibold text-sm truncate">
-                    {formatNumber(poolTvlInBtc)} ₿
+                    {formatNumber(positionValueInBtc)} ₿
                   </span>
                   <ExternalLink className="size-3 text-muted-foreground group-hover:text-foreground" />
                 </div>
                 <span className="text-muted-foreground text-xs">
-                  ${formatNumber(poolTvl, true)}
+                  ${formatNumber(positionValue, true)}
                 </span>
               </div>
               <div className="inline-flex sm:hidden flex-col space-y-1">
                 <div className="flex w-full items-center space-x-1">
                   <span className="font-semibold text-sm truncate">
-                    {formatNumber(poolTvlInBtc)} ₿
+                    {formatNumber(positionValueInBtc)} ₿
                   </span>
                 </div>
                 <span className="text-muted-foreground text-xs">
-                  ${formatNumber(poolTvl, true)}
+                  ${formatNumber(positionValue, true)}
                 </span>
               </div>
             </>
@@ -158,43 +170,20 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
           )}
         </div>
         <div className="col-span-3">
-          {poolFee !== undefined && poolFeeInSats !== undefined ? (
+          {positionYield !== undefined && positionYieldInSats !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
-                {formatNumber(poolFeeInSats, true)}{" "}
+                {positionYieldInSats === 0
+                  ? "-"
+                  : formatNumber(positionYieldInSats, true)}{" "}
                 <em className="font-normal">sats</em>
               </span>
               <span className="text-muted-foreground text-xs">
-                ${formatNumber(poolFee, true)}
+                ${formatNumber(positionYield, true)}
               </span>
             </div>
           ) : (
             <Skeleton className="h-5 w-20" />
-          )}
-        </div>
-        <div className="col-span-2 hidden md:flex">
-          {yieldTvl === undefined ? (
-            <Skeleton className="h-5 w-20" />
-          ) : (
-            <div className="flex gap-2 items-center">
-              {yieldTvl ? (
-                <>
-                  <span>{Number(yieldTvl) === 0 ? "-" : `${yieldTvl}%`}</span>
-                  {Number(yieldTvl) !== 0 && (
-                    <Circle
-                      progress={Number(yieldTvl)}
-                      size="18"
-                      lineWidth="60"
-                      progressColor="#f6d75a"
-                      bgColor="#4c9aff"
-                      showPercentage={false}
-                    />
-                  )}
-                </>
-              ) : (
-                "-"
-              )}
-            </div>
           )}
         </div>
         <div className="col-span-1 hidden md:flex justify-end">

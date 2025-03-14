@@ -32,7 +32,7 @@ export function CreateForm({
   setCoinBAmount: (value: string) => void;
   onNextStep: (key: string) => void;
 }) {
-  const { address } = useLaserEyes();
+  const { address } = useLaserEyes(({ address }) => ({ address }));
   const [isCreating, setIsCreating] = useState(false);
   const coinABalance = useCoinBalance(coinA);
   const coinBBalance = useCoinBalance(coinB);

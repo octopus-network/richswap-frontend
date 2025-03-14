@@ -85,7 +85,14 @@ export function SwapReview({
   showCancelButton?: boolean;
   setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
-  const { address, signPsbt, provider, paymentAddress } = useLaserEyes();
+  const { address, signPsbt, provider, paymentAddress } = useLaserEyes(
+    ({ address, signPsbt, provider, paymentAddress }) => ({
+      address,
+      signPsbt,
+      provider,
+      paymentAddress,
+    })
+  );
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 

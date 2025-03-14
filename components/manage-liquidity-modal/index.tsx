@@ -1,6 +1,6 @@
 "use client";
 
-import { PoolInfo, Position, PoolData } from "@/types";
+import { Position, PoolData } from "@/types";
 import { useEffect, useState } from "react";
 import { BaseModal } from "../base-modal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,24 +14,25 @@ import { Exchange } from "@/lib/exchange";
 export function ManageLiquidityModal({
   open,
   setOpen,
-  pool,
   position,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
-  pool: PoolInfo;
   position: Position | null | undefined;
 }) {
   const [onReview, setOnReview] = useState(false);
   const [poolData, setPoolData] = useState<PoolData>();
   useEffect(() => {
-    Exchange.getPoolData(pool.address).then((res) => {
+    if (!position) {
+      return;
+    }
+    Exchange.getPoolData(position.pool.address).then((res) => {
       if (!res) {
         return;
       }
       setPoolData(res);
     });
-  }, [pool, open]);
+  }, [position, open]);
   return (
     <BaseModal
       open={open}
@@ -60,15 +61,15 @@ export function ManageLiquidityModal({
             </TabsList>
             <Link
               href={`/swap?coinA=${getCoinSymbol(
-                pool.coinA
-              )}&coinB=${getCoinSymbol(pool.coinB)}`}
+                position?.pool.coinA ?? null
+              )}&coinB=${getCoinSymbol(position?.pool.coinB ?? null)}`}
               className="text-primary/80 hover:text-primary ml-3 text-sm inline-flex items-center"
             >
               <ArrowLeftRight className="mr-1 size-3" /> Swap
             </Link>
           </div>
           <DepositContent
-            pool={pool}
+            pool={position?.pool}
             poolData={poolData}
             setOnReview={setOnReview}
             onSuccess={() => {

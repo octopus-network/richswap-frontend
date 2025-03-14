@@ -59,6 +59,8 @@ export class Orchestrator {
       address
     )) as OutpointWithValue[];
 
+    console.log("getUnconfirmedUtxos", pubkey)
+
     const addressType = getAddressType(address);
 
     return res.map(({ value, script_pubkey_hex, outpoint, maybe_rune }) => {

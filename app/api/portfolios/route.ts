@@ -1,76 +1,32 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Exchange } from "@/lib/exchange";
-import { OpenApi } from "@/lib/open-api";
-import { UNKNOWN_COIN, BITCOIN } from "@/lib/constants";
+
 import { PoolInfo } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
-const UNISAT_API = process.env.UNISAT_API!;
-
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const res = await Exchange.getPoolList();
+    const address = req.nextUrl.searchParams.get("address");
 
-    console.log("pool res", res);
-
-    const pools: PoolInfo[] = [];
-
-    const openApi = new OpenApi({
-      baseUrl: UNISAT_API,
-      apiKey: UNISAT_API_KEY,
-    });
-
-    const coinRes = await Promise.all(
-      res.map(({ coin_reserved }) =>
-        coin_reserved.length
-          ? openApi.getRunesInfoList(coin_reserved[0].id)
-          : { detail: [] }
-      )
-    );
-
-    for (let i = 0; i < res.length; i++) {
-      const { name, address, btc_reserved, coin_reserved, key } = res[i];
-
-      const coinA = BITCOIN;
-      const { detail: coinBRes } = coinRes[i];
-
-      let coinB = UNKNOWN_COIN;
-      if (coinBRes.length) {
-        const {
-          spacedRune,
-          rune,
-          symbol,
-          divisibility,
-          etching,
-          runeid,
-          number,
-        } = coinBRes[0];
-
-        coinB = {
-          id: runeid,
-          name: spacedRune,
-          runeId: rune,
-          runeSymbol: symbol,
-          decimals: divisibility,
-          etching,
-          number,
-        };
-      }
-
-      pools.push({
-        key,
-        address,
-        name,
-        coinA: { ...coinA, balance: btc_reserved.toString() },
-        coinB: { ...coinB, balance: coin_reserved[0]?.value.toString() ?? "0" },
-      });
+    if (!address) {
+      throw new Error("Missing parameter(s)");
     }
+
+    const pools = (await fetch(
+      "https://vquok3pr3bhc6tui.public.blob.vercel-storage.com/pool-list.json",
+      {
+        cache: "no-cache",
+      }
+    ).then((res) => res.json())) as PoolInfo[];
+
+    const portfolios = await Promise.all(
+      pools.map((pool) => Exchange.getPosition(pool, address))
+    ).then((res) => res.filter((position) => !!position));
 
     return NextResponse.json({
       success: true,
-      data: pools,
+      data: portfolios,
     });
   } catch (error) {
     console.log(error);

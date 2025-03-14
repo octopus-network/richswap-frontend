@@ -14,7 +14,14 @@ import { usePendingTransactions } from "@/store/transactions";
 import { TransactionsContent } from "./transactions-content";
 
 export function AccountSheetContent() {
-  const { provider, address, paymentAddress, disconnect } = useLaserEyes();
+  const { provider, address, paymentAddress, disconnect } = useLaserEyes(
+    ({ provider, address, paymentAddress, disconnect }) => ({
+      provider,
+      address,
+      paymentAddress,
+      disconnect,
+    })
+  );
   const { hasCopied, onCopy } = useClipboard(address);
   const { hasCopied: hasPaymentCopied, onCopy: onPaymentCopy } =
     useClipboard(paymentAddress);

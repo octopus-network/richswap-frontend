@@ -12,7 +12,9 @@ import { useEffect, useState } from "react";
 import { MenuButton } from "./menu-button";
 
 export function Topbar() {
-  const { address, isInitializing } = useLaserEyes();
+  const { address, isInitializing } = useLaserEyes(
+    ({ address, isInitializing }) => ({ address, isInitializing })
+  );
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
   const [initialized, setInitialized] = useState(false);
 

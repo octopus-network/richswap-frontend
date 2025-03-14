@@ -182,13 +182,11 @@ export async function swapRuneTx({
 
   const toSignInputs: ToSignInput[] = [];
 
-  console.log("inputs", inputs);
-
   const toSpendUtxos = inputs
     .filter(({ utxo }, index) => {
       const isUserInput =
         utxo.address === address || utxo.address === paymentAddress;
-
+      console.log("toSignInputs", utxo);
       if (isUserInput) {
         toSignInputs.push({
           publicKey: utxo.pubkey,
