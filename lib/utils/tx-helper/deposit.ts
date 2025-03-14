@@ -39,8 +39,6 @@ export async function depositTx({
   tx.setEnableRBF(false);
   tx.setChangeAddress(paymentAddress);
 
-  const toSignInputs: ToSignInput[] = [];
-
   poolUtxos.forEach((utxo) => {
     // pool has only one utxo now
     const rune = utxo.runes.find((rune) => rune.id === runeid);
@@ -51,9 +49,8 @@ export async function depositTx({
 
   let inputUtxoDusts = BigInt(0);
   // add assets
-  runeUtxos.forEach((v, index) => {
+  runeUtxos.forEach((v) => {
     tx.addInput(v);
-    toSignInputs.push({ index, publicKey: v.pubkey });
     inputUtxoDusts += BigInt(v.satoshis);
   });
 
@@ -223,18 +220,21 @@ export async function depositTx({
 
   const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
+  const toSignInputs: ToSignInput[] = [];
+
   const toSpendUtxos = inputs
-    .filter(
-      (input) =>
-        input.utxo.address === address || input.utxo.address === paymentAddress
-    )
-    .map((input) => {
-      toSignInputs.push({
-        publicKey: input.utxo.pubkey,
-        index: input.utxo.vout,
-      });
-      return input.utxo;
-    });
+    .filter(({ utxo }, index) => {
+      const isUserInput =
+        utxo.address === address || utxo.address === paymentAddress;
+      if (isUserInput) {
+        toSignInputs.push({
+          publicKey: utxo.pubkey,
+          index,
+        });
+      }
+      return isUserInput;
+    })
+    .map((input) => input.utxo);
 
   const inputCoins: InputCoin[] = [
     {
@@ -257,8 +257,8 @@ export async function depositTx({
 
   return {
     psbt,
-    toSignInputs,
     toSpendUtxos,
+    toSignInputs,
     poolSpendUtxos,
     poolReceiveUtxos,
     txid,

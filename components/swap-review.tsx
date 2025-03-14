@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Loader2, TriangleAlert } from "lucide-react";
+import { OKX } from "@omnisat/lasereyes";
 import {
   AddressType,
   Coin,
@@ -8,6 +9,7 @@ import {
   TransactionStatus,
   TransactionType,
   UnspentOutput,
+  ToSignInput,
 } from "@/types";
 
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
@@ -40,6 +42,24 @@ import { useAddTransaction } from "@/store/transactions";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 
+declare global {
+  interface Window {
+    okxwallet: {
+      bitcoin: {
+        signPsbt: (
+          psbtHex: string,
+          config?: {
+            toSignInputs: {
+              index: number;
+              publicKey: string;
+            }[];
+          }
+        ) => Promise<string>;
+      };
+    };
+  }
+}
+
 export function SwapReview({
   coinA,
   coinB,
@@ -65,7 +85,7 @@ export function SwapReview({
   showCancelButton?: boolean;
   setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
-  const { address, signPsbt, paymentAddress } = useLaserEyes();
+  const { address, signPsbt, provider, paymentAddress } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -73,6 +93,7 @@ export function SwapReview({
   const [txid, setTxid] = useState("");
 
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
+  const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
   const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
   const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
   const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
@@ -165,6 +186,7 @@ export function SwapReview({
           setTxid(tx.txid);
           setInputCoins(tx.inputCoins);
           setOutputCoins(tx.outputCoins);
+          setToSignInputs(tx.toSignInputs);
         } catch (err) {
           console.log(err);
         }
@@ -225,6 +247,7 @@ export function SwapReview({
           setTxid(tx.txid);
           setInputCoins(tx.inputCoins);
           setOutputCoins(tx.outputCoins);
+          setToSignInputs(tx.toSignInputs);
         } catch (err) {
           console.log(err);
         }
@@ -270,15 +293,25 @@ export function SwapReview({
         return;
       }
 
-      const psbtBase64 = psbt.toBase64();
       setStep(1);
 
-      console.log("swap psbt before sign:", psbt.toHex());
-      const res = await signPsbt(psbtBase64);
+      let signedPsbtHex = "";
 
-      console.log("signedPsbtHex", res?.signedPsbtHex);
+      if (provider === OKX) {
+        console.log("is okx wallet", toSignInputs, toSpendUtxos);
+        const psbtHex = psbt.toHex();
 
-      if (!res?.signedPsbtHex) {
+        signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
+          toSignInputs,
+        });
+        console.log(signedPsbtHex);
+      } else {
+        const psbtBase64 = psbt.toBase64();
+        const res = await signPsbt(psbtBase64);
+        signedPsbtHex = res?.signedPsbtHex ?? "";
+      }
+
+      if (!signedPsbtHex) {
         throw new Error("Signed Failed");
       }
 
@@ -303,7 +336,7 @@ export function SwapReview({
             },
           ],
         },
-        psbt_hex: res.signedPsbtHex,
+        psbt_hex: signedPsbtHex,
       });
 
       addTransaction({

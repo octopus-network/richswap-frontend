@@ -9,7 +9,7 @@ import { useTransactions } from "@/store/transactions";
 import useSWR from "swr";
 import { useLaserEyes } from "@omnisat/lasereyes";
 
-export function usePendingUtxos(address: string | undefined) {
+export function usePendingUtxos(address: string | undefined, pubkey?: string) {
   const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
 
   const [timer, setTimer] = useState<number>();
@@ -19,7 +19,7 @@ export function usePendingUtxos(address: string | undefined) {
     if (!address) {
       return;
     }
-    Orchestrator.getUnconfirmedUtxos(address).then((_utxos) => {
+    Orchestrator.getUnconfirmedUtxos(address, pubkey).then((_utxos) => {
       setUtxos(_utxos);
     });
   }, [address, timer, transactions]);
@@ -38,8 +38,9 @@ export function usePendingUtxos(address: string | undefined) {
 }
 
 export function useBtcUtxos(address: string | undefined, pubkey?: string) {
-  const pendingUtxos = usePendingUtxos(address);
+  const pendingUtxos = usePendingUtxos(address, pubkey);
   const spentUtxos = useAtomValue(spentUtxosAtom);
+
   const { data: apiUtxos } = useSWR(
     address
       ? `/api/utxos/btc?address=${address}${pubkey ? `&pubkey=${pubkey}` : ""}`
@@ -53,6 +54,8 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
       }),
     { refreshInterval: 15 * 1000 }
   );
+
+  console.log("useBtcUtxos", pubkey, apiUtxos, pendingUtxos);
 
   return useMemo(
     () =>

@@ -11,7 +11,7 @@ import axios from "axios";
 import { Orchestrator } from "@/lib/orchestrator";
 
 import { useRemoveSpentUtxos } from "@/store/spent-utxos";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, getCoinSymbol } from "@/lib/utils";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { MEMPOOL_URL } from "@/lib/constants";
 
@@ -68,9 +68,11 @@ export function TransactionUpdater() {
               addPopup(
                 "Transaction Confirmed",
                 PopupStatus.SUCCESS,
-                `Swap ${formatNumber(tx.coinBAmount)} ${
-                  tx.coinB.symbol
-                } with ${formatNumber(tx.coinAAmount)} ${tx.coinA.symbol}`
+                `Swap ${formatNumber(tx.coinBAmount)} ${getCoinSymbol(
+                  tx.coinB
+                )} with ${formatNumber(tx.coinAAmount)} ${getCoinSymbol(
+                  tx.coinA
+                )}`
               );
               updateTransactionStatus({
                 txid: tx.txid,

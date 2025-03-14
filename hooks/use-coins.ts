@@ -52,6 +52,7 @@ export function useDefaultCoins() {
     () => poolList?.map((pool) => pool.coinB),
     [poolList]
   );
+
   return useMemo(
     () =>
       userAddedCoins.reduce<{ [id: string]: Coin }>(

@@ -7,10 +7,12 @@ import {
   UnspentOutput,
   InputCoin,
   OutputCoin,
+  ToSignInput,
 } from "@/types";
 
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import { OKX } from "@omnisat/lasereyes";
 import { getAddressType } from "@/lib/utils";
 import { AddressType } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
@@ -63,7 +65,7 @@ export function DepositReview({
   nonce: string;
   showCancelButton?: boolean;
 }) {
-  const { address, paymentAddress, signPsbt } = useLaserEyes();
+  const { address, paymentAddress, provider, signPsbt } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
@@ -71,6 +73,7 @@ export function DepositReview({
   const [txid, setTxid] = useState("");
 
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
+  const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
   const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
   const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
   const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
@@ -167,8 +170,6 @@ export function DepositReview({
           feeRate: recommendedFeeRate,
         });
 
-        console.log("tx", tx);
-
         setPsbt(tx.psbt);
         setToSpendUtxos(tx.toSpendUtxos);
         setToSpendUtxos(tx.toSpendUtxos);
@@ -177,6 +178,7 @@ export function DepositReview({
         setTxid(tx.txid);
         setInputCoins(tx.inputCoins);
         setOutputCoins(tx.outputCoins);
+        setToSignInputs(tx.toSignInputs);
       } catch (err) {
         console.log(err);
       }
@@ -202,20 +204,30 @@ export function DepositReview({
     }
 
     try {
-      const psbtBase64 = psbt.toBase64();
-
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
       if (!poolAddress) {
         return;
       }
 
-      console.log("Deposit Liquidity PSBT:", psbtBase64);
-
       setStep(1);
 
-      const signedRes = await signPsbt(psbtBase64);
+      let signedPsbtHex = "";
 
-      if (!signedRes?.signedPsbtHex) {
+      if (provider === OKX) {
+        console.log("is okx wallet", toSignInputs);
+        const psbtHex = psbt.toHex();
+
+        signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
+          toSignInputs,
+        });
+        console.log(signedPsbtHex);
+      } else {
+        const psbtBase64 = psbt.toBase64();
+        const res = await signPsbt(psbtBase64);
+        signedPsbtHex = res?.signedPsbtHex ?? "";
+      }
+
+      if (!signedPsbtHex) {
         throw new Error("Signed Failed");
       }
 
@@ -240,7 +252,7 @@ export function DepositReview({
             },
           ],
         },
-        psbt_hex: signedRes.signedPsbtHex,
+        psbt_hex: signedPsbtHex,
       });
 
       addTransaction({

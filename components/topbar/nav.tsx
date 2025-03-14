@@ -10,6 +10,7 @@ import {
   Ellipsis,
   BookOpen,
   MessageSquare,
+  Package
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -37,6 +38,11 @@ export const navItems: NavItem[] = [
     title: "Pools",
     href: "/pools",
     icon: <Waves className="size-4" />,
+  },
+  {
+    title: "Portfolio",
+    href: "/portfolio",
+    icon: <Package className="size-4" />,
   },
 ];
 
