@@ -49,7 +49,7 @@ export function useDefaultCoins() {
   const poolList = usePoolList();
 
   const poolCoins = useMemo(
-    () => poolList?.map((pool) => pool.coinB),
+    () => poolList.map((pool) => pool.coinB),
     [poolList]
   );
 
