@@ -38,7 +38,7 @@ export function SwapPanel() {
 
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
 
-  const { onUpdateCoins, onSwitchCoins, onSelectCoin, onUserInput } =
+  const { onSwitchCoins, onSelectCoin, onUserInput } =
     useSwapActionHandlers();
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -110,8 +110,9 @@ export function SwapPanel() {
       _coinA = BITCOIN;
       _coinB = COIN_LIST[1];
     }
-    onUpdateCoins(_coinA, _coinB);
-  }, [onUpdateCoins, coins]);
+    // onUpdateCoins(_coinA, _coinB);
+    //eslint-disable-next-line
+  }, [coins]);
 
   useEffect(() => {
     if (!coinA || !coinB) {
