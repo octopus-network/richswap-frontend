@@ -23,16 +23,7 @@ export function BaseModal({
   showCloseButton?: boolean;
 }>) {
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(open) => {
-        if (!open && showCloseButton !== false) {
-          setOpen(false);
-        } else if (open) {
-          setOpen(true);
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         className={cn(
           "border-none bg-popover rounded-2xl p-0 gap-0 shadow-none",

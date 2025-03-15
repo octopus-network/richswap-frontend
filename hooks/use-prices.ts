@@ -1,5 +1,6 @@
 import axios from "axios";
 import useSWR from "swr";
+import { useMemo } from "react";
 
 export function useCoinPrices(ids: string[]) {
   const { data } = useSWR(
@@ -10,14 +11,14 @@ export function useCoinPrices(ids: string[]) {
           data: Record<string, number>;
         }>(url)
         .then((res) => res.data.data),
-    { refreshInterval: 10 * 1000 }
+    { refreshInterval: 5 * 60 * 1000 }
   );
 
-  return data;
+  return useMemo(() => data, [data]);
 }
 
 export function useCoinPrice(id: string | undefined) {
   const prices = useCoinPrices(id ? [id] : []);
 
-  return id && prices ? prices[id] : 0;
+  return useMemo(() => (id && prices ? prices[id] : 0), [id, prices]);
 }
