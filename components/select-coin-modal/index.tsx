@@ -122,7 +122,7 @@ export function SelectCoinModal({
         </div>
       </div>
       <ScrollArea
-        className="border-t mt-4 h-[calc(70vh_-_80px)] focus:outline-none"
+        className="border-t mt-4 h-[calc(70vh_-_80px)] focus:outline-none focus:ring-0"
         tabIndex={0}
       >
         {sortedCoins.map((coin, idx) => {
