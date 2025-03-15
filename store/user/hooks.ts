@@ -1,9 +1,9 @@
 import { Coin } from "@/types";
-import { useSetAtom, useAtomValue } from "jotai";
+import { useSetAtom } from "jotai";
 import { userStateAtom } from "./reducer";
 
 import { addCoin } from "./actions";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 
 export function useAddUserCoin(): (coin: Coin) => void {
   const dispatch = useSetAtom(userStateAtom);
@@ -16,12 +16,13 @@ export function useAddUserCoin(): (coin: Coin) => void {
 }
 
 export function useUserAddedCoins(): Coin[] {
-  const userState = useAtomValue(userStateAtom);
+  // const userState = useAtomValue(userStateAtom);
 
-  return useMemo(() => {
-    const coinMap: Coin[] = userState.coins
-      ? Object.values(userState.coins)
-      : [];
-    return coinMap;
-  }, [userState]);
+  // return useMemo(() => {
+  //   const coinMap: Coin[] = userState.coins
+  //     ? Object.values(userState.coins)
+  //     : [];
+  //   return coinMap;
+  // }, [userState]);
+  return [];
 }

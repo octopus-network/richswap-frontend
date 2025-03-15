@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+
 import { GeistSans } from "geist/font/sans";
 
 import "./globals.css";
@@ -24,7 +24,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Script src="https://unpkg.com/eruda"></Script>
       <body className={`${GeistSans.className} antialiased`}>
         <Providers>
           <div className="flex min-h-screen w-screen flex-col">
