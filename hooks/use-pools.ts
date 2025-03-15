@@ -42,15 +42,7 @@ export function usePortfolios(address: string | undefined) {
 export function usePoolsTvl() {
   const poolsList = usePoolList();
 
-  const coinIds = useMemo(
-    () =>
-      Array.from(
-        new Set(poolsList.map((pool) => [pool.coinA.id, pool.coinB.id]).flat(1))
-      ),
-    [poolsList]
-  );
-
-  const prices = useCoinPrices(coinIds);
+  const [prices] = useCoinPrices();
 
   const tvls = useMemo(() => {
     const tmpObj: Record<string, number> = {};

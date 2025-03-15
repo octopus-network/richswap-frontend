@@ -14,8 +14,6 @@ export function Providers({ children }: PropsWithChildren) {
     setIsMounted(true);
   }, []);
 
-  console.log("network", NETWORK);
-
   return !isMpunted ? (
     <div className="flex min-h-screen w-screen flex-col">
       <Topbar />

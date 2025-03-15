@@ -1,64 +1,41 @@
 import { UnspentOutput } from "@/types";
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
-import { Orchestrator } from "@/lib/orchestrator";
 import { useAtomValue } from "jotai";
 import { spentUtxosAtom } from "@/store/spent-utxos";
-import axios from "axios";
-import { useTransactions } from "@/store/transactions";
-import useSWR from "swr";
-import { useLaserEyes } from "@omnisat/lasereyes";
 
-export function usePendingUtxos(address: string | undefined, pubkey?: string) {
-  const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
+import { atom, useAtom } from "jotai";
 
-  const [timer, setTimer] = useState<number>();
-  const transactions = useTransactions();
+const pendingBtcUtxosAtom = atom<UnspentOutput[]>([]);
+const pendingRuneUtxosAtom = atom<UnspentOutput[]>([]);
+const confirmedRuneUtxosAtom = atom<UnspentOutput[]>();
+const confirmedBtcUtxosAtom = atom<UnspentOutput[]>();
 
-  useEffect(() => {
-    if (!address) {
-      return;
-    }
-    Orchestrator.getUnconfirmedUtxos(address, pubkey).then((_utxos) => {
-      setUtxos(_utxos);
-    });
-  }, [address, timer, pubkey, transactions]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer(Date.now());
-    }, 15 * 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  return utxos;
+export function usePendingBtcUtxos() {
+  return useAtom(pendingBtcUtxosAtom);
 }
 
-export function useBtcUtxos(address: string | undefined, pubkey?: string) {
-  const pendingUtxos = usePendingUtxos(address, pubkey);
-  const spentUtxos = useAtomValue(spentUtxosAtom);
+export function usePendingRuneUtxos() {
+  return useAtom(pendingRuneUtxosAtom);
+}
 
-  const { data: apiUtxos } = useSWR(
-    address
-      ? `/api/utxos/btc?address=${address}${pubkey ? `&pubkey=${pubkey}` : ""}`
-      : undefined,
-    (url: string) =>
-      axios.get<{ data?: UnspentOutput[]; error: string }>(url).then((res) => {
-        if (res.data.error) {
-          throw new Error(res.data.error);
-        }
-        return res.data.data;
-      }),
-    { refreshInterval: 15 * 1000 }
-  );
+export function useConfirmedBtcUtxos() {
+  return useAtom(confirmedBtcUtxosAtom);
+}
+
+export function useConfirmedRuneUtxos() {
+  return useAtom(confirmedRuneUtxosAtom);
+}
+
+export function useBtcUtxos() {
+  const [pendingUtxos] = usePendingBtcUtxos();
+  const [confirmedUtxos] = useConfirmedBtcUtxos();
+  const spentUtxos = useAtomValue(spentUtxosAtom);
 
   return useMemo(
     () =>
-      apiUtxos
-        ? apiUtxos
+      confirmedUtxos
+        ? confirmedUtxos
             .filter(
               (c) =>
                 spentUtxos.findIndex(
@@ -69,43 +46,25 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
               pendingUtxos.filter(
                 (p) =>
                   !p.runes.length &&
-                  apiUtxos.findIndex(
+                  confirmedUtxos.findIndex(
                     (c) => c.txid === p.txid && c.vout === p.vout
                   ) < 0
               )
             )
         : undefined,
-    [apiUtxos, pendingUtxos, spentUtxos]
+    [confirmedUtxos, pendingUtxos, spentUtxos]
   );
 }
 
-export function useRuneUtxos(
-  address: string | undefined,
-  runeid?: string | undefined,
-  pubkey?: string
-) {
-  const pendingUtxos = usePendingUtxos(address, pubkey);
+export function useRuneUtxos() {
+  const [pendingUtxos] = usePendingRuneUtxos();
+  const [confirmedUtxos] = useConfirmedRuneUtxos();
   const spentUtxos = useAtomValue(spentUtxosAtom);
-  const { data: apiUtxos } = useSWR(
-    address && runeid
-      ? `/api/utxos/rune?address=${address}&runeid=${runeid}${
-          pubkey ? `&pubkey=${pubkey}` : ""
-        }`
-      : undefined,
-    (url: string) =>
-      axios.get<{ data?: UnspentOutput[]; error: string }>(url).then((res) => {
-        if (res.data.error) {
-          throw new Error(res.data.error);
-        }
-        return res.data.data;
-      }),
-    { refreshInterval: 15 * 1000 }
-  );
 
   return useMemo(
     () =>
-      apiUtxos
-        ? apiUtxos
+      confirmedUtxos
+        ? confirmedUtxos
             .filter(
               (c) =>
                 spentUtxos.findIndex(
@@ -116,36 +75,27 @@ export function useRuneUtxos(
               pendingUtxos.filter(
                 (p) =>
                   p.runes.length &&
-                  apiUtxos.findIndex(
+                  confirmedUtxos.findIndex(
                     (c) => c.txid === p.txid && c.vout === p.vout
                   ) < 0
               )
             )
         : undefined,
-    [apiUtxos, pendingUtxos, spentUtxos]
+    [confirmedUtxos, pendingUtxos, spentUtxos]
   );
 }
 
 export function useWalletBtcUtxos() {
-  const { paymentAddress, paymentPublicKey } = useLaserEyes(
-    ({ paymentAddress, paymentPublicKey }) => ({
-      paymentAddress,
-      paymentPublicKey,
-    })
-  );
-
-  const paymentUtxos = useBtcUtxos(paymentAddress, paymentPublicKey);
+  const paymentUtxos = useBtcUtxos();
 
   return useMemo(() => paymentUtxos, [paymentUtxos]);
 }
 
 export function useWalletRuneUtxos(runeid: string | undefined) {
-  const { address, publicKey } = useLaserEyes(({ address, publicKey }) => ({
-    address,
-    publicKey,
-  }));
+  const utxos = useRuneUtxos();
 
-  const utxos = useRuneUtxos(address, runeid, publicKey);
-
-  return useMemo(() => utxos, [utxos]);
+  return useMemo(
+    () => utxos?.filter((utxo) => utxo.runes[0].id === runeid),
+    [utxos, runeid]
+  );
 }

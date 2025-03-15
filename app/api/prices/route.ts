@@ -35,7 +35,7 @@ async function getPriceInBtc(coinId: string) {
 }
 
 export async function GET(req: NextRequest) {
-  const ids = req.nextUrl.searchParams.get("ids");
+  const ids = req.nextUrl.searchParams.get("coinIds");
   try {
     if (!ids) {
       throw new Error("Missing parameter(s)");

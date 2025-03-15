@@ -1,24 +1,14 @@
-import axios from "axios";
-import useSWR from "swr";
 import { useMemo } from "react";
+import { atom, useAtom } from "jotai";
 
-export function useCoinPrices(ids: string[]) {
-  const { data } = useSWR(
-    ids.length ? `/api/prices?ids=${ids.join(",")}` : undefined,
-    (url: string) =>
-      axios
-        .get<{
-          data: Record<string, number>;
-        }>(url)
-        .then((res) => res.data.data),
-    { refreshInterval: 5 * 60 * 1000 }
-  );
+const coinPricesAtom = atom<Record<string, number>>({});
 
-  return useMemo(() => data, [data]);
+export function useCoinPrices() {
+  return useAtom(coinPricesAtom);
 }
 
 export function useCoinPrice(id: string | undefined) {
-  const prices = useCoinPrices(id ? [id] : []);
+  const [prices] = useCoinPrices();
 
   return useMemo(() => (id && prices ? prices[id] : 0), [id, prices]);
 }
