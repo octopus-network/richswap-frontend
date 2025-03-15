@@ -190,6 +190,7 @@ export function CoinField({
               coin={coin}
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 setTimeout(() => {
                   setSelectCoinModalOpen(true);
                 }, 100);
