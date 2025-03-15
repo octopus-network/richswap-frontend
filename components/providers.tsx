@@ -12,6 +12,9 @@ export function Providers({ children }: PropsWithChildren) {
 
   useEffect(() => {
     setIsMounted(true);
+    setTimeout(() => {
+      window.eruda.init();
+    }, 1000);
   }, []);
 
   return !isMpunted ? (

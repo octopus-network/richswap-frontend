@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { GeistSans } from "geist/font/sans";
 
 import "./globals.css";
@@ -10,6 +11,7 @@ import { ConnectWalletModal } from "@/components/connect-wallet-modal";
 import { Popups } from "@/components/popups";
 import { TransactionUpdater } from "@/components/transaction/updater";
 import { GlobalStateUpdater } from "@/components/global-state-updater";
+
 export const metadata: Metadata = {
   title: "RichSwap",
   description: "RichSwap",
@@ -22,6 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Script src="https://unpkg.com/eruda"></Script>
       <body className={`${GeistSans.className} antialiased`}>
         <Providers>
           <div className="flex min-h-screen w-screen flex-col">

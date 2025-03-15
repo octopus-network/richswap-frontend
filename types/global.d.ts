@@ -2,6 +2,7 @@ import { ToSignInput } from "./transaction";
 
 declare global {
   interface Window {
+    eruda: any;
     okxwallet: {
       bitcoin: {
         signPsbt: (
