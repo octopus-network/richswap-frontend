@@ -9,7 +9,7 @@ import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Circle from "react-circle";
-
+import Decimal from "decimal.js";
 import { CoinIcon } from "@/components/coin-icon";
 import { BITCOIN } from "@/lib/constants";
 
@@ -34,6 +34,29 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
     }
     Exchange.getPosition(pool, paymentAddress).then(setPosition);
   }, [pool, paymentAddress]);
+
+  const positionPercentage = useMemo(
+    () =>
+      position
+        ? new Decimal(position.userShare)
+            .mul(100)
+            .div(position.sqrtK)
+            .toFixed(4)
+        : position === null
+        ? null
+        : undefined,
+    [position]
+  );
+
+  const positionValue = useMemo(() => {
+    return positionPercentage === undefined
+      ? undefined
+      : positionPercentage === null
+      ? null
+      : poolTvl
+      ? new Decimal(poolTvl).mul(positionPercentage).div(100).toNumber()
+      : undefined;
+  }, [poolTvl, positionPercentage]);
 
   const yieldTvl = useMemo(
     () =>
@@ -79,7 +102,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
   return (
     <>
       <div
-        className="grid md:grid-cols-12 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors"
+        className="grid md:grid-cols-14 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors"
         onClick={() => setManageLiquidityModalOpen(true)}
       >
         <div className="col-span-3 flex items-center">
@@ -190,6 +213,28 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                       showPercentage={false}
                     />
                   )}
+                </>
+              ) : (
+                "-"
+              )}
+            </div>
+          )}
+        </div>
+        <div className="col-span-2 hidden md:flex">
+          {positionPercentage === undefined ? (
+            <Skeleton className="h-5 w-20" />
+          ) : (
+            <div className="flex  space-y-1 flex-col">
+              {positionPercentage ? (
+                <>
+                  <span className="font-semibold">
+                    {formatNumber(positionPercentage)}%
+                  </span>
+                  {positionValue ? (
+                    <span className="text-muted-foreground text-xs">
+                      ${formatNumber(positionValue ?? "0", true)}
+                    </span>
+                  ) : null}
                 </>
               ) : (
                 "-"
