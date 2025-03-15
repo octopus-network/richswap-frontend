@@ -1,7 +1,7 @@
 import { TabsContent } from "@radix-ui/react-tabs";
 import { useEffect, useMemo, useState } from "react";
-import { cn, getCoinSymbol } from "@/lib/utils";
-import { TransactionInfo, TransactionStatus, TransactionType } from "@/types";
+import { cn, getTxTitleAndDescription } from "@/lib/utils";
+import { TransactionInfo, TransactionStatus } from "@/types";
 import { useTransactions } from "@/store/transactions";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TxStatusBadge } from "../tx-status-badge";
@@ -33,33 +33,10 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
     }
   }, [transaction, latestBlock, updateTransactionStatus]);
 
-  const title = useMemo(() => {
-    const { type, coinA, coinB } = transaction;
-    if (type === TransactionType.ADD_LIQUIDITY) {
-      return `Add Liquidity to ${getCoinSymbol(coinB)} pool`;
-    } else if (type === TransactionType.SWAP) {
-      return `Swap ${getCoinSymbol(coinA)} to ${getCoinSymbol(coinB)}`;
-    } else if (type === TransactionType.WITHDRAW_LIQUIDITY) {
-      return `Withdraw Liquidity from ${getCoinSymbol(coinB)} pool`;
-    }
-  }, [transaction]);
-
-  const description = useMemo(() => {
-    const { type, coinA, coinAAmount, coinB, coinBAmount } = transaction;
-    if (type === TransactionType.ADD_LIQUIDITY) {
-      return `With ${coinAAmount} ${getCoinSymbol(
-        coinA
-      )} and ${coinBAmount} ${getCoinSymbol(coinB)}`;
-    } else if (type === TransactionType.SWAP) {
-      return `Convert ${coinAAmount} ${getCoinSymbol(
-        coinA
-      )} to ${coinBAmount} ${getCoinSymbol(coinB)}`;
-    } else if (type === TransactionType.WITHDRAW_LIQUIDITY) {
-      return `Widthdraw ${coinAAmount} ${getCoinSymbol(
-        coinA
-      )} and ${coinBAmount} ${getCoinSymbol(coinB)}`;
-    }
-  }, [transaction]);
+  const { title, description } = useMemo(
+    () => getTxTitleAndDescription(transaction),
+    [transaction]
+  );
 
   const onClick = () => {
     if (
