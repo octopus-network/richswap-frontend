@@ -44,12 +44,17 @@ export async function GET(req: NextRequest) {
         : [],
     });
   } catch (error) {
-    return NextResponse.json({
-      error:
-        error instanceof Error
-          ? error.message || error.toString()
-          : "Unkown Error",
-      success: false,
-    });
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message || error.toString()
+            : "Unkown Error",
+        success: false,
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }
