@@ -17,6 +17,7 @@ import { formatNumber } from "@/lib/utils";
 import Decimal from "decimal.js";
 
 import { getCoinSymbol, getCoinName } from "@/lib/utils";
+import { useDefaultCoins } from "@/hooks/use-coins";
 
 export function beautify(str = ""): string {
   const reg =
@@ -110,6 +111,7 @@ export function CoinField({
   const { address } = useLaserEyes((x) => ({ address: x.address }));
   const balance = useCoinBalance(coin);
 
+  const defaultCoins = useDefaultCoins();
   const beautifiedValue = beautify(value);
 
   const onSetHalf = () => {
@@ -137,7 +139,7 @@ export function CoinField({
           "bg-card/80 px-4 py-2 rounded-xl focus-within:border-primary/80 focus-within:shadow-swap-input border border-transparent transition-colors duration-200",
           className,
           !disabled &&
-            "hover:focus-within:border-primary/60 hover:border-primary/30",
+          "hover:focus-within:border-primary/60 hover:border-primary/30",
           !disabled && pulsing && "animate-pulse duration-600"
         )}
       >
@@ -245,6 +247,7 @@ export function CoinField({
       </div>
       <SelectCoinModal
         open={selectCoinModalOpen}
+        defaultCoins={defaultCoins}
         setOpen={setSelectCoinModalOpen}
         onSelectCoin={onSelectCoin}
       />
