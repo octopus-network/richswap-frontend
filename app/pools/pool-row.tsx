@@ -105,7 +105,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
         className="grid md:grid-cols-14 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors"
         onClick={() => setManageLiquidityModalOpen(true)}
       >
-        <div className="col-span-3 flex items-center">
+        <div className="col-span-4 flex items-center">
           <div className="hidden sm:block mr-3">
             <CoinIcon size="lg" coin={pool.coinB} />
           </div>
@@ -180,7 +180,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
             <Skeleton className="h-5 w-20" />
           )}
         </div>
-        <div className="col-span-3">
+        <div className="col-span-2">
           {poolFee !== undefined && poolFeeInSats !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
