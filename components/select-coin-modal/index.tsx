@@ -9,7 +9,7 @@ import { BaseModal } from "../base-modal";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CoinRow } from "./coin-row";
-
+import { ScrollArea } from "../ui/scroll-area";
 import { useSearchCoins } from "@/hooks/use-coins";
 
 import { useAddUserCoin } from "@/store/user/hooks";
@@ -125,11 +125,9 @@ export function SelectCoinModal({
           />
         </div>
       </div>
-      <div
-        className="border-t mt-4 overflow-y-scroll"
-        style={{
-          height: "calc(70vh - 80px)",
-        }}
+      <ScrollArea
+        className="border-t mt-4 h-[calc(70vh_-_80px)]"
+        tabIndex={0}
       >
         {sortedCoins.map((coin, idx) => {
           return <CoinRow coin={coin} key={idx} onSelect={handleCoinSelect} />;
@@ -143,7 +141,7 @@ export function SelectCoinModal({
               />
             ))
           : null}
-      </div>
+      </ScrollArea>
       <CoinWarningModal
         open={coinWarningModalOpen}
         coin={toWarningCoin}
