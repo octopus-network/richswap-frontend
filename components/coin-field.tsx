@@ -3,7 +3,7 @@
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { MouseEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Coin } from "@/types";
 import { CoinIcon } from "./coin-icon";
@@ -30,7 +30,7 @@ const CoinButton = ({
   onClick,
 }: {
   coin: Coin | null | undefined;
-  onClick: () => void;
+  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }) => {
   const [isMounted, setIsMounted] = useState(false);
 
@@ -188,7 +188,12 @@ export function CoinField({
           {onSelectCoin ? (
             <CoinButton
               coin={coin}
-              onClick={() => setSelectCoinModalOpen(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                setTimeout(() => {
+                  setSelectCoinModalOpen(true);
+                }, 100);
+              }}
             />
           ) : (
             <div className="flex gap-2 items-center w-36 sm:w-40">

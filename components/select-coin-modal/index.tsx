@@ -120,6 +120,7 @@ export function SelectCoinModal({
           <Input
             placeholder="Input coin id or name"
             className="border-none"
+            autoFocus={false}
             onChange={handleInput}
           />
         </div>
