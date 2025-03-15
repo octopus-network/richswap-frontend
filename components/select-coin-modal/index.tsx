@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import { Input } from "../ui/input";
 import { CoinWarningModal } from "./coin-warning-modal";
 import { BaseModal } from "../base-modal";
-
+import { useDefaultCoins } from "@/hooks/use-coins";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CoinRow } from "./coin-row";
 import { ScrollArea } from "../ui/scroll-area";
@@ -57,7 +57,7 @@ export function SelectCoinModal({
   setOpen: (open: boolean) => void;
   onSelectCoin?: (coin: Coin) => void;
 }) {
-  const defaultCoins: Record<string, Coin> = useMemo(() => ({}), []);
+  const defaultCoins = useDefaultCoins();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const debouncedQuery = useDebounce(searchQuery, 200);
