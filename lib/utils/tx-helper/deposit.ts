@@ -1,4 +1,10 @@
-import { UnspentOutput, InputCoin, OutputCoin, ToSignInput } from "@/types";
+import {
+  UnspentOutput,
+  InputCoin,
+  OutputCoin,
+  ToSignInput,
+  AddressType,
+} from "@/types";
 
 import { UTXO_DUST, BITCOIN } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
@@ -227,11 +233,13 @@ export async function depositTx({
     .filter(({ utxo }, index) => {
       const isUserInput =
         utxo.address === address || utxo.address === paymentAddress;
+      const addressType = getAddressType(utxo.address);
       if (isUserInput) {
         toSignInputs.push({
-          publicKey: utxo.pubkey,
-          address: utxo.address,
           index,
+          ...(addressType === AddressType.P2TR
+            ? { address: utxo.address, disableTweakSigner: false }
+            : { publicKey: utxo.pubkey, disableTweakSigner: true }),
         });
       }
       return isUserInput;

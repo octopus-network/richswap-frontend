@@ -198,6 +198,7 @@ export function WithdrawReview({
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
           toSignInputs,
+          autoFinalized: false
         });
         console.log(signedPsbtHex);
       } else {
