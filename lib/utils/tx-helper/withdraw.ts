@@ -199,6 +199,7 @@ export async function withdrawTx({
       if (isUserInput) {
         toSignInputs.push({
           publicKey: utxo.pubkey,
+          address: utxo.address,
           index,
         });
       }

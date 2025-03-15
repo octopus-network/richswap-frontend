@@ -169,6 +169,8 @@ export async function swapRuneTx({
     throw new Error("Inssuficient UTXO(s)");
   }
 
+  console.log("changeBtcAmount", changeBtcAmount);
+
   if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   }
@@ -194,6 +196,7 @@ export async function swapRuneTx({
       if (isUserInput) {
         toSignInputs.push({
           publicKey: utxo.pubkey,
+          address: utxo.address,
           index,
         });
       }

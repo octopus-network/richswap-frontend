@@ -237,6 +237,7 @@ export async function swapBtcTx({
       if (isUserInput) {
         toSignInputs.push({
           publicKey: utxo.pubkey,
+          address: utxo.address,
           index,
         });
       }

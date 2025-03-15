@@ -230,6 +230,7 @@ export async function depositTx({
       if (isUserInput) {
         toSignInputs.push({
           publicKey: utxo.pubkey,
+          address: utxo.address,
           index,
         });
       }
