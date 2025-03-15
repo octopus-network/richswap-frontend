@@ -7,6 +7,7 @@ import { RuneId, Runestone, none, Edict } from "runelib";
 import { addressTypeToString, getAddressType } from "@/lib/utils/address";
 import { Orchestrator } from "@/lib/orchestrator";
 import { selectBtcUtxos } from "./common";
+import { AddressType } from "@/types";
 
 export async function swapRuneTx({
   btcAmount,
@@ -193,13 +194,16 @@ export async function swapRuneTx({
       const isUserInput =
         utxo.address === address || utxo.address === paymentAddress;
 
+      const addressType = getAddressType(utxo.address);
       if (isUserInput) {
         toSignInputs.push({
-          publicKey: utxo.pubkey,
-          address: utxo.address,
           index,
+          ...(addressType === AddressType.P2TR
+            ? { address: utxo.address, disableTweakSigner: false }
+            : { publicKey: utxo.pubkey, disableTweakSigner: true }),
         });
       }
+      
       return isUserInput;
     })
     .map((input) => input.utxo);

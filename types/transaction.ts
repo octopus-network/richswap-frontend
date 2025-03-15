@@ -2,7 +2,7 @@ import { Coin } from "./coin";
 import { UnspentOutput } from "./utxo";
 
 export type ToSignInput = {
-  publicKey: string;
+  publicKey?: string;
   address?: string;
   index: number;
 };

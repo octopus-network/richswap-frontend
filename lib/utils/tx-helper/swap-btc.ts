@@ -1,6 +1,6 @@
 import { ToSignInput, UnspentOutput } from "@/types";
 
-import { InputCoin, OutputCoin } from "@/types";
+import { InputCoin, OutputCoin, AddressType } from "@/types";
 import { UTXO_DUST, BITCOIN } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
 import { getAddressType, addressTypeToString } from "../address";
@@ -234,13 +234,16 @@ export async function swapBtcTx({
       const isUserInput =
         utxo.address === address || utxo.address === paymentAddress;
 
+      const addressType = getAddressType(utxo.address);
       if (isUserInput) {
         toSignInputs.push({
-          publicKey: utxo.pubkey,
-          address: utxo.address,
           index,
+          ...(addressType === AddressType.P2TR
+            ? { address: utxo.address, disableTweakSigner: false }
+            : { publicKey: utxo.pubkey, disableTweakSigner: true }),
         });
       }
+
       return isUserInput;
     })
     .map((input) => input.utxo);

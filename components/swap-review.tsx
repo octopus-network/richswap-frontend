@@ -42,24 +42,6 @@ import { useAddTransaction } from "@/store/transactions";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 
-declare global {
-  interface Window {
-    okxwallet: {
-      bitcoin: {
-        signPsbt: (
-          psbtHex: string,
-          config?: {
-            toSignInputs: {
-              index: number;
-              publicKey: string;
-            }[];
-          }
-        ) => Promise<string>;
-      };
-    };
-  }
-}
-
 export function SwapReview({
   coinA,
   coinB,
@@ -315,6 +297,7 @@ export function SwapReview({
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
           toSignInputs,
+          autoFinalized: false
         });
         console.log(signedPsbtHex);
       } else {

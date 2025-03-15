@@ -1,3 +1,5 @@
+import { ToSignInput } from "./transaction";
+
 declare global {
   interface Window {
     okxwallet: {
@@ -5,12 +7,10 @@ declare global {
         signPsbt: (
           psbtHex: string,
           config?: {
-            toSignInputs: {
-              index: number;
-              publicKey: string;
-            }[];
+            autoFinalized?: boolean;
+            toSignInputs: ToSignInput[];
           }
-        ) => string;
+        ) => Promise<string>;
       };
     };
   }
