@@ -175,9 +175,11 @@ export function getTxTitleAndDescription(transaction: TransactionInfo): {
     description = "";
   if (type === TransactionType.ADD_LIQUIDITY) {
     title = `Add Liquidity to ${getCoinSymbol(coinB)} pool`;
-    description = `With ${formatNumber(coinAAmount)} ${getCoinSymbol(
+    description = `Add ${formatNumber(coinAAmount)} ${getCoinSymbol(
       coinA
-    )} and ${formatNumber(coinBAmount)} ${getCoinSymbol(coinB)}`;
+    )} and ${formatNumber(coinBAmount)} ${getCoinSymbol(
+      coinB
+    )} to ${getCoinSymbol(coinB)} pool`;
   } else if (type === TransactionType.SWAP) {
     title = `Swap ${getCoinSymbol(coinA)} to ${getCoinSymbol(coinB)}`;
     description = `Convert ${formatNumber(coinAAmount)} ${getCoinSymbol(
@@ -187,7 +189,7 @@ export function getTxTitleAndDescription(transaction: TransactionInfo): {
     title = `Withdraw Liquidity from ${getCoinSymbol(coinB)} pool`;
     description = `Widthdraw ${formatNumber(coinAAmount)} ${getCoinSymbol(
       coinA
-    )} and ${formatNumber(coinBAmount)} ${getCoinSymbol(coinB)}`;
+    )} and ${formatNumber(coinBAmount)} ${getCoinSymbol(coinB)} from ${getCoinSymbol(coinB)} pool`;
   }
 
   return {
