@@ -1,7 +1,7 @@
 "use client";
 
 import { Coin } from "@/types";
-import { useState, useMemo, ChangeEvent, useCallback, useEffect } from "react";
+import { useState, useMemo, ChangeEvent, useCallback } from "react";
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
 import { CoinWarningModal } from "./coin-warning-modal";
@@ -66,10 +66,6 @@ export function SelectCoinModal({
   const searchCoins = useSearchCoins(debouncedQuery);
 
   const userCoinAdder = useAddUserCoin();
-
-  useEffect(() => {
-    setSearchQuery("");
-  }, [open]);
 
   const sortedCoins: Coin[] = useMemo(() => {
     const filteredCoins = Object.values(defaultCoins).filter(
