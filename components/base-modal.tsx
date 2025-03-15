@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 import { cn } from "@/lib/utils";
@@ -34,11 +35,12 @@ export function BaseModal({
         }}
         showCloseButton={showCloseButton}
       >
-        {title ? (
-          <DialogHeader className="p-5 pb-3">
+        {title !== undefined ? (
+          <DialogHeader className={title === "" ? "" : "p-5 pb-3"}>
             <DialogTitle className="text-left text-md text-muted-foreground">
               {title}
             </DialogTitle>
+            <DialogDescription></DialogDescription>
           </DialogHeader>
         ) : null}
         <div>{children}</div>

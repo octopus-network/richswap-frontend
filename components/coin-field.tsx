@@ -184,13 +184,7 @@ export function CoinField({
           {onSelectCoin ? (
             <CoinButton
               coin={coin}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setTimeout(() => {
-                  setSelectCoinModalOpen(true);
-                }, 100);
-              }}
+              onClick={() => setSelectCoinModalOpen(true)}
             />
           ) : (
             <div className="flex gap-2 items-center w-36 sm:w-40">
