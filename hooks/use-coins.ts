@@ -11,6 +11,10 @@ export function useSearchCoins(searchQuery: string) {
   const defaultCoins = useDefaultCoins();
 
   useEffect(() => {
+    console.log("searchQuery updated");
+  }, [searchQuery]);
+
+  useEffect(() => {
     if (!searchQuery) {
       return setSearchCoins([]);
     }
