@@ -7,18 +7,20 @@ import { useCoinPrices } from "@/hooks/use-prices";
 
 import { Orchestrator } from "@/lib/orchestrator";
 import { usePendingBtcUtxos, usePendingRuneUtxos } from "@/hooks/use-utxos";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes, XVERSE } from "@omnisat/lasereyes";
 import { useTransactions } from "@/store/transactions";
 
 export function GlobalStateUpdater() {
-  const { address, publicKey, paymentAddress, paymentPublicKey } = useLaserEyes(
-    ({ address, publicKey, paymentAddress, paymentPublicKey }) => ({
-      address,
-      publicKey,
-      paymentAddress,
-      paymentPublicKey,
-    })
-  );
+  const { address, publicKey, paymentAddress, paymentPublicKey, provider } =
+    useLaserEyes(
+      ({ address, publicKey, paymentAddress, paymentPublicKey, provider }) => ({
+        address,
+        publicKey,
+        provider,
+        paymentAddress,
+        paymentPublicKey,
+      })
+    );
 
   const [, setCoinPrices] = useCoinPrices();
   const [, setPendingBtcUtxos] = usePendingBtcUtxos();
@@ -57,21 +59,30 @@ export function GlobalStateUpdater() {
 
   useEffect(() => {
     if (address && publicKey) {
-      Orchestrator.getUnconfirmedUtxos(address, publicKey).then((_utxos) => {
-        setPendingRuneUtxos(_utxos);
-      });
+      if (provider === XVERSE) {
+        setPendingRuneUtxos([]);
+      } else {
+        Orchestrator.getUnconfirmedUtxos(address, publicKey).then((_utxos) => {
+          setPendingRuneUtxos(_utxos);
+        });
+      }
     }
-  }, [address, publicKey, setPendingRuneUtxos, transactions, timer]);
+  }, [address, publicKey, setPendingRuneUtxos, provider, transactions, timer]);
 
   useEffect(() => {
     if (paymentAddress && paymentPublicKey) {
-      Orchestrator.getUnconfirmedUtxos(paymentAddress, paymentPublicKey).then(
-        (_utxos) => {
-          setPendingBtcUtxos(_utxos);
-        }
-      );
+      if (provider === XVERSE) {
+        setPendingRuneUtxos([]);
+      } else {
+        Orchestrator.getUnconfirmedUtxos(paymentAddress, paymentPublicKey).then(
+          (_utxos) => {
+            setPendingBtcUtxos(_utxos);
+          }
+        );
+      }
     }
   }, [
+    provider,
     paymentAddress,
     paymentPublicKey,
     setPendingBtcUtxos,
