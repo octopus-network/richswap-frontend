@@ -25,4 +25,4 @@ export const UNKNOWN_COIN: Coin = {
   decimals: 8,
 };
 
-export const COIN_LIST: Coin[] = [BITCOIN, RICH];
+export const COIN_LIST: Coin[] = [BITCOIN];
