@@ -43,9 +43,9 @@ function coinFilter(query: string) {
   return ({ name, symbol, runeSymbol, runeId }: Coin) =>
     Boolean(
       (symbol && match(symbol)) ||
-      (name && match(name)) ||
-      (runeId && match(runeId)) ||
-      (runeSymbol && match(runeSymbol))
+        (name && match(name)) ||
+        (runeId && match(runeId)) ||
+        (runeSymbol && match(runeSymbol))
     );
 }
 
@@ -135,27 +135,33 @@ export function SelectCoinModal({
           />
         </div>
       </div>
-      {
-        isModalReady ?
-          (
-            <ScrollArea className="border-t mt-4 h-[calc(70vh_-_80px)]">
-              {sortedCoins.map((coin, idx) => {
-                return <CoinRow coin={coin} key={idx} onSelect={handleCoinSelect} />;
-              })}
-              {searchCoins?.length
-                ? searchCoins.map((coin, idx) => (
+      {isModalReady ? (
+        <ScrollArea className="border-t mt-4 h-[calc(70vh_-_80px)]">
+          {sortedCoins.map((coin, idx) => {
+            return (
+              <CoinRow coin={coin} key={idx} onSelect={handleCoinSelect} />
+            );
+          })}
+          {searchCoins?.length
+            ? searchCoins
+                .filter(
+                  (item) =>
+                    sortedCoins.findIndex((coin) => coin.id === item.id) < 0
+                )
+                .map((coin, idx) => (
                   <CoinRow
                     coin={coin}
                     key={idx}
                     onSelect={(coin) => handleCoinSelect(coin, true)}
                   />
                 ))
-                : null}
-            </ScrollArea>
-          ) : <div className="border-t mt-4 h-[calc(70vh_-_80px)] flex items-center justify-center">
-            <Loader2 className="size-5 text-muted-foreground animate-spin" />
-          </div>
-      }
+            : null}
+        </ScrollArea>
+      ) : (
+        <div className="border-t mt-4 h-[calc(70vh_-_80px)] flex items-center justify-center">
+          <Loader2 className="size-5 text-muted-foreground animate-spin" />
+        </div>
+      )}
 
       <CoinWarningModal
         open={coinWarningModalOpen}
