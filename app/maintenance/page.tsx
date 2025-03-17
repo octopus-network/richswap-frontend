@@ -11,7 +11,7 @@ export default function Page() {
             check our
           </span>
           <Link
-            href="https://x.com/RichSwap_REE/status/1899410661622652941"
+            href="https://x.com/RichSwap_REE/status/1901604760438099979"
             target="_blank"
             className="text-foreground inline-flex text-lg ml-2"
           >
