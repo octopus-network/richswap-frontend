@@ -2,29 +2,36 @@ import { NextRequest, NextResponse } from "next/server";
 
 import Decimal from "decimal.js";
 import { getBtcPrice } from "@/lib/chain-api";
-import { parseCoinAmount } from "@/lib/utils";
-import { Exchange } from "@/lib/exchange";
-import { SwapState } from "@/types";
-import { COIN_LIST, BITCOIN } from "@/lib/constants";
+import { PoolInfo } from "@/types";
+import { BITCOIN } from "@/lib/constants";
 
-const INPUT_BTC_AMOUNT = "0.0001";
+export const dynamic = "force-dynamic";
+
+const STORAGE_URL = process.env.STORAGE_URL!;
 
 async function getPriceInBtc(coinId: string) {
-  const coin = COIN_LIST.find((c) => c.id === coinId);
-  if (!coin) {
+  const pools = (await fetch(`${STORAGE_URL}/pool-list.json`, {
+    cache: "no-cache",
+  }).then((res) => res.json())) as PoolInfo[];
+
+  const pool = pools.find((pool) => pool.coinB.id === coinId);
+  if (!pool) {
     return 0;
   }
 
-  const inputAmount = parseCoinAmount(INPUT_BTC_AMOUNT, BITCOIN);
-  const res = await Exchange.preSwap(BITCOIN, coin, inputAmount);
+  const coinInBtc =
+    pool.coinA.balance !== "0" && pool.coinB.balance !== "0"
+      ? new Decimal(pool.coinA.balance)
+          .div(Math.pow(10, pool.coinA.decimals))
+          .div(
+            new Decimal(pool.coinB.balance).div(
+              Math.pow(10, pool.coinB.decimals)
+            )
+          )
+          .toNumber()
+      : 0;
 
-  if (!res || res.state !== SwapState.VALID) {
-    return 0;
-  }
-
-  return res.outputAmount
-    ? new Decimal(res.outputAmount).div(Math.pow(10, coin.decimals)).toNumber()
-    : 0;
+  return coinInBtc;
 }
 
 export async function GET(req: NextRequest) {
@@ -46,9 +53,7 @@ export async function GET(req: NextRequest) {
 
     pricesInBtc.forEach((price, idx) => {
       const id = idsArr[idx];
-      tmpObj[id] = new Decimal(btcPrice * Number(INPUT_BTC_AMOUNT))
-        .div(price)
-        .toNumber();
+      tmpObj[id] = new Decimal(btcPrice * price).toNumber();
     });
 
     return NextResponse.json({
@@ -56,12 +61,17 @@ export async function GET(req: NextRequest) {
       data: tmpObj,
     });
   } catch (error) {
-    return NextResponse.json({
-      error:
-        error instanceof Error
-          ? error.message || error.toString()
-          : "Unkown Error",
-      success: false,
-    });
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message || error.toString()
+            : "Unkown Error",
+        success: false,
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }

@@ -1,19 +1,20 @@
+import { PoolInfo } from "@/types";
 import { NextResponse } from "next/server";
+import axios from "axios";
 
 export const dynamic = "force-dynamic";
 
+const STORAGE_URL = process.env.STORAGE_URL!;
+
 export async function GET() {
   try {
-    const cache = await fetch(
-      "https://vquok3pr3bhc6tui.public.blob.vercel-storage.com/pool-list.json",
-      {
-        cache: "no-cache",
-      }
-    ).then((res) => res.json());
+    const cache = (await axios
+      .get(`${STORAGE_URL}/pool-list.json`)
+      .then((res) => res.data)) as PoolInfo[];
 
     return NextResponse.json({
       success: true,
-      data: cache ?? [],
+      data: cache.filter((pool) => pool.coinA.balance !== "0") ?? [],
     });
   } catch (error) {
     console.log(error);

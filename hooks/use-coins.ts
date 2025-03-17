@@ -8,11 +8,10 @@ import { usePoolList } from "./use-pools";
 
 export function useSearchCoins(searchQuery: string) {
   const [searchCoins, setSearchCoins] = useState<Coin[]>([]);
-  const defaultCoins = useDefaultCoins();
 
   useEffect(() => {
     if (!searchQuery) {
-      return setSearchCoins([]);
+      return;
     }
     axios
       .get<{
@@ -30,17 +29,17 @@ export function useSearchCoins(searchQuery: string) {
         if (!data?.length) {
           return setSearchCoins([]);
         }
-        const defaultCoinsArray = Object.values(defaultCoins);
-        const filteredData = data.filter(
-          (item) =>
-            defaultCoinsArray.findIndex((coin) => coin.id === item.id) < 0
-        );
-
-        setSearchCoins(filteredData);
+        setSearchCoins(data);
       });
-  }, [searchQuery, defaultCoins]);
+  }, [searchQuery]);
 
-  return searchCoins;
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchCoins([]);
+    }
+  }, [searchQuery]);
+
+  return useMemo(() => searchCoins, [searchCoins]);
 }
 
 export function useDefaultCoins() {
@@ -52,6 +51,7 @@ export function useDefaultCoins() {
     () => poolList?.map((pool) => pool.coinB),
     [poolList]
   );
+
   return useMemo(
     () =>
       userAddedCoins.reduce<{ [id: string]: Coin }>(

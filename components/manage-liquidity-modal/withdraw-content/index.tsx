@@ -58,7 +58,7 @@ export function WithdrawContent({
           <WithdrawReview
             coinA={position?.coinA ?? null}
             coinB={position?.coinB ?? null}
-            poolKey={position?.poolKey ?? ""}
+            poolKey={position?.pool.key ?? ""}
             coinAAmount={coinAAmount}
             coinBAmount={coinBAmount}
             onSuccess={onSuccess}

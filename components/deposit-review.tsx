@@ -7,10 +7,13 @@ import {
   UnspentOutput,
   InputCoin,
   OutputCoin,
+  ToSignInput,
 } from "@/types";
 
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import Decimal from "decimal.js";
+import { OKX } from "@omnisat/lasereyes";
 import { getAddressType } from "@/lib/utils";
 import { AddressType } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
@@ -37,7 +40,7 @@ import { parseCoinAmount } from "@/lib/utils";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
-import { EXCHANGE_ID } from "@/lib/constants";
+import { BITCOIN, EXCHANGE_ID } from "@/lib/constants";
 import { useAddTransaction } from "@/store/transactions";
 
 export function DepositReview({
@@ -63,14 +66,23 @@ export function DepositReview({
   nonce: string;
   showCancelButton?: boolean;
 }) {
-  const { address, paymentAddress, signPsbt } = useLaserEyes();
+  const { address, paymentAddress, provider, signPsbt } = useLaserEyes(
+    ({ address, paymentAddress, provider, signPsbt }) => ({
+      address,
+      paymentAddress,
+      provider,
+      signPsbt,
+    })
+  );
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
   const [txid, setTxid] = useState("");
 
+  const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
+  const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
   const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
   const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
   const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
@@ -167,8 +179,6 @@ export function DepositReview({
           feeRate: recommendedFeeRate,
         });
 
-        console.log("tx", tx);
-
         setPsbt(tx.psbt);
         setToSpendUtxos(tx.toSpendUtxos);
         setToSpendUtxos(tx.toSpendUtxos);
@@ -177,6 +187,8 @@ export function DepositReview({
         setTxid(tx.txid);
         setInputCoins(tx.inputCoins);
         setOutputCoins(tx.outputCoins);
+        setToSignInputs(tx.toSignInputs);
+        setFee(tx.fee);
       } catch (err) {
         console.log(err);
       }
@@ -202,20 +214,31 @@ export function DepositReview({
     }
 
     try {
-      const psbtBase64 = psbt.toBase64();
-
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
       if (!poolAddress) {
         return;
       }
 
-      console.log("Deposit Liquidity PSBT:", psbtBase64);
-
       setStep(1);
 
-      const signedRes = await signPsbt(psbtBase64);
+      let signedPsbtHex = "";
 
-      if (!signedRes?.signedPsbtHex) {
+      if (provider === OKX) {
+        console.log("is okx wallet", toSignInputs);
+        const psbtHex = psbt.toHex();
+
+        signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
+          toSignInputs,
+          autoFinalized: false
+        });
+        console.log(signedPsbtHex);
+      } else {
+        const psbtBase64 = psbt.toBase64();
+        const res = await signPsbt(psbtBase64);
+        signedPsbtHex = res?.signedPsbtHex ?? "";
+      }
+
+      if (!signedPsbtHex) {
         throw new Error("Signed Failed");
       }
 
@@ -240,7 +263,7 @@ export function DepositReview({
             },
           ],
         },
-        psbt_hex: signedRes.signedPsbtHex,
+        psbt_hex: signedPsbtHex,
       });
 
       addTransaction({
@@ -280,6 +303,8 @@ export function DepositReview({
       paymentAddressType !== AddressType.P2WPKH
     );
   }, [paymentAddress]);
+
+  const btcPrice = useCoinPrice(BITCOIN.id);
 
   return errorMessage ? (
     <div className="mt-4 flex flex-col gap-4">
@@ -361,7 +386,20 @@ export function DepositReview({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Network cost</span>
-              <span>$ -</span>
+              <div className="flex flex-col items-end">
+                <span>
+                  {fee > 0 ? Number(fee) : "-"}{" "}
+                  <em className="text-muted-foreground">sats</em>
+                </span>
+                <span className="text-primary/80 text-xs">
+                  {btcPrice && fee > 0
+                    ? `$${new Decimal(fee.toString())
+                        .mul(btcPrice)
+                        .div(Math.pow(10, 8))
+                        .toFixed(4)}`
+                    : ""}
+                </span>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex flex-col space-y-3">

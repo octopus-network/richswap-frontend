@@ -3,7 +3,7 @@
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Coin } from "@/types";
 import { CoinIcon } from "./coin-icon";
@@ -29,7 +29,7 @@ const CoinButton = ({
   coin,
   onClick,
 }: {
-  coin: Coin | null;
+  coin: Coin | null | undefined;
   onClick: () => void;
 }) => {
   const [isMounted, setIsMounted] = useState(false);
@@ -95,7 +95,7 @@ export function CoinField({
   disabled,
 }: {
   label: string;
-  coin: Coin | null;
+  coin: Coin | null | undefined;
   className?: string;
   autoFocus?: boolean;
   pulsing?: boolean;
@@ -106,9 +106,8 @@ export function CoinField({
   onUserInput: (value: string) => void;
   disabled?: boolean;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [selectCoinModalOpen, setSelectCoinModalOpen] = useState(false);
-  const { address } = useLaserEyes();
+  const { address } = useLaserEyes((x) => ({ address: x.address }));
   const balance = useCoinBalance(coin);
 
   const beautifiedValue = beautify(value);
@@ -141,9 +140,6 @@ export function CoinField({
             "hover:focus-within:border-primary/60 hover:border-primary/30",
           !disabled && pulsing && "animate-pulse duration-600"
         )}
-        onClick={() => {
-          inputRef?.current?.focus();
-        }}
       >
         <div className="flex justify-between h-9 items-center">
           <span className="text-sm">{label}</span>
@@ -216,7 +212,6 @@ export function CoinField({
               <Input
                 type="text"
                 inputMode="decimal"
-                ref={inputRef}
                 autoFocus={autoFocus}
                 placeholder={placeholder ?? "0.00"}
                 pattern="^[0-9]*[.,]?[0-9]*$"

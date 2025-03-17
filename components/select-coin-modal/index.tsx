@@ -9,7 +9,8 @@ import { BaseModal } from "../base-modal";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CoinRow } from "./coin-row";
-
+import { Loader2 } from "lucide-react";
+import { ScrollArea } from "../ui/scroll-area";
 import { useSearchCoins } from "@/hooks/use-coins";
 
 import { useAddUserCoin } from "@/store/user/hooks";
@@ -62,6 +63,7 @@ export function SelectCoinModal({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const debouncedQuery = useDebounce(searchQuery, 200);
   const [coinWarningModalOpen, setCoinWarningModalOpen] = useState(false);
+  const [isModalReady, setIsModalReady] = useState(false);
   const [toWarningCoin, setToWarningCoin] = useState<Coin>();
   const searchCoins = useSearchCoins(debouncedQuery);
 
@@ -69,6 +71,15 @@ export function SelectCoinModal({
 
   useEffect(() => {
     setSearchQuery("");
+    if (open) {
+      // Small delay to prevent UI blocking during modal opening
+      const timer = setTimeout(() => {
+        setIsModalReady(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setIsModalReady(false);
+    }
   }, [open]);
 
   const sortedCoins: Coin[] = useMemo(() => {
@@ -76,7 +87,12 @@ export function SelectCoinModal({
       coinFilter(debouncedQuery)
     );
 
-    return filteredCoins;
+    return filteredCoins.sort((a, b) => {
+      const [blockA] = a.id.split(":");
+      const [blockB] = b.id.split(":");
+
+      return Number(blockA) - Number(blockB);
+    });
   }, [defaultCoins, debouncedQuery]);
 
   const handleCoinSelect = (coin: Coin, hasWarning?: boolean) => {
@@ -119,25 +135,34 @@ export function SelectCoinModal({
           />
         </div>
       </div>
-      <div
-        className="border-t mt-4 overflow-y-scroll"
-        style={{
-          height: "calc(70vh - 80px)",
-        }}
-      >
-        {sortedCoins.map((coin, idx) => {
-          return <CoinRow coin={coin} key={idx} onSelect={handleCoinSelect} />;
-        })}
-        {searchCoins?.length
-          ? searchCoins.map((coin, idx) => (
-              <CoinRow
-                coin={coin}
-                key={idx}
-                onSelect={(coin) => handleCoinSelect(coin, true)}
-              />
-            ))
-          : null}
-      </div>
+      {isModalReady ? (
+        <ScrollArea className="border-t mt-4 h-[calc(70vh_-_80px)]">
+          {sortedCoins.map((coin, idx) => {
+            return (
+              <CoinRow coin={coin} key={idx} onSelect={handleCoinSelect} />
+            );
+          })}
+          {searchCoins?.length
+            ? searchCoins
+                .filter(
+                  (item) =>
+                    sortedCoins.findIndex((coin) => coin.id === item.id) < 0
+                )
+                .map((coin, idx) => (
+                  <CoinRow
+                    coin={coin}
+                    key={idx}
+                    onSelect={(coin) => handleCoinSelect(coin, true)}
+                  />
+                ))
+            : null}
+        </ScrollArea>
+      ) : (
+        <div className="border-t mt-4 h-[calc(70vh_-_80px)] flex items-center justify-center">
+          <Loader2 className="size-5 text-muted-foreground animate-spin" />
+        </div>
+      )}
+
       <CoinWarningModal
         open={coinWarningModalOpen}
         coin={toWarningCoin}

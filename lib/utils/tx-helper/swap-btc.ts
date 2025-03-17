@@ -1,6 +1,6 @@
-import { UnspentOutput } from "@/types";
+import { ToSignInput, UnspentOutput } from "@/types";
 
-import { ToSignInput, InputCoin, OutputCoin } from "@/types";
+import { InputCoin, OutputCoin, AddressType } from "@/types";
 import { UTXO_DUST, BITCOIN } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
 import { getAddressType, addressTypeToString } from "../address";
@@ -40,8 +40,6 @@ export async function swapBtcTx({
   tx.setEnableRBF(false);
   tx.setChangeAddress(paymentAddress);
 
-  const toSignInputs: ToSignInput[] = [];
-
   poolUtxos.forEach((utxo) => {
     // pool has only one utxo now
     const rune = utxo.runes.find((rune) => rune.id === runeid);
@@ -53,9 +51,8 @@ export async function swapBtcTx({
   let inputUtxoDusts = BigInt(0);
 
   // add assets
-  runeUtxos.forEach((v, index) => {
+  runeUtxos.forEach((v) => {
     tx.addInput(v);
-    toSignInputs.push({ index, publicKey: v.pubkey });
     inputUtxoDusts += BigInt(v.satoshis);
   });
 
@@ -212,7 +209,11 @@ export async function swapBtcTx({
 
   const changeBtcAmount = totalBtcAmount - currentFee;
 
-  if (changeBtcAmount > 0 && changeBtcAmount > UTXO_DUST) {
+  if (changeBtcAmount < 0) {
+    throw new Error("Inssuficient UTXO(s)");
+  }
+
+  if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   }
 
@@ -226,18 +227,26 @@ export async function swapBtcTx({
 
   const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
+  const toSignInputs: ToSignInput[] = [];
+
   const toSpendUtxos = inputs
-    .filter(
-      (input) =>
-        input.utxo.address === address || input.utxo.address === paymentAddress
-    )
-    .map((input) => {
-      toSignInputs.push({
-        publicKey: input.utxo.pubkey,
-        index: input.utxo.vout,
-      });
-      return input.utxo;
-    });
+    .filter(({ utxo }, index) => {
+      const isUserInput =
+        utxo.address === address || utxo.address === paymentAddress;
+
+      const addressType = getAddressType(utxo.address);
+      if (isUserInput) {
+        toSignInputs.push({
+          index,
+          ...(addressType === AddressType.P2TR
+            ? { address: utxo.address, disableTweakSigner: false }
+            : { publicKey: utxo.pubkey, disableTweakSigner: true }),
+        });
+      }
+
+      return isUserInput;
+    })
+    .map((input) => input.utxo);
 
   const inputCoins: InputCoin[] = [
     {
@@ -259,24 +268,14 @@ export async function swapBtcTx({
     },
   ];
 
-  console.log({
-    psbt,
-    toSignInputs,
-    poolSpendUtxos,
-    poolReceiveUtxos,
-    toSpendUtxos,
-    txid,
-    inputCoins,
-    outputCoins,
-  });
-
   return {
     psbt,
-    toSignInputs,
     poolSpendUtxos,
     poolReceiveUtxos,
     toSpendUtxos,
+    toSignInputs,
     txid,
+    fee: currentFee,
     inputCoins,
     outputCoins,
   };

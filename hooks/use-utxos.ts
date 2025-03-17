@@ -1,45 +1,29 @@
 import { UnspentOutput } from "@/types";
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
-import { Orchestrator } from "@/lib/orchestrator";
 import { useAtomValue } from "jotai";
 import { spentUtxosAtom } from "@/store/spent-utxos";
 import axios from "axios";
-import { useTransactions } from "@/store/transactions";
+
 import useSWR from "swr";
 import { useLaserEyes } from "@omnisat/lasereyes";
+import { atom, useAtom } from "jotai";
 
-export function usePendingUtxos(address: string | undefined) {
-  const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
+export const pendingBtcUtxosAtom = atom<UnspentOutput[]>([]);
+export const pendingRuneUtxosAtom = atom<UnspentOutput[]>([]);
 
-  const [timer, setTimer] = useState<number>();
-  const transactions = useTransactions();
+export function usePendingBtcUtxos() {
+  return useAtom(pendingBtcUtxosAtom);
+}
 
-  useEffect(() => {
-    if (!address) {
-      return;
-    }
-    Orchestrator.getUnconfirmedUtxos(address).then((_utxos) => {
-      setUtxos(_utxos);
-    });
-  }, [address, timer, transactions]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer(Date.now());
-    }, 15 * 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  return utxos;
+export function usePendingRuneUtxos() {
+  return useAtom(pendingRuneUtxosAtom);
 }
 
 export function useBtcUtxos(address: string | undefined, pubkey?: string) {
-  const pendingUtxos = usePendingUtxos(address);
+  const [pendingUtxos] = usePendingBtcUtxos();
   const spentUtxos = useAtomValue(spentUtxosAtom);
+
   const { data: apiUtxos } = useSWR(
     address
       ? `/api/utxos/btc?address=${address}${pubkey ? `&pubkey=${pubkey}` : ""}`
@@ -83,7 +67,7 @@ export function useRuneUtxos(
   runeid?: string | undefined,
   pubkey?: string
 ) {
-  const pendingUtxos = usePendingUtxos(address);
+  const [pendingUtxos] = usePendingRuneUtxos();
   const spentUtxos = useAtomValue(spentUtxosAtom);
   const { data: apiUtxos } = useSWR(
     address && runeid
@@ -126,7 +110,12 @@ export function useRuneUtxos(
 }
 
 export function useWalletBtcUtxos() {
-  const { paymentAddress, paymentPublicKey } = useLaserEyes();
+  const { paymentAddress, paymentPublicKey } = useLaserEyes(
+    ({ paymentAddress, paymentPublicKey }) => ({
+      paymentAddress,
+      paymentPublicKey,
+    })
+  );
 
   const paymentUtxos = useBtcUtxos(paymentAddress, paymentPublicKey);
 
@@ -134,7 +123,10 @@ export function useWalletBtcUtxos() {
 }
 
 export function useWalletRuneUtxos(runeid: string | undefined) {
-  const { address, publicKey } = useLaserEyes();
+  const { address, publicKey } = useLaserEyes(({ address, publicKey }) => ({
+    address,
+    publicKey,
+  }));
 
   const utxos = useRuneUtxos(address, runeid, publicKey);
 

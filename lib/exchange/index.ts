@@ -22,6 +22,9 @@ import Decimal from "decimal.js";
 
 export class Exchange {
   public static async getPool(inputCoin: Coin, outputCoin: Coin) {
+    if (inputCoin.id !== BITCOIN.id && outputCoin.id !== BITCOIN.id) {
+      return undefined;
+    }
     const poolList = await this.getPoolList();
 
     const runeId = inputCoin.id === BITCOIN.id ? outputCoin.id : inputCoin.id;
@@ -141,7 +144,7 @@ export class Exchange {
       );
 
       return {
-        poolKey: pool.key,
+        pool,
         coinA: pool.coinA,
         coinB: pool.coinB,
         userAddress,

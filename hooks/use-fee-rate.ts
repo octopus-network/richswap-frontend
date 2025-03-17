@@ -50,7 +50,7 @@ export function useRecommendedFeeRateFromOrchestrator(refetch?: boolean) {
     if (!refetch) {
       return;
     }
-    const interval = setInterval(() => setTimer(Date.now()), 1500);
+    const interval = setInterval(() => setTimer(Date.now()), 15 * 1000);
 
     return () => {
       clearInterval(interval);

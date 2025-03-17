@@ -7,7 +7,7 @@ import { formatCoinAmount } from "@/lib/utils";
 import { Exchange } from "@/lib/exchange";
 import { BITCOIN } from "@/lib/constants";
 import useSWR from "swr";
-import { PoolInfo } from "@/types";
+import { PoolInfo, Position } from "@/types";
 
 export function usePoolList() {
   const { data } = useSWR(
@@ -24,18 +24,25 @@ export function usePoolList() {
   return useMemo(() => data ?? [], [data]);
 }
 
+export function usePortfolios(address: string | undefined) {
+  const { data } = useSWR(
+    address && `/api/portfolios?address=${address}`,
+    (url: string) =>
+      axios
+        .get<{
+          data: Position[];
+        }>(url)
+        .then((res) => res.data.data),
+    { refreshInterval: 30 * 1000 }
+  );
+
+  return useMemo(() => data ?? [], [data]);
+}
+
 export function usePoolsTvl() {
   const poolsList = usePoolList();
 
-  const coinIds = useMemo(
-    () =>
-      Array.from(
-        new Set(poolsList.map((pool) => [pool.coinA.id, pool.coinB.id]).flat(1))
-      ),
-    [poolsList]
-  );
-
-  const prices = useCoinPrices(coinIds);
+  const [prices] = useCoinPrices();
 
   const tvls = useMemo(() => {
     const tmpObj: Record<string, number> = {};
@@ -44,7 +51,6 @@ export function usePoolsTvl() {
     }
     poolsList.forEach(({ coinA, key }) => {
       const coinAPrice = prices?.[coinA.id] ?? 0;
-
       const coinAValue = new Decimal(
         formatCoinAmount(coinA.balance, coinA)
       ).mul(coinAPrice);

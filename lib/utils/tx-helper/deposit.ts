@@ -1,4 +1,10 @@
-import { UnspentOutput, InputCoin, OutputCoin, ToSignInput } from "@/types";
+import {
+  UnspentOutput,
+  InputCoin,
+  OutputCoin,
+  ToSignInput,
+  AddressType,
+} from "@/types";
 
 import { UTXO_DUST, BITCOIN } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
@@ -39,8 +45,6 @@ export async function depositTx({
   tx.setEnableRBF(false);
   tx.setChangeAddress(paymentAddress);
 
-  const toSignInputs: ToSignInput[] = [];
-
   poolUtxos.forEach((utxo) => {
     // pool has only one utxo now
     const rune = utxo.runes.find((rune) => rune.id === runeid);
@@ -51,9 +55,8 @@ export async function depositTx({
 
   let inputUtxoDusts = BigInt(0);
   // add assets
-  runeUtxos.forEach((v, index) => {
+  runeUtxos.forEach((v) => {
     tx.addInput(v);
-    toSignInputs.push({ index, publicKey: v.pubkey });
     inputUtxoDusts += BigInt(v.satoshis);
   });
 
@@ -204,12 +207,13 @@ export async function depositTx({
     totalBtcAmount += BigInt(utxo.satoshis);
   });
 
-  const changeBtcAmount =
-    totalBtcAmount - targetBtcAmount + (inputUtxoDusts - utxoDust);
+  const changeBtcAmount = totalBtcAmount - targetBtcAmount + inputUtxoDusts;
 
-  console.log(changeBtcAmount, targetBtcAmount, totalBtcAmount);
+  if (changeBtcAmount < 0) {
+    throw new Error("Inssuficient UTXO(s)");
+  }
 
-  if (changeBtcAmount > 0 && changeBtcAmount > UTXO_DUST) {
+  if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   }
 
@@ -223,18 +227,24 @@ export async function depositTx({
 
   const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
+  const toSignInputs: ToSignInput[] = [];
+
   const toSpendUtxos = inputs
-    .filter(
-      (input) =>
-        input.utxo.address === address || input.utxo.address === paymentAddress
-    )
-    .map((input) => {
-      toSignInputs.push({
-        publicKey: input.utxo.pubkey,
-        index: input.utxo.vout,
-      });
-      return input.utxo;
-    });
+    .filter(({ utxo }, index) => {
+      const isUserInput =
+        utxo.address === address || utxo.address === paymentAddress;
+      const addressType = getAddressType(utxo.address);
+      if (isUserInput) {
+        toSignInputs.push({
+          index,
+          ...(addressType === AddressType.P2TR
+            ? { address: utxo.address, disableTweakSigner: false }
+            : { publicKey: utxo.pubkey, disableTweakSigner: true }),
+        });
+      }
+      return isUserInput;
+    })
+    .map((input) => input.utxo);
 
   const inputCoins: InputCoin[] = [
     {
@@ -257,11 +267,12 @@ export async function depositTx({
 
   return {
     psbt,
-    toSignInputs,
     toSpendUtxos,
+    toSignInputs,
     poolSpendUtxos,
     poolReceiveUtxos,
     txid,
+    fee: currentFee,
     inputCoins,
     outputCoins,
   };

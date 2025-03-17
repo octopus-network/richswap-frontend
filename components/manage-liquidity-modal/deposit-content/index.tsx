@@ -12,7 +12,7 @@ export function DepositContent({
   onSuccess,
   setOnReview,
 }: {
-  pool: PoolInfo;
+  pool: PoolInfo | undefined;
   poolData: PoolData | undefined;
   setOnReview: (onReview: boolean) => void;
   onSuccess: () => void;
@@ -53,7 +53,7 @@ export function DepositContent({
           transform: "translateX(0)",
         }}
       >
-        {showReview ? (
+        {showReview && pool ? (
           <>
             <DepositReview
               coinA={pool.coinA}

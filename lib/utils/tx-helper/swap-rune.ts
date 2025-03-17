@@ -1,5 +1,5 @@
-import { UnspentOutput } from "@/types";
-import { ToSignInput } from "@/types";
+import { UnspentOutput, ToSignInput } from "@/types";
+
 import { BITCOIN, UTXO_DUST } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
 import { InputCoin, OutputCoin } from "@/types";
@@ -7,6 +7,7 @@ import { RuneId, Runestone, none, Edict } from "runelib";
 import { addressTypeToString, getAddressType } from "@/lib/utils/address";
 import { Orchestrator } from "@/lib/orchestrator";
 import { selectBtcUtxos } from "./common";
+import { AddressType } from "@/types";
 
 export async function swapRuneTx({
   btcAmount,
@@ -37,8 +38,6 @@ export async function swapRuneTx({
   tx.setEnableRBF(false);
   tx.setChangeAddress(paymentAddress);
 
-  const toSignInputs: ToSignInput[] = [];
-
   // Add pool UTXOs
   poolUtxos.forEach((utxo) => {
     const rune = utxo.runes.find((rune) => rune.id === runeid);
@@ -53,24 +52,24 @@ export async function swapRuneTx({
 
   const edicts = needChange
     ? [
-      new Edict(
-        new RuneId(Number(runeBlock), Number(runeIdx)),
-        changeRuneAmount,
-        0
-      ),
-      new Edict(
-        new RuneId(Number(runeBlock), Number(runeIdx)),
-        runeAmount,
-        1
-      ),
-    ]
+        new Edict(
+          new RuneId(Number(runeBlock), Number(runeIdx)),
+          changeRuneAmount,
+          0
+        ),
+        new Edict(
+          new RuneId(Number(runeBlock), Number(runeIdx)),
+          runeAmount,
+          1
+        ),
+      ]
     : [
-      new Edict(
-        new RuneId(Number(runeBlock), Number(runeIdx)),
-        runeAmount,
-        0
-      ),
-    ];
+        new Edict(
+          new RuneId(Number(runeBlock), Number(runeIdx)),
+          runeAmount,
+          0
+        ),
+      ];
 
   const runestone = new Runestone(edicts, none(), none(), none());
 
@@ -86,16 +85,22 @@ export async function swapRuneTx({
   tx.addScriptOutput(opReturnScript, BigInt(0));
 
   let inputTypes = [
-    ...poolUtxos.map(utxo => addressTypeToString(getAddressType(utxo.address))),
+    ...poolUtxos.map((utxo) =>
+      addressTypeToString(getAddressType(utxo.address))
+    ),
   ];
 
   const outputTypes = [
-    ...Array(needChange ? 1 : 0).fill(addressTypeToString(getAddressType(poolAddress))),
+    ...Array(needChange ? 1 : 0).fill(
+      addressTypeToString(getAddressType(poolAddress))
+    ),
     addressTypeToString(getAddressType(address)),
-    ...Array(!needChange ? 1 : 0).fill(addressTypeToString(getAddressType(poolAddress))),
+    ...Array(!needChange ? 1 : 0).fill(
+      addressTypeToString(getAddressType(poolAddress))
+    ),
     { OpReturn: BigInt(opReturnScript.length) },
     // fee output
-    addressTypeToString(getAddressType(paymentAddress))
+    addressTypeToString(getAddressType(paymentAddress)),
   ];
 
   let lastFee = BigInt(0);
@@ -119,37 +124,55 @@ export async function swapRuneTx({
 
       targetBtcAmount = btcAmount + currentFee + UTXO_DUST;
 
-      const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(btcUtxos, targetBtcAmount);
+      const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(
+        btcUtxos,
+        targetBtcAmount
+      );
       if (_selectedUtxos.length === 0) {
         throw new Error("INSUFFICIENT_BTC_UTXO");
       }
 
       inputTypes = [
-        ...poolUtxos.map(utxo => addressTypeToString(getAddressType(utxo.address))),
-        ..._selectedUtxos.map(() => addressTypeToString(getAddressType(paymentAddress)))
+        ...poolUtxos.map((utxo) =>
+          addressTypeToString(getAddressType(utxo.address))
+        ),
+        ..._selectedUtxos.map(() =>
+          addressTypeToString(getAddressType(paymentAddress))
+        ),
       ];
 
-      const totalBtcAmount = _selectedUtxos.reduce((total, curr) => total + BigInt(curr.satoshis), BigInt(0));
+      const totalBtcAmount = _selectedUtxos.reduce(
+        (total, curr) => total + BigInt(curr.satoshis),
+        BigInt(0)
+      );
 
-      if ((totalBtcAmount - targetBtcAmount) > 0 && (totalBtcAmount - targetBtcAmount) > UTXO_DUST) {
+      if (
+        totalBtcAmount - targetBtcAmount > 0 &&
+        totalBtcAmount - targetBtcAmount > UTXO_DUST
+      ) {
         outputTypes.push(addressTypeToString(getAddressType(paymentAddress)));
       }
 
       selectedUtxos = _selectedUtxos;
     }
-
   } while (currentFee > lastFee);
 
   let totalBtcAmount = BigInt(0);
 
-  selectedUtxos.forEach(utxo => {
+  selectedUtxos.forEach((utxo) => {
     tx.addInput(utxo);
     totalBtcAmount += BigInt(utxo.satoshis);
   });
 
   const changeBtcAmount = totalBtcAmount - targetBtcAmount;
 
-  if (changeBtcAmount > 0 && changeBtcAmount > UTXO_DUST) {
+  if (changeBtcAmount < 0) {
+    throw new Error("Inssuficient UTXO(s)");
+  }
+
+  console.log("changeBtcAmount", changeBtcAmount);
+
+  if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   }
 
@@ -164,18 +187,26 @@ export async function swapRuneTx({
   const poolVouts = needChange ? [0] : [1];
   const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
+  const toSignInputs: ToSignInput[] = [];
+
   const toSpendUtxos = inputs
-    .filter(
-      (input) =>
-        input.utxo.address === address || input.utxo.address === paymentAddress
-    )
-    .map((input) => {
-      toSignInputs.push({
-        publicKey: input.utxo.pubkey,
-        index: input.utxo.vout,
-      });
-      return input.utxo;
-    });
+    .filter(({ utxo }, index) => {
+      const isUserInput =
+        utxo.address === address || utxo.address === paymentAddress;
+
+      const addressType = getAddressType(utxo.address);
+      if (isUserInput) {
+        toSignInputs.push({
+          index,
+          ...(addressType === AddressType.P2TR
+            ? { address: utxo.address, disableTweakSigner: false }
+            : { publicKey: utxo.pubkey, disableTweakSigner: true }),
+        });
+      }
+      
+      return isUserInput;
+    })
+    .map((input) => input.utxo);
 
   const inputCoins: InputCoin[] = [
     {
@@ -199,11 +230,12 @@ export async function swapRuneTx({
 
   return {
     psbt,
-    toSignInputs,
     toSpendUtxos,
+    toSignInputs,
     poolSpendUtxos,
     poolReceiveUtxos,
     txid,
+    fee: currentFee,
     inputCoins,
     outputCoins,
   };

@@ -1,9 +1,11 @@
-import { Coin, UnspentOutput } from "@/types";
+import { Coin, TransactionInfo, UnspentOutput, TransactionType } from "@/types";
 
+import { getCoinSymbol } from "../common";
 import { Runestone, Edict } from "runelib";
 import { AddressType } from "@/types";
 import { getTxInfo, getRawTx } from "@/lib/chain-api";
 import { getAddressType } from "../address";
+import { formatNumber } from "../format-number";
 
 export async function getTxScript(outpoint: string) {
   const [txid, vout] = outpoint.split(":");
@@ -27,18 +29,18 @@ export async function getUtxoByOutpoint(
     getTxInfo(txid),
     getRawTx(txid),
   ])) as [
-      {
-        vout: {
-          scriptpubkey: string;
-          scriptpubkey_address: string;
-          scriptpubkey_asm: string;
-          scriptpubkey_type: string;
-          value: number;
-        }[];
-        status: { confirmed: boolean; block_height: number };
-      },
-      string
-    ];
+    {
+      vout: {
+        scriptpubkey: string;
+        scriptpubkey_address: string;
+        scriptpubkey_asm: string;
+        scriptpubkey_type: string;
+        value: number;
+      }[];
+      status: { confirmed: boolean; block_height: number };
+    },
+    string
+  ];
 
   if (!outputs) {
     return;
@@ -72,11 +74,11 @@ export async function getUtxoByOutpoint(
     addressType: getAddressType(scriptpubkey_address),
     runes: edict
       ? [
-        {
-          id: `${edict.id.block}:${edict.id.idx}`,
-          amount: edict.amount.toString(),
-        },
-      ]
+          {
+            id: `${edict.id.block}:${edict.id.idx}`,
+            amount: edict.amount.toString(),
+          },
+        ]
       : [],
   };
 }
@@ -103,7 +105,6 @@ export function selectBtcUtxos(utxos: UnspentOutput[], targetAmount: bigint) {
     remainingUtxos,
   };
 }
-
 
 export function selectRuneUtxos(
   utxos: UnspentOutput[],
@@ -163,4 +164,34 @@ export function getAddedVirtualSize(addressType: AddressType) {
     return 41 + 24 + (1 + 1 + 72 + 1 + 33) / 4;
   }
   throw new Error("unknown address type");
+}
+
+export function getTxTitleAndDescription(transaction: TransactionInfo): {
+  title: string;
+  description: string;
+} {
+  const { type, coinA, coinB, coinAAmount, coinBAmount } = transaction;
+  let title = "",
+    description = "";
+  if (type === TransactionType.ADD_LIQUIDITY) {
+    title = `Add Liquidity to ${getCoinSymbol(coinB)} pool`;
+    description = `With ${formatNumber(coinAAmount)} ${getCoinSymbol(
+      coinA
+    )} and ${formatNumber(coinBAmount)} ${getCoinSymbol(coinB)}`;
+  } else if (type === TransactionType.SWAP) {
+    title = `Swap ${getCoinSymbol(coinA)} to ${getCoinSymbol(coinB)}`;
+    description = `Convert ${formatNumber(coinAAmount)} ${getCoinSymbol(
+      coinA
+    )} to ${formatNumber(coinBAmount)} ${getCoinSymbol(coinB)}`;
+  } else if (type === TransactionType.WITHDRAW_LIQUIDITY) {
+    title = `Withdraw Liquidity from ${getCoinSymbol(coinB)} pool`;
+    description = `Widthdraw ${formatNumber(coinAAmount)} ${getCoinSymbol(
+      coinA
+    )} and ${formatNumber(coinBAmount)} ${getCoinSymbol(coinB)}`;
+  }
+
+  return {
+    title,
+    description,
+  };
 }

@@ -38,6 +38,9 @@ export function BaseModal({
           "border-none bg-popover rounded-2xl p-0 gap-0 shadow-none",
           className
         )}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+        }}
         showCloseButton={showCloseButton}
       >
         {title ? (

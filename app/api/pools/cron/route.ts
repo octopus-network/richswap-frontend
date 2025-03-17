@@ -3,7 +3,7 @@ import { Exchange } from "@/lib/exchange";
 import { OpenApi } from "@/lib/open-api";
 import { UNKNOWN_COIN, BITCOIN } from "@/lib/constants";
 import { PoolInfo } from "@/types";
-// import { put } from "@vercel/blob";
+import { put } from "@vercel/blob";
 import { limitFunction } from "p-limit";
 
 export const dynamic = "force-dynamic";
@@ -76,10 +76,10 @@ export async function GET() {
       });
     }
 
-    // await put("pool-list.json", JSON.stringify(pools), {
-    //   access: "public",
-    //   addRandomSuffix: false,
-    // });
+    await put("pool-list.json", JSON.stringify(pools), {
+      access: "public",
+      addRandomSuffix: false,
+    });
 
     return NextResponse.json({
       success: true,

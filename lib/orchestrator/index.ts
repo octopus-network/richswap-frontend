@@ -51,7 +51,10 @@ export class Orchestrator {
     });
   }
 
-  static async getUnconfirmedUtxos(address: string): Promise<UnspentOutput[]> {
+  static async getUnconfirmedUtxos(
+    address: string,
+    pubkey = ""
+  ): Promise<UnspentOutput[]> {
     const res = (await actor.get_zero_confirmed_utxos_of_address(
       address
     )) as OutpointWithValue[];
@@ -66,7 +69,7 @@ export class Orchestrator {
         vout: Number(vout),
         satoshis: value.toString(),
         scriptPk: script_pubkey_hex,
-        pubkey: "",
+        pubkey,
         addressType,
         address,
         runes: rune

@@ -13,6 +13,9 @@ const config: Config = {
         sans: ["var(--font-geist-sans)"],
         mono: ["var(--font-geist-mono)"],
       },
+      gridTemplateColumns: {
+        "14": "repeat(14, minmax(0, 1fr))"
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

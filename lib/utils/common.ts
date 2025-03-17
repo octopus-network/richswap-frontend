@@ -64,11 +64,11 @@ export function getP2trAressAndScript(pubkey: string) {
   return { address, output: output ? bytesToHex(output) : "" };
 }
 
-export function getCoinSymbol(coin: Coin | null) {
+export function getCoinSymbol(coin: Coin | null | undefined) {
   return coin ? (coin.id === BITCOIN.id ? coin.symbol! : coin.name) : "";
 }
 
-export function getCoinName(coin: Coin | null) {
+export function getCoinName(coin: Coin | null | undefined) {
   return coin ? (coin.id === BITCOIN.id ? coin.name : coin.id) : "";
 }
 

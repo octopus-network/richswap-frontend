@@ -7,12 +7,15 @@ import {
   UnspentOutput,
   InputCoin,
   OutputCoin,
+  ToSignInput,
 } from "@/types";
 
 import { formatNumber, withdrawTx } from "@/lib/utils";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import { BITCOIN } from "@/lib/constants";
+import { OKX } from "@omnisat/lasereyes";
 import { Loader2 } from "lucide-react";
 import { AddressType } from "@/types";
 import { getAddressType } from "@/lib/utils";
@@ -29,6 +32,7 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { parseCoinAmount } from "@/lib/utils";
 
+import Decimal from "decimal.js";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
@@ -60,14 +64,23 @@ export function WithdrawReview({
   sqrtK: bigint | undefined;
   showCancelButton?: boolean;
 }) {
-  const { address, paymentAddress, signPsbt } = useLaserEyes();
+  const { address, paymentAddress, provider, signPsbt } = useLaserEyes(
+    ({ address, paymentAddress, provider, signPsbt }) => ({
+      address,
+      paymentAddress,
+      provider,
+      signPsbt,
+    })
+  );
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 
   const [errorMessage, setErrorMessage] = useState("");
   const [txid, setTxid] = useState("");
 
+  const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
+  const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
   const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
   const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
   const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
@@ -131,17 +144,18 @@ export function WithdrawReview({
         });
 
         setPsbt(tx.psbt);
-
+        setFee(tx.fee);
         setToSpendUtxos(tx.toSpendUtxos);
         setPoolSpendUtxos(tx.poolSpendUtxos);
         setPoolReceiveUtxos(tx.poolReceiveUtxos);
         setTxid(tx.txid);
         setInputCoins(tx.inputCoins);
         setOutputCoins(tx.outputCoins);
+        setToSignInputs(tx.toSignInputs);
       } catch (err) {
         console.log(err);
       }
-    }
+    };
     genPsbt();
   }, [
     poolKey,
@@ -157,13 +171,18 @@ export function WithdrawReview({
   ]);
 
   const onSubmit = async () => {
-    if (!psbt || !coinA || !coinB || !poolUtxos || !toSpendUtxos.length || !sqrtK) {
+    if (
+      !psbt ||
+      !coinA ||
+      !coinB ||
+      !poolUtxos ||
+      !toSpendUtxos.length ||
+      !sqrtK
+    ) {
       return;
     }
 
     try {
-      const psbtBase64 = psbt.toBase64();
-
       const { address: poolAddress } = getP2trAressAndScript(poolKey);
       if (!poolAddress) {
         return;
@@ -171,9 +190,24 @@ export function WithdrawReview({
 
       setStep(1);
 
-      const signedRes = await signPsbt(psbtBase64);
+      let signedPsbtHex = "";
 
-      if (!signedRes?.signedPsbtHex) {
+      if (provider === OKX) {
+        console.log("is okx wallet", toSignInputs);
+        const psbtHex = psbt.toHex();
+
+        signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
+          toSignInputs,
+          autoFinalized: false
+        });
+        console.log(signedPsbtHex);
+      } else {
+        const psbtBase64 = psbt.toBase64();
+        const res = await signPsbt(psbtBase64);
+        signedPsbtHex = res?.signedPsbtHex ?? "";
+      }
+
+      if (!signedPsbtHex) {
         throw new Error("Signed Failed");
       }
 
@@ -198,7 +232,7 @@ export function WithdrawReview({
             },
           ],
         },
-        psbt_hex: signedRes.signedPsbtHex,
+        psbt_hex: signedPsbtHex,
       });
 
       addTransaction({
@@ -237,6 +271,8 @@ export function WithdrawReview({
       paymentAddressType !== AddressType.P2WPKH
     );
   }, [paymentAddress]);
+
+  const btcPrice = useCoinPrice(BITCOIN.id);
 
   return errorMessage ? (
     <div className="mt-4 flex flex-col gap-4">
@@ -320,7 +356,20 @@ export function WithdrawReview({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Network cost</span>
-              <span>$ -</span>
+              <div className="flex flex-col items-end">
+                <span>
+                  {fee > 0 ? Number(fee) : "-"}{" "}
+                  <em className="text-muted-foreground">sats</em>
+                </span>
+                <span className="text-primary/80 text-xs">
+                  {btcPrice && fee > 0
+                    ? `$${new Decimal(fee.toString())
+                        .mul(btcPrice)
+                        .div(Math.pow(10, 8))
+                        .toFixed(4)}`
+                    : ""}
+                </span>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex flex-col space-y-3">
@@ -330,14 +379,12 @@ export function WithdrawReview({
               onClick={onSubmit}
               disabled={!psbt || invalidAddressType}
             >
-              {
-                !psbt && <Loader2 className="size-4 animate-spin" />
-              }
+              {!psbt && <Loader2 className="size-4 animate-spin" />}
               {!psbt
                 ? "Generating PSBT"
                 : invalidAddressType
-                  ? "Unsupported Address Type"
-                  : "Sign Transaction"}
+                ? "Unsupported Address Type"
+                : "Sign Transaction"}
             </Button>
             {showCancelButton && (
               <Button

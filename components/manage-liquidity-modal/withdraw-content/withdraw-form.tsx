@@ -56,7 +56,7 @@ export function WithdrawForm({
     setSqrtK(_sqrtK);
 
     Exchange.preWithdrawLiquidity(
-      position.poolKey,
+      position.pool.key,
       position.userAddress,
       _sqrtK
     ).then((res) => {
@@ -84,10 +84,10 @@ export function WithdrawForm({
                 <span className="text-sm text-muted-foreground">
                   {coinAPrice
                     ? `$${formatNumber(
-                      new Decimal(position.coinAAmount)
-                        .mul(coinAPrice)
-                        .toNumber()
-                    )}`
+                        new Decimal(position.coinAAmount)
+                          .mul(coinAPrice)
+                          .toNumber()
+                      )}`
                     : "-"}
                 </span>
               </div>
@@ -103,10 +103,10 @@ export function WithdrawForm({
                 <span className="text-sm text-muted-foreground">
                   {coinBPrice
                     ? `$${formatNumber(
-                      new Decimal(position.coinBAmount)
-                        .mul(coinBPrice)
-                        .toNumber()
-                    )}`
+                        new Decimal(position.coinBAmount)
+                          .mul(coinBPrice)
+                          .toNumber()
+                      )}`
                     : "-"}
                 </span>
               </div>
@@ -133,7 +133,13 @@ export function WithdrawForm({
             disabled={!position || !Number(nonce) || !output || !utxos.length}
             onClick={() =>
               output && sqrtK
-                ? onReview(output.coinAAmount, output.coinBAmount, nonce, utxos, sqrtK)
+                ? onReview(
+                    output.coinAAmount,
+                    output.coinBAmount,
+                    nonce,
+                    utxos,
+                    sqrtK
+                  )
                 : null
             }
           >
