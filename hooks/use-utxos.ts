@@ -1,44 +1,27 @@
 import { UnspentOutput } from "@/types";
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
-import { Orchestrator } from "@/lib/orchestrator";
 import { useAtomValue } from "jotai";
 import { spentUtxosAtom } from "@/store/spent-utxos";
 import axios from "axios";
-import { useTransactions } from "@/store/transactions";
+
 import useSWR from "swr";
 import { useLaserEyes } from "@omnisat/lasereyes";
+import { atom, useAtom } from "jotai";
 
-export function usePendingUtxos(address: string | undefined, pubkey?: string) {
-  const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
+export const pendingBtcUtxosAtom = atom<UnspentOutput[]>([]);
+export const pendingRuneUtxosAtom = atom<UnspentOutput[]>([]);
 
-  const [timer, setTimer] = useState<number>();
-  const transactions = useTransactions();
+export function usePendingBtcUtxos() {
+  return useAtom(pendingBtcUtxosAtom);
+}
 
-  useEffect(() => {
-    if (!address) {
-      return;
-    }
-    Orchestrator.getUnconfirmedUtxos(address, pubkey).then((_utxos) => {
-      setUtxos(_utxos);
-    });
-  }, [address, timer, pubkey, transactions]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer(Date.now());
-    }, 15 * 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  return utxos;
+export function usePendingRuneUtxos() {
+  return useAtom(pendingRuneUtxosAtom);
 }
 
 export function useBtcUtxos(address: string | undefined, pubkey?: string) {
-  const pendingUtxos = usePendingUtxos(address, pubkey);
+  const [pendingUtxos] = usePendingBtcUtxos();
   const spentUtxos = useAtomValue(spentUtxosAtom);
 
   const { data: apiUtxos } = useSWR(
@@ -84,7 +67,7 @@ export function useRuneUtxos(
   runeid?: string | undefined,
   pubkey?: string
 ) {
-  const pendingUtxos = usePendingUtxos(address, pubkey);
+  const [pendingUtxos] = usePendingRuneUtxos();
   const spentUtxos = useAtomValue(spentUtxosAtom);
   const { data: apiUtxos } = useSWR(
     address && runeid

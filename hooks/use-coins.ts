@@ -16,7 +16,7 @@ export function useSearchCoins(searchQuery: string) {
 
   useEffect(() => {
     if (!searchQuery) {
-      return setSearchCoins([]);
+      return;
     }
     axios
       .get<{
@@ -44,7 +44,13 @@ export function useSearchCoins(searchQuery: string) {
       });
   }, [searchQuery, defaultCoins]);
 
-  return searchCoins;
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchCoins([]);
+    }
+  }, [searchQuery]);
+
+  return useMemo(() => searchCoins, [searchCoins]);
 }
 
 export function useDefaultCoins() {
