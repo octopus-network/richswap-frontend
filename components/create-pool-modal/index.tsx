@@ -21,6 +21,7 @@ export function CreatePoolModal({
   const [poolKey, setPoolKey] = useState("");
   const [pool, setPool] = useState<PoolInfo>();
   const [showReview, setShowReview] = useState(false);
+  const [nonce, setNonce] = useState(BigInt(0));
   const [showDepositModal, setShowDepositModal] = useState(false);
 
   useEffect(() => {
@@ -30,9 +31,10 @@ export function CreatePoolModal({
     }
   }, [open]);
 
-  const onNextStep = (key: string) => {
+  const onNextStep = (key: string, nonce = BigInt(0)) => {
     setPoolKey(key);
     setShowReview(true);
+    setNonce(nonce);
   };
 
   const onPoolExists = (pool: PoolInfo) => {
@@ -65,7 +67,7 @@ export function CreatePoolModal({
                 coinAAmount={coinAAmount}
                 coinBAmount={coinBAmount}
                 onBack={onBack}
-                nonce="0"
+                nonce={nonce.toString()}
                 onSuccess={() => setOpen(false)}
               />
             </motion.div>

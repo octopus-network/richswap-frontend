@@ -32,7 +32,7 @@ export function CreateForm({
   coinBAmount: string;
   setCoinAAmount: (value: string) => void;
   setCoinBAmount: (value: string) => void;
-  onNextStep: (key: string) => void;
+  onNextStep: (key: string, nonce?: bigint) => void;
   onPoolExsists?: (pool: PoolInfo) => void;
 }) {
   const { address } = useLaserEyes(({ address }) => ({ address }));
@@ -86,7 +86,7 @@ export function CreateForm({
         if (pool) {
           if (pool.btc_reserved === BigInt(0)) {
             setIsCreating(false);
-            onNextStep(pool.key);
+            onNextStep(pool.key, pool.nonce);
           } else {
             const poolInfo = poolList.find((pool) => pool.key === pool.key);
             if (poolInfo && onPoolExsists) {
