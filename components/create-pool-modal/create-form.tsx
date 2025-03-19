@@ -1,4 +1,4 @@
-import { Coin } from "@/types";
+import { Coin, PoolInfo } from "@/types";
 import { CoinField } from "../coin-field";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "../ui/button";
@@ -12,6 +12,7 @@ import { useCoinPrice } from "@/hooks/use-prices";
 import { Exchange } from "@/lib/exchange";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { getCoinSymbol } from "@/lib/utils";
+import { usePoolList } from "@/hooks/use-pools";
 
 export function CreateForm({
   coinA,
@@ -22,6 +23,7 @@ export function CreateForm({
   setCoinAAmount,
   setCoinBAmount,
   onNextStep,
+  onPoolExsists,
 }: {
   coinA: Coin;
   coinB: Coin | null;
@@ -31,11 +33,14 @@ export function CreateForm({
   setCoinAAmount: (value: string) => void;
   setCoinBAmount: (value: string) => void;
   onNextStep: (key: string) => void;
+  onPoolExsists?: (pool: PoolInfo) => void;
 }) {
   const { address } = useLaserEyes(({ address }) => ({ address }));
   const [isCreating, setIsCreating] = useState(false);
   const coinABalance = useCoinBalance(coinA);
   const coinBBalance = useCoinBalance(coinB);
+
+  const poolList = usePoolList();
 
   const addPopup = useAddPopup();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
@@ -78,9 +83,17 @@ export function CreateForm({
       if (error?.message === "PoolAlreadyExists") {
         const pool = await Exchange.getPool(coinA, coinB);
 
-        if (pool && pool.btc_reserved === BigInt(0)) {
-          setIsCreating(false);
-          onNextStep(pool.key);
+        if (pool) {
+          if (pool.btc_reserved === BigInt(0)) {
+            setIsCreating(false);
+            onNextStep(pool.key);
+          } else {
+            const poolInfo = poolList.find((pool) => pool.key === pool.key);
+            if (poolInfo && onPoolExsists) {
+              onPoolExsists(poolInfo);
+            }
+          }
+
           return;
         }
       }
