@@ -75,6 +75,16 @@ export function CreateForm({
       setIsCreating(false);
       onNextStep(poolKey);
     } catch (error: any) {
+      if (error?.message === "PoolAlreadyExists") {
+        const pool = await Exchange.getPool(coinA, coinB);
+
+        if (pool && pool.btc_reserved === BigInt(0)) {
+          setIsCreating(false);
+          onNextStep(pool.key);
+          return;
+        }
+      }
+
       setIsCreating(false);
 
       addPopup("Error", PopupStatus.ERROR, error.message || "Unknown Error");

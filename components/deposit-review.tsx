@@ -189,7 +189,8 @@ export function DepositReview({
         setOutputCoins(tx.outputCoins);
         setToSignInputs(tx.toSignInputs);
         setFee(tx.fee);
-      } catch (err) {
+      } catch (err: any) {
+        setErrorMessage(err.message || err.toString());
         console.log(err);
       }
     };
@@ -229,7 +230,7 @@ export function DepositReview({
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
           toSignInputs,
-          autoFinalized: false
+          autoFinalized: false,
         });
         console.log(signedPsbtHex);
       } else {
