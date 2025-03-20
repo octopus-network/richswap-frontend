@@ -116,7 +116,8 @@ export function WithdrawReview({
       !coinAAmount ||
       !coinBAmount ||
       !btcUtxos?.length ||
-      !poolUtxos
+      !poolUtxos ||
+      step !== 0
     ) {
       return;
     }
@@ -166,6 +167,7 @@ export function WithdrawReview({
     coinBAmount,
     btcUtxos,
     address,
+    step,
     paymentAddress,
     recommendedFeeRate,
   ]);
@@ -198,7 +200,7 @@ export function WithdrawReview({
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
           toSignInputs,
-          autoFinalized: false
+          autoFinalized: false,
         });
         console.log(signedPsbtHex);
       } else {

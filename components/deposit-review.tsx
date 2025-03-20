@@ -120,7 +120,8 @@ export function DepositReview({
       !coinBAmount ||
       !btcUtxos?.length ||
       !runeUtxos?.length ||
-      !poolUtxos
+      !poolUtxos ||
+      step !== 0
     ) {
       return;
     }
@@ -205,6 +206,7 @@ export function DepositReview({
     btcUtxos,
     runeUtxos,
     address,
+    step,
     paymentAddress,
     recommendedFeeRate,
   ]);

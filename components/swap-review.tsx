@@ -138,7 +138,8 @@ export function SwapReview({
       !coinAAmount ||
       !coinBAmount ||
       !btcUtxos?.length ||
-      !poolUtxos?.length
+      !poolUtxos?.length ||
+      step !== 0
     ) {
       return;
     }
@@ -242,7 +243,7 @@ export function SwapReview({
           setToSignInputs(tx.toSignInputs);
           setFee(tx.fee);
         } catch (err: any) {
-          setErrorMessage(err?.message || "Unknown Error");
+          // setErrorMessage(err?.message || "Unknown Error");
           console.log(err);
         }
       }
@@ -260,6 +261,7 @@ export function SwapReview({
     poolUtxos,
     paymentAddress,
     address,
+    step,
     recommendedFeeRate,
   ]);
 
@@ -297,7 +299,7 @@ export function SwapReview({
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
           toSignInputs,
-          autoFinalized: false
+          autoFinalized: false,
         });
         console.log(signedPsbtHex);
       } else {
