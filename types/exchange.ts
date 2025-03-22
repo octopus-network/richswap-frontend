@@ -68,8 +68,8 @@ export interface Position {
   coinAAmount: string;
   coinB: Coin | undefined;
   coinBAmount: string;
-  btcSupply: string;
+  totalShare: string;
   userAddress: string;
   userShare: string;
-  sqrtK: string;
+  userIncomes: string;
 }

@@ -2,7 +2,7 @@ import { Position } from "@/types";
 
 import { useState, useMemo } from "react";
 import { ChevronRight, ExternalLink } from "lucide-react";
-import { usePoolFee, usePoolTvl } from "@/hooks/use-pools";
+import { usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
@@ -18,7 +18,6 @@ export function PortfolioRow({ position }: { position: Position }) {
     useState(false);
 
   const poolTvl = usePoolTvl(position.pool.key);
-  const poolFee = usePoolFee(position.pool.key);
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
@@ -27,7 +26,7 @@ export function PortfolioRow({ position }: { position: Position }) {
       position
         ? new Decimal(position.userShare)
             .mul(100)
-            .div(position.sqrtK)
+            .div(position.totalShare)
             .toFixed(4)
         : position === null
         ? null
@@ -45,16 +44,6 @@ export function PortfolioRow({ position }: { position: Position }) {
       : undefined;
   }, [poolTvl, positionPercentage]);
 
-  const positionYield = useMemo(() => {
-    return positionPercentage === undefined
-      ? undefined
-      : positionPercentage === null
-      ? undefined
-      : poolFee !== undefined
-      ? new Decimal(poolFee).mul(positionPercentage).div(100).toNumber()
-      : undefined;
-  }, [poolFee, positionPercentage]);
-
   const positionValueInBtc = useMemo(
     () =>
       positionValue !== undefined && btcPrice !== undefined
@@ -65,22 +54,20 @@ export function PortfolioRow({ position }: { position: Position }) {
     [btcPrice, positionValue]
   );
 
-  const positionYieldInBtc = useMemo(
-    () =>
-      positionYield !== undefined && btcPrice !== undefined
-        ? positionYield / btcPrice
-        : btcPrice
-        ? positionYield ?? 0 / btcPrice
-        : undefined,
-    [btcPrice, positionYield]
+  const positionYield = useMemo(
+    () => (position ? position.userIncomes : undefined),
+    [position]
   );
 
-  const positionYieldInSats = useMemo(
+  const positionYieldValue = useMemo(
     () =>
-      positionYieldInBtc !== undefined
-        ? positionYieldInBtc * Math.pow(10, 8)
+      positionYield && btcPrice
+        ? new Decimal(positionYield)
+            .mul(btcPrice)
+            .div(Math.pow(10, 8))
+            .toNumber()
         : undefined,
-    [positionYieldInBtc]
+    [positionYield, btcPrice]
   );
 
   const poolAddress = useMemo(() => {
@@ -170,16 +157,14 @@ export function PortfolioRow({ position }: { position: Position }) {
           )}
         </div>
         <div className="col-span-3">
-          {positionYield !== undefined && positionYieldInSats !== undefined ? (
+          {positionYieldValue !== undefined && positionYield !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
-                {positionYieldInSats === 0
-                  ? "-"
-                  : formatNumber(positionYieldInSats, true)}{" "}
+                {formatNumber(positionYield, true)}{" "}
                 <em className="font-normal">sats</em>
               </span>
               <span className="text-muted-foreground text-xs">
-                ${formatNumber(positionYield, true)}
+                ${formatNumber(positionYieldValue, true)}
               </span>
             </div>
           ) : (

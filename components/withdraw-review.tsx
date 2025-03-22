@@ -270,7 +270,8 @@ export function WithdrawReview({
     const paymentAddressType = getAddressType(paymentAddress);
     return (
       paymentAddressType !== AddressType.P2TR &&
-      paymentAddressType !== AddressType.P2WPKH
+      paymentAddressType !== AddressType.P2WPKH &&
+      paymentAddressType !== AddressType.P2SH_P2WPKH
     );
   }, [paymentAddress]);
 
