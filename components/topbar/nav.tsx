@@ -10,7 +10,8 @@ import {
   Ellipsis,
   BookOpen,
   MessageSquare,
-  Package
+  Package,
+  Code
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -143,6 +144,15 @@ export const Nav = () => {
             <DropdownMenuItem>
               <MessageSquare />
               <span className="ml-2 mr-1">Support</span>
+            </DropdownMenuItem>
+          </Link>
+          <Link
+            href="https://github.com/octopus-network/richswap-canister"
+            target="_blank"
+          >
+            <DropdownMenuItem>
+              <Code />
+              <span className="ml-2 mr-1">Source Code</span>
             </DropdownMenuItem>
           </Link>
         </DropdownMenuContent>
