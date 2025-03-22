@@ -9,6 +9,7 @@ import { Footer } from "@/components/footer";
 import { ConnectWalletModal } from "@/components/connect-wallet-modal";
 import { Popups } from "@/components/popups";
 import { TransactionUpdater } from "@/components/transaction/updater";
+import { GlobalStateUpdater } from "@/components/global-state-updater";
 
 export const metadata: Metadata = {
   title: "RichSwap",
@@ -34,6 +35,7 @@ export default function RootLayout({
           </div>
           <ConnectWalletModal />
           <TransactionUpdater />
+          <GlobalStateUpdater />
         </Providers>
       </body>
     </html>

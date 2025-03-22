@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Exchange } from "@/lib/exchange";
+import axios from "axios";
 
 import { PoolInfo } from "@/types";
 
@@ -15,9 +16,9 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const pools = (await fetch(`${STORAGE_URL}/pool-list.json`, {
-      cache: "no-cache",
-    }).then((res) => res.json())) as PoolInfo[];
+    const pools = (await axios(`${STORAGE_URL}/pool-list.json`).then(
+      (res) => res.data
+    )) as PoolInfo[];
 
     const portfolios = await Promise.all(
       pools.map((pool) => Exchange.getPosition(pool, address))

@@ -120,7 +120,8 @@ export function DepositReview({
       !coinBAmount ||
       !btcUtxos?.length ||
       !runeUtxos?.length ||
-      !poolUtxos
+      !poolUtxos ||
+      step !== 0
     ) {
       return;
     }
@@ -189,7 +190,8 @@ export function DepositReview({
         setOutputCoins(tx.outputCoins);
         setToSignInputs(tx.toSignInputs);
         setFee(tx.fee);
-      } catch (err) {
+      } catch (err: any) {
+        setErrorMessage(err.message || err.toString());
         console.log(err);
       }
     };
@@ -204,6 +206,7 @@ export function DepositReview({
     btcUtxos,
     runeUtxos,
     address,
+    step,
     paymentAddress,
     recommendedFeeRate,
   ]);
@@ -229,7 +232,7 @@ export function DepositReview({
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
           toSignInputs,
-          autoFinalized: false
+          autoFinalized: false,
         });
         console.log(signedPsbtHex);
       } else {

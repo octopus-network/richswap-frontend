@@ -1,10 +1,11 @@
 import { BaseModal } from "../base-modal";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Coin } from "@/types";
+import { Coin, PoolInfo } from "@/types";
 import { BITCOIN } from "@/lib/constants";
 import { CreateForm } from "./create-form";
 import { DepositReview } from "../deposit-review";
+import { ManageLiquidityModal } from "../manage-liquidity-modal";
 
 export function CreatePoolModal({
   open,
@@ -18,18 +19,27 @@ export function CreatePoolModal({
   const [coinAAmount, setCoinAAmount] = useState("");
   const [coinBAmount, setCoinBAmount] = useState("");
   const [poolKey, setPoolKey] = useState("");
-
+  const [pool, setPool] = useState<PoolInfo>();
   const [showReview, setShowReview] = useState(false);
+  const [nonce, setNonce] = useState(BigInt(0));
+  const [showDepositModal, setShowDepositModal] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setShowReview(false);
+      setShowDepositModal(false);
     }
   }, [open]);
 
-  const onNextStep = (key: string) => {
+  const onNextStep = (key: string, nonce = BigInt(0)) => {
     setPoolKey(key);
     setShowReview(true);
+    setNonce(nonce);
+  };
+
+  const onPoolExists = (pool: PoolInfo) => {
+    setPool(pool);
+    setShowDepositModal(true);
   };
 
   const onBack = () => {
@@ -37,42 +47,58 @@ export function CreatePoolModal({
   };
 
   return (
-    <BaseModal open={open} setOpen={setOpen} showCloseButton={!showReview}>
-      <div className="p-5">
-        {showReview ? (
-          <motion.div
-            initial={{
-              transform: "translateX(20px)",
-            }}
-            animate={{
-              transform: "translateX(0)",
-            }}
-          >
-            <DepositReview
+    <>
+      <BaseModal open={open} setOpen={setOpen} showCloseButton={!showReview}>
+        <div className="p-5">
+          {showReview ? (
+            <motion.div
+              initial={{
+                transform: "translateX(20px)",
+              }}
+              animate={{
+                transform: "translateX(0)",
+              }}
+            >
+              <DepositReview
+                coinA={coinA}
+                coinB={coinB}
+                poolKey={poolKey}
+                poolUtxos={[]}
+                coinAAmount={coinAAmount}
+                coinBAmount={coinBAmount}
+                onBack={onBack}
+                nonce={nonce.toString()}
+                onSuccess={() => setOpen(false)}
+              />
+            </motion.div>
+          ) : (
+            <CreateForm
               coinA={coinA}
               coinB={coinB}
-              poolKey={poolKey}
-              poolUtxos={[]}
               coinAAmount={coinAAmount}
               coinBAmount={coinBAmount}
-              onBack={onBack}
-              nonce="0"
-              onSuccess={() => setOpen(false)}
+              setCoinB={setCoinB}
+              setCoinAAmount={setCoinAAmount}
+              setCoinBAmount={setCoinBAmount}
+              onNextStep={onNextStep}
+              onPoolExsists={onPoolExists}
             />
-          </motion.div>
-        ) : (
-          <CreateForm
-            coinA={coinA}
-            coinB={coinB}
-            coinAAmount={coinAAmount}
-            coinBAmount={coinBAmount}
-            setCoinB={setCoinB}
-            setCoinAAmount={setCoinAAmount}
-            setCoinBAmount={setCoinBAmount}
-            onNextStep={onNextStep}
-          />
-        )}
-      </div>
-    </BaseModal>
+          )}
+        </div>
+      </BaseModal>
+      {pool && (
+        <ManageLiquidityModal
+          pool={pool}
+          position={null}
+          open={showDepositModal}
+          setOpen={(open) => {
+            setShowDepositModal(open);
+            if (!open) {
+              setOpen(false);
+            }
+          }}
+        />
+      )}
+    </>
   );
 }
