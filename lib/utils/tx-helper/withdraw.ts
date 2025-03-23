@@ -8,7 +8,7 @@ import {
 
 import { UTXO_DUST, BITCOIN } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
-
+import * as bitcoin from "bitcoinjs-lib";
 import { Orchestrator } from "@/lib/orchestrator";
 import { addressTypeToString, getAddressType } from "../address";
 import { RuneId, Runestone, none, Edict } from "runelib";
@@ -133,8 +133,6 @@ export async function withdrawTx({
     currentFee += BigInt(1);
 
     if (currentFee > lastFee) {
-      outputTypes.pop();
-
       targetBtcAmount = currentFee + UTXO_DUST;
 
       const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(
@@ -163,6 +161,7 @@ export async function withdrawTx({
         totalBtcAmount - targetBtcAmount > 0 &&
         totalBtcAmount - targetBtcAmount > UTXO_DUST
       ) {
+        outputTypes.pop();
         outputTypes.push(addressTypeToString(getAddressType(paymentAddress)));
       }
 
@@ -192,9 +191,6 @@ export async function withdrawTx({
 
   //@ts-expect-error: todo
   const unsignedTx = psbt.__CACHE.__TX;
-  const txid = unsignedTx.getId();
-
-  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
   const toSignInputs: ToSignInput[] = [];
 
@@ -214,6 +210,28 @@ export async function withdrawTx({
       return isUserInput;
     })
     .map((input) => input.utxo);
+
+  const unsignedTxClone = unsignedTx.clone();
+
+  for (let i = 0; i < toSignInputs.length; i++) {
+    const toSignInput = toSignInputs[i];
+
+    const toSignIndex = toSignInput.index;
+    const input = inputs[toSignIndex];
+    const inputAddress = input.utxo.address;
+    if (!inputAddress) continue;
+    const redeemScript = psbt.data.inputs[toSignIndex].redeemScript;
+    const addressType = getAddressType(inputAddress);
+
+    if (redeemScript && addressType === AddressType.P2SH_P2WPKH) {
+      const finalScriptSig = bitcoin.script.compile([redeemScript]);
+      unsignedTxClone.setInputScript(toSignIndex, finalScriptSig);
+    }
+  }
+
+  const txid = unsignedTxClone.getId();
+
+  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
   const inputCoins: InputCoin[] = [];
 

@@ -73,7 +73,7 @@ export function decodeAddress(address: string) {
       return {
         addressType,
       };
-    } catch { }
+    } catch {}
   } else {
     try {
       decodeBase58 = bitcoin.address.fromBase58Check(address);
@@ -97,7 +97,7 @@ export function decodeAddress(address: string) {
       return {
         addressType,
       };
-    } catch { }
+    } catch {}
   }
 
   return {
@@ -110,10 +110,11 @@ export function getAddressType(address: string): AddressType {
   return decodeAddress(address).addressType;
 }
 
-
 export function addressTypeToString(addressType: AddressType): TxOutputType {
   if (addressType === AddressType.P2WPKH) {
     return { P2WPKH: null };
+  } else if (addressType === AddressType.P2SH_P2WPKH) {
+    return { P2SH: null };
   } else {
     return { P2TR: null };
   }

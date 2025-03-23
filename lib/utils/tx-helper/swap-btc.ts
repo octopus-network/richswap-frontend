@@ -7,6 +7,7 @@ import { getAddressType, addressTypeToString } from "../address";
 import { Orchestrator } from "@/lib/orchestrator";
 import { RuneId, Runestone, none, Edict } from "runelib";
 import { selectBtcUtxos } from "./common";
+import * as bitcoin from "bitcoinjs-lib";
 
 export async function swapBtcTx({
   btcAmount,
@@ -164,13 +165,11 @@ export async function swapBtcTx({
     leftFeeAmount = currentFee + utxoDust;
 
     if (currentFee > lastFee && leftFeeAmount > 0) {
-      outputTypes.pop();
       const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(
         btcUtxos,
         leftFeeAmount
       );
 
-      console.log("selectedUtxos", _selectedUtxos);
       if (_selectedUtxos.length === 0) {
         throw new Error("INSUFFICIENT_BTC_UTXO");
       }
@@ -194,6 +193,7 @@ export async function swapBtcTx({
 
       const changeBtcAmount = totalBtcAmount - leftFeeAmount;
       if (changeBtcAmount > 0 && changeBtcAmount > UTXO_DUST) {
+        outputTypes.pop();
         outputTypes.push(addressTypeToString(getAddressType(paymentAddress)));
       }
       selectedUtxos = _selectedUtxos;
@@ -223,9 +223,6 @@ export async function swapBtcTx({
 
   //@ts-expect-error: todo
   const unsignedTx = psbt.__CACHE.__TX;
-  const txid = unsignedTx.getId();
-
-  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
   const toSignInputs: ToSignInput[] = [];
 
@@ -247,6 +244,28 @@ export async function swapBtcTx({
       return isUserInput;
     })
     .map((input) => input.utxo);
+
+  const unsignedTxClone = unsignedTx.clone();
+
+  for (let i = 0; i < toSignInputs.length; i++) {
+    const toSignInput = toSignInputs[i];
+
+    const toSignIndex = toSignInput.index;
+    const input = inputs[toSignIndex];
+    const inputAddress = input.utxo.address;
+    if (!inputAddress) continue;
+    const redeemScript = psbt.data.inputs[toSignIndex].redeemScript;
+    const addressType = getAddressType(inputAddress);
+
+    if (redeemScript && addressType === AddressType.P2SH_P2WPKH) {
+      const finalScriptSig = bitcoin.script.compile([redeemScript]);
+      unsignedTxClone.setInputScript(toSignIndex, finalScriptSig);
+    }
+  }
+
+  const txid = unsignedTxClone.getId();
+
+  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
   const inputCoins: InputCoin[] = [
     {

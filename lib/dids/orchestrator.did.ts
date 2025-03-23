@@ -3,6 +3,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   const TxOutputType = IDL.Variant({
     P2WPKH: IDL.Null,
     OpReturn: IDL.Nat64,
+    P2SH: IDL.Null,
     P2TR: IDL.Null,
   });
   const EstimateMinTxFeeArgs = IDL.Record({

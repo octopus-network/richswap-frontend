@@ -8,6 +8,7 @@ import { addressTypeToString, getAddressType } from "@/lib/utils/address";
 import { Orchestrator } from "@/lib/orchestrator";
 import { selectBtcUtxos } from "./common";
 import { AddressType } from "@/types";
+import * as bitcoin from "bitcoinjs-lib";
 
 export async function swapRuneTx({
   btcAmount,
@@ -120,8 +121,7 @@ export async function swapRuneTx({
     currentFee += BigInt(1);
 
     if (currentFee > lastFee) {
-      outputTypes.pop();
-
+      
       targetBtcAmount = btcAmount + currentFee + UTXO_DUST;
 
       const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(
@@ -150,6 +150,7 @@ export async function swapRuneTx({
         totalBtcAmount - targetBtcAmount > 0 &&
         totalBtcAmount - targetBtcAmount > UTXO_DUST
       ) {
+        outputTypes.pop();
         outputTypes.push(addressTypeToString(getAddressType(paymentAddress)));
       }
 
@@ -170,8 +171,6 @@ export async function swapRuneTx({
     throw new Error("Inssuficient UTXO(s)");
   }
 
-  console.log("changeBtcAmount", changeBtcAmount);
-
   if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   }
@@ -181,11 +180,9 @@ export async function swapRuneTx({
 
   //@ts-expect-error: todo
   const unsignedTx = psbt.__CACHE.__TX;
-  const txid = unsignedTx.getId();
 
   const poolSpendUtxos = poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`);
   const poolVouts = needChange ? [0] : [1];
-  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
   const toSignInputs: ToSignInput[] = [];
 
@@ -203,10 +200,32 @@ export async function swapRuneTx({
             : { publicKey: utxo.pubkey, disableTweakSigner: true }),
         });
       }
-      
+
       return isUserInput;
     })
     .map((input) => input.utxo);
+
+  const unsignedTxClone = unsignedTx.clone();
+
+  for (let i = 0; i < toSignInputs.length; i++) {
+    const toSignInput = toSignInputs[i];
+
+    const toSignIndex = toSignInput.index;
+    const input = inputs[toSignIndex];
+    const inputAddress = input.utxo.address;
+    if (!inputAddress) continue;
+    const redeemScript = psbt.data.inputs[toSignIndex].redeemScript;
+    const addressType = getAddressType(inputAddress);
+
+    if (redeemScript && addressType === AddressType.P2SH_P2WPKH) {
+      const finalScriptSig = bitcoin.script.compile([redeemScript]);
+      unsignedTxClone.setInputScript(toSignIndex, finalScriptSig);
+    }
+  }
+
+  const txid = unsignedTxClone.getId();
+
+  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
   const inputCoins: InputCoin[] = [
     {
