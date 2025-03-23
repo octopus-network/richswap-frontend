@@ -175,7 +175,7 @@ export default function Pools() {
           </div>
         </div>
         <div className="mt-6 border rounded-xl overflow-hidden">
-          <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl md:grid-cols-12 grid-cols-9 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
+          <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl md:grid-cols-14 grid-cols-9 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
             <div className="col-span-4">Pool</div>
             <div className="col-span-3">
               <span>TVL</span>
@@ -184,6 +184,7 @@ export default function Pools() {
               <span>Fee</span>
             </div>
             <div className="col-span-2 hidden md:flex">Yield/TVL</div>
+            <div className="col-span-2 hidden md:flex">Your Share</div>
             <div className="col-span-1 hidden md:flex" />
           </div>
           {poolList?.length
@@ -191,7 +192,7 @@ export default function Pools() {
             : [1, 2, 3, 4, 5].map((idx) => (
                 <div
                   key={idx}
-                  className="grid md:grid-cols-12 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3 bg-secondary/20"
+                  className="grid md:grid-cols-14 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3 bg-secondary/20"
                 >
                   <div className="col-span-4 flex items-center space-x-3">
                     <Skeleton className="size-10 rounded-full hidden sm:block" />
@@ -204,6 +205,9 @@ export default function Pools() {
                     <Skeleton className="h-5 w-2/3" />
                   </div>
                   <div className="col-span-2 flex">
+                    <Skeleton className="h-5 w-2/3" />
+                  </div>
+                  <div className="col-span-2 hidden md:flex">
                     <Skeleton className="h-5 w-2/3" />
                   </div>
                   <div className="col-span-2 hidden md:flex">
