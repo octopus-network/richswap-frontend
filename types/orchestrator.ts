@@ -35,6 +35,7 @@ export type InvokeArgs = {
 export type TxOutputType =
   | { P2WPKH: null }
   | { P2TR: null }
+  | { P2SH: null }
   | { OpReturn: bigint };
 
 export type EstimateMinTxFeeArgs = {

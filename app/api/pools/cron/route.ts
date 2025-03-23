@@ -79,6 +79,7 @@ export async function GET() {
     await put("pool-list.json", JSON.stringify(pools), {
       access: "public",
       addRandomSuffix: false,
+      cacheControlMaxAge: 10,
     });
 
     return NextResponse.json({
