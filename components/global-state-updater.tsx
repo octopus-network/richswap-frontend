@@ -72,7 +72,7 @@ export function GlobalStateUpdater() {
   useEffect(() => {
     if (paymentAddress && paymentPublicKey) {
       if (provider === XVERSE) {
-        setPendingRuneUtxos([]);
+        setPendingBtcUtxos([]);
       } else {
         Orchestrator.getUnconfirmedUtxos(paymentAddress, paymentPublicKey).then(
           (_utxos) => {
