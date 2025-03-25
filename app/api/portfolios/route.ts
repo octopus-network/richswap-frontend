@@ -2,61 +2,60 @@ import { NextRequest, NextResponse } from "next/server";
 
 import axios from "axios";
 // import Decimal from "decimal.js";
-// import { BITCOIN } from "@/lib/constants";
+import { BITCOIN } from "@/lib/constants";
 // import { formatCoinAmount } from "@/lib/utils";
-import { PoolInfo } from "@/types";
-
+import { PoolInfo, PoolData } from "@/types";
 
 const STORAGE_URL = process.env.STORAGE_URL!;
 
 export const dynamic = "force-dynamic";
 
-// import { actor } from "@/lib/exchange/actor";
+import { actor } from "@/lib/exchange/actor";
 
-// async function getPoolData(address: string): Promise<PoolData | undefined> {
-//   const res = (await actor.get_pool_info({
-//     pool_address: address,
-//   })) as [
-//     {
-//       address: string;
-//       attributes: string;
-//       btc_reserved: bigint;
-//       coin_reserved: [{ id: string; value: bigint }];
-//       key: string;
-//       name: string;
-//       nonce: bigint;
-//       utxos: [
-//         {
-//           sats: bigint;
-//           txid: string;
-//           vout: number;
-//           maybe_rune: [{ id: string; value: bigint }];
-//         }
-//       ];
-//     }
-//   ];
+async function getPoolData(address: string): Promise<PoolData | undefined> {
+  const res = (await actor.get_pool_info({
+    pool_address: address,
+  })) as [
+    {
+      address: string;
+      attributes: string;
+      btc_reserved: bigint;
+      coin_reserved: [{ id: string; value: bigint }];
+      key: string;
+      name: string;
+      nonce: bigint;
+      utxos: [
+        {
+          sats: bigint;
+          txid: string;
+          vout: number;
+          maybe_rune: [{ id: string; value: bigint }];
+        }
+      ];
+    }
+  ];
 
-//   if (res?.length) {
-//     const data = res[0];
+  if (res?.length) {
+    const data = res[0];
 
-//     const attributes = JSON.parse(data.attributes);
+    const attributes = JSON.parse(data.attributes);
 
-//     const coinReserved = data.coin_reserved[0];
+    const coinReserved = data.coin_reserved[0];
 
-//     const utxo = data.utxos[0];
+    const utxo = data.utxos[0];
 
-//     const incomes = BigInt(0);
+    const incomes = BigInt(0);
 
-//     return {
-//       key: data.key,
-//       coinAId: BITCOIN.id,
-//       coinBId: coinReserved?.id,
-//       coinAAmount: ((utxo?.sats ?? BigInt(0)) - incomes).toString(),
-//       coinBAmount: utxo?.maybe_rune[0].value.toString(),
-//       incomes: attributes.incomes.toString(),
-//     };
-//   }
-// }
+    return {
+      key: data.key,
+      coinAId: BITCOIN.id,
+      coinBId: coinReserved?.id,
+      coinAAmount: ((utxo?.sats ?? BigInt(0)) - incomes).toString(),
+      coinBAmount: utxo?.maybe_rune[0].value.toString(),
+      incomes: attributes.incomes.toString(),
+    };
+  }
+}
 
 // async function getPosition(pool: PoolInfo, userAddress: string) {
 //   try {
@@ -132,10 +131,14 @@ export async function GET(req: NextRequest) {
     const pools = (await axios(`${STORAGE_URL}/pool-list.json`).then(
       (res) => res.data
     )) as PoolInfo[];
-    
+
+    const poolDatas = await Promise.all(
+      pools.map((pool) => getPoolData(pool.address))
+    );
+
     return NextResponse.json({
       success: true,
-      data: pools,
+      data: poolDatas,
     });
 
     // const portfolios = await Promise.all(
