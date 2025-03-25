@@ -101,71 +101,6 @@ export class Exchange {
     }
   }
 
-  // #TESTNET
-  // public static async getPosition(pool: PoolInfo, userAddress: string) {
-  //   try {
-  //     const [res, poolData] = await Promise.all([
-  //       actor.get_lp(pool.key, userAddress).then((data: any) => {
-  //         if (data.Ok) {
-  //           return data.Ok;
-  //         } else {
-  //           throw new Error(
-  //             data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
-  //           );
-  //         }
-  //       }),
-  //       Exchange.getPoolData(pool.address),
-  //     ]);
-
-  //     console.log("position res", res);
-  //     if (!poolData) {
-  //       return null;
-  //     }
-
-  //     const { total_share, user_incomes, user_share } = res as {
-  //       total_share: bigint;
-  //       user_incomes: bigint;
-  //       user_share: bigint;
-  //     };
-
-  //     if (!Number(user_share) || !Number(total_share)) {
-  //       return null;
-  //     }
-
-  //     const userSharePercentageDecimal = new Decimal(user_share.toString());
-
-  //     const coinAAmount = formatCoinAmount(
-  //       userSharePercentageDecimal
-  //         .mul(poolData.coinAAmount)
-  //         .div(total_share.toString())
-  //         .toFixed(0),
-  //       pool.coinA
-  //     );
-  //     const coinBAmount = formatCoinAmount(
-  //       userSharePercentageDecimal
-  //         .mul(poolData.coinBAmount)
-  //         .div(total_share.toString())
-  //         .toFixed(0),
-  //       pool.coinB
-  //     );
-
-  //     return {
-  //       pool,
-  //       coinA: pool.coinA,
-  //       coinB: pool.coinB,
-  //       userAddress,
-  //       userShare: user_share.toString(),
-  //       coinAAmount,
-  //       coinBAmount,
-  //       totalShare: total_share.toString(),
-  //       userIncomes: user_incomes.toString(),
-  //     };
-  //   } catch (err: any) {
-  //     console.log("get position error", err);
-  //     return null;
-  //   }
-  // }
-
   public static async getPosition(pool: PoolInfo, userAddress: string) {
     try {
       const [res, poolData] = await Promise.all([
@@ -185,26 +120,30 @@ export class Exchange {
         return null;
       }
 
-      const { btc_supply, sqrt_k, user_share } = res as {
-        btc_supply: bigint;
-        sqrt_k: bigint;
+      const { total_share, user_incomes, user_share } = res as {
+        total_share: bigint;
+        user_incomes: bigint;
         user_share: bigint;
       };
 
-      if (!Number(user_share) || !Number(btc_supply)) {
+      if (!Number(user_share) || !Number(total_share)) {
         return null;
       }
 
-      const userSharePercentageDecimal = new Decimal(user_share.toString()).div(
-        sqrt_k.toString()
-      );
+      const userSharePercentageDecimal = new Decimal(user_share.toString());
 
       const coinAAmount = formatCoinAmount(
-        userSharePercentageDecimal.mul(poolData.coinAAmount).toFixed(0),
+        userSharePercentageDecimal
+          .mul(poolData.coinAAmount)
+          .div(total_share.toString())
+          .toFixed(0),
         pool.coinA
       );
       const coinBAmount = formatCoinAmount(
-        userSharePercentageDecimal.mul(poolData.coinBAmount).toFixed(0),
+        userSharePercentageDecimal
+          .mul(poolData.coinBAmount)
+          .div(total_share.toString())
+          .toFixed(0),
         pool.coinB
       );
 
@@ -216,13 +155,15 @@ export class Exchange {
         userShare: user_share.toString(),
         coinAAmount,
         coinBAmount,
-        btcSupply: btc_supply.toString(),
-        sqrtK: sqrt_k.toString(),
+        totalShare: total_share.toString(),
+        userIncomes: user_incomes.toString(),
       };
-    } catch {
+    } catch (err: any) {
+      console.log("get position error", err);
       return null;
     }
   }
+
   public static async preAddLiquidity(
     poolKey: string,
     coin: Coin,

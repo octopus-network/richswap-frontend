@@ -62,27 +62,14 @@ export type PoolOverview = {
   nonce: bigint;
 };
 
-// # TESTNET
-// export interface Position {
-//   pool: PoolInfo;
-//   coinA: Coin | undefined;
-//   coinAAmount: string;
-//   coinB: Coin | undefined;
-//   coinBAmount: string;
-//   totalShare: string;
-//   userAddress: string;
-//   userShare: string;
-//   userIncomes: string;
-// }
-
 export interface Position {
   pool: PoolInfo;
   coinA: Coin | undefined;
   coinAAmount: string;
   coinB: Coin | undefined;
   coinBAmount: string;
-  btcSupply: string;
+  totalShare: string;
   userAddress: string;
   userShare: string;
-  sqrtK: string;
+  userIncomes: string;
 }
