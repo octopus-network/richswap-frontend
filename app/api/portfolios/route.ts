@@ -131,6 +131,11 @@ export async function GET(req: NextRequest) {
     const pools = (await axios(`${STORAGE_URL}/pool-list.json`).then(
       (res) => res.data
     )) as PoolInfo[];
+    
+    return NextResponse.json({
+      success: true,
+      data: pools,
+    });
 
     const portfolios = await Promise.all(
       pools.map((pool) => getPosition(pool, address))
