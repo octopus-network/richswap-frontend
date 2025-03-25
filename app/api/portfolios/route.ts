@@ -132,13 +132,17 @@ export async function GET(req: NextRequest) {
       (res) => res.data
     )) as PoolInfo[];
 
-    const poolDatas = await Promise.all(
-      pools.map((pool) => getPoolData(pool.address))
-    );
+    const poolDatas = await Promise.all([
+      actor.get_pool_info({
+        pool_address:
+          "tb1pfr420a6qr8t00xwjyfz7x4lg2ppdqnnm3n7gk8x4q4qra93wx88qpam69j",
+      }),
+    ]);
 
     return NextResponse.json({
       success: true,
       data: poolDatas,
+      pools,
     });
 
     // const portfolios = await Promise.all(
