@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { usePoolList } from "@/hooks/use-pools";
+import { usePoolList, usePortfolios } from "@/hooks/use-pools";
 import { useEffect, useMemo, useState } from "react";
 import { useCoinPrices } from "@/hooks/use-prices";
 
@@ -9,6 +9,9 @@ import { Orchestrator } from "@/lib/orchestrator";
 import { usePendingBtcUtxos, usePendingRuneUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useTransactions } from "@/store/transactions";
+import { limitFunction } from "p-limit";
+import { PoolInfo } from "@/types";
+import { Exchange } from "@/lib/exchange";
 
 export function GlobalStateUpdater() {
   const { address, publicKey, paymentAddress, paymentPublicKey } = useLaserEyes(
@@ -23,6 +26,7 @@ export function GlobalStateUpdater() {
   const [, setCoinPrices] = useCoinPrices();
   const [, setPendingBtcUtxos] = usePendingBtcUtxos();
   const [, setPendingRuneUtxos] = usePendingRuneUtxos();
+  const [, setPortfolios] = usePortfolios();
 
   const [timer, setTimer] = useState<number>();
 
@@ -62,6 +66,19 @@ export function GlobalStateUpdater() {
       });
     }
   }, [address, publicKey, setPendingRuneUtxos, transactions, timer]);
+
+  useEffect(() => {
+    if (paymentAddress && poolList.length) {
+      const limitGetPosition = limitFunction(
+        async (pool: PoolInfo, address: string) =>
+          Exchange.getPosition(pool, address),
+        { concurrency: 2 }
+      );
+      Promise.all(
+        poolList.map((pool) => limitGetPosition(pool, paymentAddress))
+      ).then((positions) => setPortfolios(positions.filter((p) => !!p)));
+    }
+  }, [paymentAddress, poolList, transactions, setPortfolios]);
 
   useEffect(() => {
     if (paymentAddress && paymentPublicKey) {
