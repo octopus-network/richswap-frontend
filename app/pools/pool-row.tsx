@@ -115,7 +115,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
               e.stopPropagation();
               e.preventDefault();
               window.open(
-                `https://www.runescan.net/runes/${pool.coinB.number}`,
+                `https://www.runescan.net/runes/${pool.coinB.name}`,
                 "_blank"
               );
             }}
@@ -150,7 +150,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                   e.stopPropagation();
                   e.preventDefault();
                   window.open(
-                    `https://www.runescan.net/address/${poolAddress}`,
+                    `https://www.runescan.net/exchange/RICH_SWAP/pool/${poolAddress}`,
                     "_blank"
                   );
                 }}
