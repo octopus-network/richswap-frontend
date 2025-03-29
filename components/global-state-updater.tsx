@@ -78,7 +78,7 @@ export function GlobalStateUpdater() {
         poolList.map((pool) => limitGetPosition(pool, paymentAddress))
       ).then((positions) => setPortfolios(positions.filter((p) => !!p)));
     }
-  }, [paymentAddress, poolList, transactions, setPortfolios]);
+  }, [paymentAddress, poolList, transactions, setPortfolios, timer]);
 
   useEffect(() => {
     if (paymentAddress && paymentPublicKey) {
