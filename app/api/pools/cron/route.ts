@@ -50,7 +50,13 @@ const query = gql`
 export async function GET() {
   try {
     console.log(REE_INDEXER_URL);
-    const { exchange_view } = (await request(REE_INDEXER_URL, query)) as {
+    const { exchange_view } = (await request(REE_INDEXER_URL, query, {
+      fetch: (url: string, options: RequestInit) =>
+        fetch(url, {
+          ...options,
+          cache: "no-store",
+        }),
+    })) as {
       exchange_view: {
         exchange_id: string;
         pool_infos: {
