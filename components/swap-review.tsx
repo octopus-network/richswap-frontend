@@ -320,6 +320,7 @@ export function SwapReview({
 
       await Orchestrator.invoke({
         intention_set: {
+          tx_fee_in_sats: fee,
           initiator_address: paymentAddress,
           intentions: [
             {
