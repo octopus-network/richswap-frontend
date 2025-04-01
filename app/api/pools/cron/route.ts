@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
 const UNISAT_API = process.env.UNISAT_API!;
 
-const REE_INDEXER_URL = process.env.REE_INDEXER_URL!;
+const REE_INDEXER_URL = process.env.NEXT_PUBLIC_REE_INDEXER_URL!;
 
 const query = gql`
   {
@@ -64,8 +64,6 @@ export async function GET() {
         }[];
       }[];
     };
-
-    
 
     const exchangeData = exchange_view.find(
       (ex) => ex.exchange_id === EXCHANGE_ID

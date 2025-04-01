@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCoinPrice, useCoinPrices } from "./use-prices";
 
 import Decimal from "decimal.js";
@@ -54,6 +54,8 @@ export function usePoolList() {
   const [poolList, setPoolList] = useState<PoolInfo[]>([]);
   const [timer, setTimer] = useState<number>();
 
+  const isFetching = useRef(false);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setTimer(new Date().getTime());
@@ -66,61 +68,72 @@ export function usePoolList() {
 
   useEffect(() => {
     const fetchPools = async () => {
-      const { exchange_view } = (await request(
-        REE_INDEXER_URL,
-        EXCHANGE_VIEW
-      )) as {
-        exchange_view: {
-          exchange_id: string;
-          pool_infos: {
-            address: string;
-            attributes: string;
-            btc_reserved: number;
-            coin_reserveds: { id: string; value: number }[];
-            name: string;
-            nonce: number;
-            key: string;
-          }[];
-        }[];
-      };
-
-      const exchangeData = exchange_view.find(
-        (ex) => ex.exchange_id === EXCHANGE_ID
-      );
-
-      const res = exchangeData?.pool_infos ?? [];
-      console.log(res);
-      const pools: PoolInfo[] = [];
-
-      const coinRes = await Promise.all(
-        res.map(({ coin_reserveds }) => fetchCoinById(coin_reserveds[0].id))
-      );
-
-      for (let i = 0; i < res.length; i++) {
-        const { name, address, btc_reserved, coin_reserveds, key } = res[i];
-
-        const coinA = BITCOIN;
-        const coinB = coinRes[i];
-
-        pools.push({
-          key,
-          address,
-          name,
-          coinA: { ...coinA, balance: btc_reserved.toString() },
-          coinB: {
-            ...coinB,
-            balance: coin_reserveds[0]?.value.toString() ?? "0",
-          },
-        });
+      if (isFetching.current) {
+        return;
       }
 
-      setPoolList(pools);
+      try {
+        isFetching.current = true;
+        const { exchange_view } = (await request(
+          REE_INDEXER_URL,
+          EXCHANGE_VIEW
+        )) as {
+          exchange_view: {
+            exchange_id: string;
+            pool_infos: {
+              address: string;
+              attributes: string;
+              btc_reserved: number;
+              coin_reserveds: { id: string; value: number }[];
+              name: string;
+              nonce: number;
+              key: string;
+            }[];
+          }[];
+        };
+
+        const exchangeData = exchange_view.find(
+          (ex) => ex.exchange_id === EXCHANGE_ID
+        );
+
+        const res = exchangeData?.pool_infos ?? [];
+
+        const pools: PoolInfo[] = [];
+
+        const coinRes = await Promise.all(
+          res.map(({ coin_reserveds }) => fetchCoinById(coin_reserveds[0].id))
+        );
+
+        for (let i = 0; i < res.length; i++) {
+          const { name, address, btc_reserved, coin_reserveds, key } = res[i];
+
+          const coinA = BITCOIN;
+          const coinB = coinRes[i];
+
+          pools.push({
+            key,
+            address,
+            name,
+            coinA: { ...coinA, balance: btc_reserved.toString() },
+            coinB: {
+              ...coinB,
+              balance: coin_reserveds[0]?.value.toString() ?? "0",
+            },
+          });
+        }
+
+        setPoolList(pools);
+      } catch (err) {
+        console.log("Get pool list", err);
+      } finally {
+        isFetching.current = false;
+      }
     };
 
     fetchPools();
   }, [timer]);
 
-  return poolList;
+  return useMemo(() => poolList, [poolList]);
 }
 
 export function usePoolsTvl() {
