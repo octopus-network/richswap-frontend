@@ -1,19 +1,74 @@
 import { NextResponse } from "next/server";
-import { Exchange } from "@/lib/exchange";
+
 import { OpenApi } from "@/lib/open-api";
-import { UNKNOWN_COIN, BITCOIN } from "@/lib/constants";
+import { UNKNOWN_COIN, BITCOIN, EXCHANGE_ID } from "@/lib/constants";
 import { PoolInfo } from "@/types";
 import { put } from "@vercel/blob";
 import { limitFunction } from "p-limit";
+
+import { gql, request } from "graphql-request";
 
 export const dynamic = "force-dynamic";
 
 const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
 const UNISAT_API = process.env.UNISAT_API!;
 
+const REE_INDEXER_URL = process.env.REE_INDEXER_URL!;
+
+const query = gql`
+  {
+    exchange_view {
+      logo
+      exchange_link
+      exchange_id
+      description
+      canister_id
+      name
+      x_link
+      status
+      pool_infos {
+        address
+        attributes
+        btc_reserved
+        exchange_id
+        key
+        key_derivation_path
+        name
+        nonce
+        coin_reserveds {
+          id
+          index
+          pool_exchange_id
+          pool_name
+          value
+        }
+      }
+    }
+  }
+`;
+
 export async function GET() {
   try {
-    const res = await Exchange.getPoolList();
+    const { exchange_view } = (await request(REE_INDEXER_URL, query)) as {
+      exchange_view: {
+        exchange_id: string;
+        pool_infos: {
+          address: string;
+          attributes: string;
+          btc_reserved: number;
+          coin_reserveds: { id: string; value: number }[];
+          name: string;
+          nonce: number;
+          key: string;
+        }[];
+      }[];
+    };
+
+    const exchangeData = exchange_view.find(
+      (ex) => ex.exchange_id === EXCHANGE_ID
+    );
+
+    const res = exchangeData?.pool_infos ?? [];
 
     const pools: PoolInfo[] = [];
 
@@ -28,16 +83,16 @@ export async function GET() {
     );
 
     const coinRes = await Promise.all(
-      res.map(({ coin_reserved }) =>
-        coin_reserved.length
-          ? limitGetRunesInfoList(coin_reserved[0].id)
+      res.map(({ coin_reserveds }) =>
+        coin_reserveds.length
+          ? limitGetRunesInfoList(coin_reserveds[0].id)
           : { detail: [] }
       )
     );
 
     for (let i = 0; i < res.length; i++) {
-      const { name, address, btc_reserved, coin_reserved, key } = res[i];
-
+      const { name, address, btc_reserved, coin_reserveds, key } = res[i];
+      console.log(coin_reserveds);
       const coinA = BITCOIN;
       const { detail: coinBRes } = coinRes[i];
 
@@ -69,7 +124,10 @@ export async function GET() {
         address,
         name,
         coinA: { ...coinA, balance: btc_reserved.toString() },
-        coinB: { ...coinB, balance: coin_reserved[0]?.value.toString() ?? "0" },
+        coinB: {
+          ...coinB,
+          balance: coin_reserveds[0]?.value.toString() ?? "0",
+        },
       });
     }
 
