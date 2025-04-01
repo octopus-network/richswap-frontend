@@ -70,6 +70,8 @@ export async function GET() {
 
     const res = exchangeData?.pool_infos ?? [];
 
+    console.log(res);
+
     const pools: PoolInfo[] = [];
 
     const openApi = new OpenApi({
@@ -92,7 +94,7 @@ export async function GET() {
 
     for (let i = 0; i < res.length; i++) {
       const { name, address, btc_reserved, coin_reserveds, key } = res[i];
-      console.log(coin_reserveds);
+
       const coinA = BITCOIN;
       const { detail: coinBRes } = coinRes[i];
 
