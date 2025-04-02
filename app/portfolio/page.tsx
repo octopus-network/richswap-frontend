@@ -10,8 +10,10 @@ import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { Empty } from "@/components/empty";
 
 export default function Portolios() {
-  const { address } = useLaserEyes((x) => ({ address: x.address }));
-  const portfolios = usePortfolios(address);
+  const { paymentAddress } = useLaserEyes((x) => ({
+    paymentAddress: x.paymentAddress,
+  }));
+  const [portfolios] = usePortfolios();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
 
   return (
@@ -34,8 +36,8 @@ export default function Portolios() {
             portfolios.map((position, idx) => (
               <PortfolioRow position={position} key={idx} />
             ))
-          ) : address ? (
-            portfolios.length === 0 ? (
+          ) : paymentAddress ? (
+            portfolios?.length === 0 ? (
               <div className="min-h-60 flex items-center justify-center">
                 <Empty label="No data" />
               </div>
