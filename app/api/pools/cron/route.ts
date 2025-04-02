@@ -49,7 +49,6 @@ const query = gql`
 
 export async function GET() {
   try {
-    console.log(REE_INDEXER_URL);
     const { exchange_view } = (await request(REE_INDEXER_URL, query, {
       fetch: (url: string, options: RequestInit) =>
         fetch(url, {
@@ -75,8 +74,11 @@ export async function GET() {
       (ex) => ex.exchange_id === EXCHANGE_ID
     );
 
-    const res = exchangeData?.pool_infos ?? [];
-    console.log(res);
+    const res =
+      exchangeData?.pool_infos.sort(
+        (a, b) => b.btc_reserved - a.btc_reserved
+      ) ?? [];
+
     const pools: PoolInfo[] = [];
 
     const openApi = new OpenApi({
