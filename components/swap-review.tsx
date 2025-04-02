@@ -124,7 +124,9 @@ export function SwapReview({
 
   const runePriceInSats = useMemo(
     () =>
-      new Decimal(btcAmount).mul(Math.pow(10, 8)).div(runeAmount).toFixed(2),
+      btcAmount && runeAmount
+        ? new Decimal(btcAmount).mul(Math.pow(10, 8)).div(runeAmount).toFixed(2)
+        : "0",
     [runeAmount, btcAmount]
   );
 
@@ -318,6 +320,7 @@ export function SwapReview({
 
       await Orchestrator.invoke({
         intention_set: {
+          tx_fee_in_sats: fee,
           initiator_address: paymentAddress,
           intentions: [
             {

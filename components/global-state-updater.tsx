@@ -1,21 +1,25 @@
 "use client";
 
-import axios from "axios";
-import { usePoolList } from "@/hooks/use-pools";
-import { useEffect, useMemo, useState } from "react";
+import { usePoolList, usePortfolios } from "@/hooks/use-pools";
+import { useEffect, useState } from "react";
 import { useCoinPrices } from "@/hooks/use-prices";
 
+import Decimal from "decimal.js";
 import { Orchestrator } from "@/lib/orchestrator";
 import { usePendingBtcUtxos, usePendingRuneUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useTransactions } from "@/store/transactions";
+import { limitFunction } from "p-limit";
+import { PoolInfo } from "@/types";
+import { Exchange } from "@/lib/exchange";
+import { getBtcPrice } from "@/lib/chain-api";
+import { BITCOIN } from "@/lib/constants";
 
 export function GlobalStateUpdater() {
   const { address, publicKey, paymentAddress, paymentPublicKey } = useLaserEyes(
     ({ address, publicKey, paymentAddress, paymentPublicKey }) => ({
       address,
       publicKey,
-
       paymentAddress,
       paymentPublicKey,
     })
@@ -24,16 +28,13 @@ export function GlobalStateUpdater() {
   const [, setCoinPrices] = useCoinPrices();
   const [, setPendingBtcUtxos] = usePendingBtcUtxos();
   const [, setPendingRuneUtxos] = usePendingRuneUtxos();
+  const [, setPortfolios] = usePortfolios();
+  const [btcPrice, setBtcPrice] = useState<number>();
 
   const [timer, setTimer] = useState<number>();
 
   const transactions = useTransactions();
   const poolList = usePoolList();
-
-  const poolCoinIds = useMemo(
-    () => poolList.map((pool) => pool.coinB.id),
-    [poolList]
-  );
 
   useEffect(() => {
     const interval = setInterval(
@@ -47,14 +48,28 @@ export function GlobalStateUpdater() {
   }, []);
 
   useEffect(() => {
-    if (poolCoinIds.length) {
-      axios
-        .get<{
-          data: Record<string, number>;
-        }>(`/api/prices?ids=${poolCoinIds.join(",")}`)
-        .then((res) => setCoinPrices(res.data.data));
+    if (poolList.length && btcPrice) {
+      const tmpObj: Record<string, number> = { [BITCOIN.id]: btcPrice };
+
+      poolList.forEach((pool) => {
+        const coinPriceInBtc =
+          pool.coinA.balance !== "0" && pool.coinB.balance !== "0"
+            ? new Decimal(pool.coinA.balance)
+                .div(Math.pow(10, pool.coinA.decimals))
+                .div(
+                  new Decimal(pool.coinB.balance).div(
+                    Math.pow(10, pool.coinB.decimals)
+                  )
+                )
+                .toNumber()
+            : 0;
+        const coinPrice = btcPrice * coinPriceInBtc;
+        tmpObj[pool.coinB.id] = coinPrice;
+      });
+
+      setCoinPrices(tmpObj);
     }
-  }, [poolCoinIds, setCoinPrices]);
+  }, [poolList, setCoinPrices, btcPrice]);
 
   useEffect(() => {
     if (address && publicKey) {
@@ -63,6 +78,19 @@ export function GlobalStateUpdater() {
       });
     }
   }, [address, publicKey, setPendingRuneUtxos, transactions, timer]);
+
+  useEffect(() => {
+    if (paymentAddress && poolList.length) {
+      const limitGetPosition = limitFunction(
+        async (pool: PoolInfo, address: string) =>
+          Exchange.getPosition(pool, address),
+        { concurrency: 2 }
+      );
+      Promise.all(
+        poolList.map((pool) => limitGetPosition(pool, paymentAddress))
+      ).then((positions) => setPortfolios(positions.filter((p) => !!p)));
+    }
+  }, [paymentAddress, poolList, transactions, setPortfolios, timer]);
 
   useEffect(() => {
     if (paymentAddress && paymentPublicKey) {
@@ -79,6 +107,12 @@ export function GlobalStateUpdater() {
     transactions,
     timer,
   ]);
+
+  useEffect(() => {
+    getBtcPrice().then((price) => {
+      setBtcPrice(price);
+    });
+  }, [timer]);
 
   return null;
 }

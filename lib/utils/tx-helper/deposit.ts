@@ -163,7 +163,6 @@ export async function depositTx({
     currentFee += BigInt(1);
     targetBtcAmount = btcAmount + currentFee + utxoDust;
     if (currentFee > lastFee && targetBtcAmount > 0) {
-      console.log("popped output types", [...outputTypes]);
       const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(
         btcUtxos,
         targetBtcAmount

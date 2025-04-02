@@ -23,6 +23,7 @@ export type Intention = {
 };
 
 export type IntentionSet = {
+  tx_fee_in_sats: bigint;
   initiator_address: string;
   intentions: Intention[];
 };

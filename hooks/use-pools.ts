@@ -9,6 +9,14 @@ import { BITCOIN } from "@/lib/constants";
 import useSWR from "swr";
 import { PoolInfo, Position } from "@/types";
 
+import { atom, useAtom } from "jotai";
+
+export const portfoliosAtom = atom<Position[]>();
+
+export function usePortfolios() {
+  return useAtom(portfoliosAtom);
+}
+
 export function usePoolList() {
   const { data } = useSWR(
     "/api/pools",
@@ -16,21 +24,6 @@ export function usePoolList() {
       axios
         .get<{
           data: PoolInfo[];
-        }>(url)
-        .then((res) => res.data.data),
-    { refreshInterval: 30 * 1000 }
-  );
-
-  return useMemo(() => data ?? [], [data]);
-}
-
-export function usePortfolios(address: string | undefined) {
-  const { data } = useSWR(
-    address && `/api/portfolios?address=${address}`,
-    (url: string) =>
-      axios
-        .get<{
-          data: Position[];
         }>(url)
         .then((res) => res.data.data),
     { refreshInterval: 30 * 1000 }
