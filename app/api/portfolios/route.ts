@@ -24,8 +24,6 @@ export async function GET(req: NextRequest) {
       pools.map((pool) => Exchange.getPosition(pool, address))
     ).then((res) => res.filter((position) => !!position));
 
-    console.log("portfolios", portfolios);
-
     return NextResponse.json({
       success: true,
       data: portfolios,
