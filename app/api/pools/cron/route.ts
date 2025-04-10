@@ -6,7 +6,7 @@ import { PoolInfo } from "@/types";
 import { put } from "@vercel/blob";
 import { limitFunction } from "p-limit";
 
-import { gql, request } from "graphql-request";
+import { gql, GraphQLClient } from "graphql-request";
 
 export const dynamic = "force-dynamic";
 
@@ -49,13 +49,15 @@ const query = gql`
 
 export async function GET() {
   try {
-    const { exchange_view } = (await request(REE_INDEXER_URL, query, {
-      fetch: (url: string, options: RequestInit) =>
-        fetch(url, {
+    const client = new GraphQLClient(REE_INDEXER_URL, {
+      fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
+        fetch(url as string, {
           ...options,
           cache: "no-store",
         }),
-    })) as {
+    });
+
+    const { exchange_view } = (await client.request(query)) as {
       exchange_view: {
         exchange_id: string;
         pool_infos: {
