@@ -242,7 +242,6 @@ export function WithdrawReview({
         txid,
         coinA,
         coinB,
-        poolKey,
         utxos: toSpendUtxos,
         coinAAmount,
         coinBAmount,

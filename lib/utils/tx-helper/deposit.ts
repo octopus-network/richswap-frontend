@@ -156,7 +156,7 @@ export async function depositTx({
 
     currentFee = await Orchestrator.getEstimateMinTxFee({
       input_types: inputTypes,
-      pool_address: poolAddress,
+      pool_address: [poolAddress],
       output_types: outputTypes,
     });
 

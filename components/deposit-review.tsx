@@ -21,11 +21,7 @@ import { CoinIcon } from "@/components/coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { Loader2 } from "lucide-react";
 
-import {
-  formatNumber,
-  getCoinSymbol,
-  getP2trAressAndScript,
-} from "@/lib/utils";
+import { formatNumber, getCoinSymbol } from "@/lib/utils";
 
 import { useWalletBtcUtxos, useWalletRuneUtxos } from "@/hooks/use-utxos";
 import { Separator } from "@/components/ui/separator";
