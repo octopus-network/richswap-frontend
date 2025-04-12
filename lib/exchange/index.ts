@@ -161,15 +161,18 @@ export class Exchange {
   }
 
   public static async preAddLiquidity(
-    poolKey: string,
+    pool: PoolInfo,
     coin: Coin,
     coinAmount: string
   ): Promise<DepositQuote | undefined> {
     try {
       const { output, inputs, nonce } = await actor
-        .pre_add_liquidity(poolKey, { id: coin.id, value: BigInt(coinAmount) })
+        .pre_add_liquidity(pool.address, {
+          id: coin.id,
+          value: BigInt(coinAmount),
+        })
         .then((data: any) => {
-          console.log("preAddLiquidity", data);
+          console.log("pre add liquidity", pool, data);
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -182,7 +185,7 @@ export class Exchange {
       const utxos: UnspentOutput[] = [];
 
       inputs.forEach(async ({ txid, vout, sats, maybe_rune }: any) => {
-        const { address, output } = getP2trAressAndScript(poolKey);
+        const { output } = getP2trAressAndScript(pool.key);
 
         const rune = maybe_rune[0];
 
@@ -190,7 +193,7 @@ export class Exchange {
           txid,
           vout,
           satoshis: sats.toString(),
-          address: address!,
+          address: pool.address,
           scriptPk: output,
           pubkey: "",
           addressType: AddressType.P2TR,
@@ -227,7 +230,7 @@ export class Exchange {
   }
 
   public static async preWithdrawLiquidity(
-    poolKey: string,
+    pool: PoolInfo,
     userAddress: string,
     sqrK: bigint
   ): Promise<{
@@ -242,7 +245,7 @@ export class Exchange {
   } | null> {
     try {
       const res = await actor
-        .pre_withdraw_liquidity(poolKey, userAddress, sqrK)
+        .pre_withdraw_liquidity(pool.address, userAddress, sqrK)
         .then((data: any) => {
           console.log("withdraw liquidity", data);
           if (data.Ok) {
@@ -282,7 +285,7 @@ export class Exchange {
 
       const coinB = await fetchCoinById(_coinB.id);
 
-      const { address, output } = getP2trAressAndScript(poolKey);
+      const { output } = getP2trAressAndScript(pool.key);
 
       const rune = res.input.maybe_rune[0];
 
@@ -290,7 +293,7 @@ export class Exchange {
         txid: res.input.txid,
         vout: res.input.vout,
         satoshis: res.input.sats.toString(),
-        address: address!,
+        address: pool.address,
         pubkey: "",
         addressType: AddressType.P2TR,
         scriptPk: output,

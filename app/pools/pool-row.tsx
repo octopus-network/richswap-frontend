@@ -9,9 +9,9 @@ import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Circle from "react-circle";
-// import Decimal from "decimal.js";
+
 import { CoinIcon } from "@/components/coin-icon";
-import { BITCOIN } from "@/lib/constants";
+import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
 
 export function PoolRow({ pool }: { pool: PoolInfo }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
@@ -34,29 +34,6 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
     }
     Exchange.getPosition(pool, paymentAddress).then(setPosition);
   }, [pool, paymentAddress]);
-
-  // const positionPercentage = useMemo(
-  //   () =>
-  //     position
-  //       ? new Decimal(position.userShare)
-  //           .mul(100)
-  //           .div(position.totalShare)
-  //           .toFixed(4)
-  //       : position === null
-  //       ? null
-  //       : undefined,
-  //   [position]
-  // );
-
-  // const positionValue = useMemo(() => {
-  //   return positionPercentage === undefined
-  //     ? undefined
-  //     : positionPercentage === null
-  //     ? null
-  //     : poolTvl
-  //     ? new Decimal(poolTvl).mul(positionPercentage).div(100).toNumber()
-  //     : undefined;
-  // }, [poolTvl, positionPercentage]);
 
   const yieldTvl = useMemo(
     () =>
@@ -112,7 +89,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
               e.stopPropagation();
               e.preventDefault();
               window.open(
-                `https://www.runescan.net/runes/${pool.coinB.name}`,
+                `${RUNESCAN_URL}/runes/${pool.coinB.name}`,
                 "_blank"
               );
             }}
@@ -147,7 +124,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                   e.stopPropagation();
                   e.preventDefault();
                   window.open(
-                    `https://www.runescan.net/exchange/RICH_SWAP/pool/${poolAddress}`,
+                    `${RUNESCAN_URL}/exchange/RICH_SWAP/pool/${poolAddress}`,
                     "_blank"
                   );
                 }}

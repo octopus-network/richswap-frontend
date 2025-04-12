@@ -172,8 +172,8 @@ export default function Pools() {
           <div className="flex justify-between">
             <span className="text-muted-foreground text-sm">Trades</span>
             <div className="flex flex-col space-y-0.5 items-end">
-              {poolsFeeInSats ? (
-                <span className="font-semibold">-</span>
+              {poolsTrades ? (
+                <span className="font-semibold">{poolsTrades}</span>
               ) : (
                 <Skeleton className="h-6 w-20" />
               )}

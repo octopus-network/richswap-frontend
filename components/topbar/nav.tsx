@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
+import { RUNESCAN_URL } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -124,10 +125,7 @@ export const Nav = () => {
           </a>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[180px] border-none shadow-none text-foreground">
-          <Link
-            href="https://www.runescan.net/exchange/RICH_SWAP"
-            target="_blank"
-          >
+          <Link href={`${RUNESCAN_URL}/exchange/RICH_SWAP`} target="_blank">
             <DropdownMenuItem>
               <Globe />
               <span className="ml-2 mr-1">Explorer</span>

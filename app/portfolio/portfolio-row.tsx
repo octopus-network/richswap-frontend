@@ -11,7 +11,7 @@ import { useCoinPrice } from "@/hooks/use-prices";
 
 import Decimal from "decimal.js";
 import { CoinIcon } from "@/components/coin-icon";
-import { BITCOIN } from "@/lib/constants";
+import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
 
 export function PortfolioRow({ position }: { position: Position }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
@@ -88,7 +88,7 @@ export function PortfolioRow({ position }: { position: Position }) {
               e.stopPropagation();
               e.preventDefault();
               window.open(
-                `https://www.runescan.net/runes/${position.pool.coinB.number}`,
+                `${RUNESCAN_URL}/runes/${position.pool.coinB.number}`,
                 "_blank"
               );
             }}
@@ -123,7 +123,7 @@ export function PortfolioRow({ position }: { position: Position }) {
                   e.stopPropagation();
                   e.preventDefault();
                   window.open(
-                    `https://www.runescan.net/address/${poolAddress}`,
+                    `${RUNESCAN_URL}/address/${poolAddress}`,
                     "_blank"
                   );
                 }}
