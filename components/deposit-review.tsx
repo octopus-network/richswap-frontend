@@ -48,7 +48,7 @@ export function DepositReview({
   coinB,
   coinAAmount,
   coinBAmount,
-  poolKey,
+  poolAddress,
   poolUtxos,
   onSuccess,
   onBack,
@@ -58,7 +58,7 @@ export function DepositReview({
   coinA: Coin | null;
   coinB: Coin | null;
   coinAAmount: string;
-  poolKey: string;
+  poolAddress: string;
   poolUtxos?: UnspentOutput[];
   coinBAmount: string;
   onSuccess: () => void;
@@ -113,7 +113,7 @@ export function DepositReview({
 
   useEffect(() => {
     if (
-      !poolKey ||
+      !poolAddress ||
       !coinA ||
       !coinB ||
       !coinAAmount ||
@@ -123,11 +123,6 @@ export function DepositReview({
       !poolUtxos ||
       step !== 0
     ) {
-      return;
-    }
-
-    const { address: poolAddress } = getP2trAressAndScript(poolKey);
-    if (!poolAddress) {
       return;
     }
 
@@ -197,7 +192,7 @@ export function DepositReview({
     };
     genPsbt();
   }, [
-    poolKey,
+    poolAddress,
     coinA,
     coinB,
     poolUtxos,
@@ -212,16 +207,18 @@ export function DepositReview({
   ]);
 
   const onSubmit = async () => {
-    if (!psbt || !coinA || !coinB || !poolUtxos || !toSpendUtxos.length) {
+    if (
+      !psbt ||
+      !coinA ||
+      !coinB ||
+      !poolUtxos ||
+      !toSpendUtxos.length ||
+      !poolAddress
+    ) {
       return;
     }
 
     try {
-      const { address: poolAddress } = getP2trAressAndScript(poolKey);
-      if (!poolAddress) {
-        return;
-      }
-
       setStep(1);
 
       let signedPsbtHex = "";
@@ -274,7 +271,6 @@ export function DepositReview({
         txid,
         coinA,
         coinB,
-        poolKey,
         coinAAmount,
         coinBAmount,
         utxos: toSpendUtxos,

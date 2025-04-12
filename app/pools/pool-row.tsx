@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import { usePoolFee, usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -94,10 +94,7 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
     [poolFeeInBtc]
   );
 
-  const poolAddress = useMemo(() => {
-    const { address } = getP2trAressAndScript(pool.key);
-    return address;
-  }, [pool]);
+  const poolAddress = useMemo(() => pool.address, [pool]);
 
   return (
     <>

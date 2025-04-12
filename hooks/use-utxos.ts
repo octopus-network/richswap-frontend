@@ -35,7 +35,7 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
         }
         return res.data.data;
       }),
-    { refreshInterval: 15 * 1000 }
+    { refreshInterval: 3 * 60 * 1000 }
   );
 
   return useMemo(
@@ -82,7 +82,7 @@ export function useRuneUtxos(
         }
         return res.data.data;
       }),
-    { refreshInterval: 15 * 1000 }
+    { refreshInterval: 3 * 60 * 1000 }
   );
 
   return useMemo(

@@ -58,7 +58,7 @@ export function DepositContent({
             <DepositReview
               coinA={pool.coinA}
               coinB={pool.coinB}
-              poolKey={pool.key}
+              poolAddress={pool.address}
               coinAAmount={coinAAmount}
               coinBAmount={coinBAmount}
               onSuccess={onSuccess}

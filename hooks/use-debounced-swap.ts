@@ -4,8 +4,9 @@ import { formatCoinAmount } from "@/lib/utils";
 import { useDebounce } from "./use-debounce";
 import { Exchange } from "@/lib/exchange";
 import { SwapQuote, SwapState } from "@/types";
+import { BITCOIN } from "@/lib/constants";
 
-const DEBOUNCE_TIME = 350;
+const DEBOUNCE_TIME = 550;
 
 export function useDebouncedSwap(
   inputAmount: string,
@@ -30,39 +31,74 @@ export function useDebouncedSwap(
       return;
     }
 
-    if (!inputCoin || !outputCoin || !inputAmount) {
+    if (!inputCoin || !outputCoin || !Number(inputAmount)) {
       return setSwapQuote(undefined);
     }
 
     if (Number(formatCoinAmount(inputAmount, inputCoin)) < 0.00001) {
       return setSwapQuote(() => ({
         state: SwapState.INVALID,
-        inputAmount,
-        outputAmount: "",
         errorMessage: "Too small amount",
       }));
     }
 
-    setSwapQuote((prev) => ({
-      state: SwapState.LOADING,
-      inputAmount,
-      outputAmount: inputAmount === "" ? "" : prev?.outputAmount,
-    }));
+    const quote = async () => {
+      setSwapQuote(() => ({
+        state: SwapState.LOADING,
+      }));
 
-    Exchange.preSwap(inputCoin, outputCoin, inputAmount).then((res) => {
-      setSwapQuote(res);
-    });
+      try {
+        if (inputCoin.id === BITCOIN.id || outputCoin.id === BITCOIN.id) {
+          const route = await Exchange.getSwapRoute(
+            inputCoin,
+            outputCoin,
+            inputAmount
+          );
+          setSwapQuote({
+            state: SwapState.VALID,
+            routes: [route],
+          });
+        } else {
+          console.log("input amount", inputAmount);
+          const route1 = await Exchange.getSwapRoute(
+            inputCoin,
+            BITCOIN,
+            inputAmount
+          );
+          console.log("route1 amount", route1.outputAmount);
+          const route2 = await Exchange.getSwapRoute(
+            BITCOIN,
+            outputCoin,
+            route1.outputAmount
+          );
+
+          setSwapQuote({
+            state: SwapState.VALID,
+            routes: [route1, route2],
+          });
+        }
+      } catch (err: any) {
+        setSwapQuote({
+          state: SwapState.INVALID,
+          errorMessage: err.message,
+        });
+      }
+    };
+
+    quote();
   }, [skipRoutingFetch, inputCoin, inputAmount, outputCoin, timer]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTimer(Date.now());
-    }, 15 * 1000);
+    }, 30 * 1000);
 
     return () => {
       clearInterval(interval);
     };
   }, []);
+
+  console.log("Swap quote", swapQuote);
 
   return swapQuote ? swapQuote : undefined;
 }

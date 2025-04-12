@@ -1,6 +1,6 @@
 import { BaseModal } from "@/components/base-modal";
 import { SwapReview } from "@/components/swap-review";
-import { Coin, UnspentOutput } from "@/types";
+import { Coin, SwapQuote } from "@/types";
 import { useState } from "react";
 
 export function ReviewModal({
@@ -10,18 +10,14 @@ export function ReviewModal({
   coinB,
   coinAAmount,
   coinBAmount,
-  poolKey,
-  poolUtxos,
-  nonce,
+  swapQuote,
 }: {
   open: boolean;
   coinA: Coin | null;
   coinB: Coin | null;
   coinAAmount: string;
   coinBAmount: string;
-  poolKey: string;
-  nonce: string;
-  poolUtxos?: UnspentOutput[];
+  swapQuote: SwapQuote | undefined;
   setOpen: (open: boolean) => void;
 }) {
   const [isSubmiting, setIsSubmiting] = useState(false);
@@ -42,12 +38,10 @@ export function ReviewModal({
           coinB={coinB}
           coinAAmount={coinAAmount}
           coinBAmount={coinBAmount}
-          poolKey={poolKey}
           setIsSubmiting={setIsSubmiting}
           onSuccess={() => setOpen(false)}
           onBack={() => setOpen(false)}
-          nonce={nonce}
-          poolUtxos={poolUtxos}
+          swapQuote={swapQuote}
         />
       </div>
     </BaseModal>

@@ -4,6 +4,7 @@ import {
   EstimateMinTxFeeArgs,
   OutpointWithValue,
   UnspentOutput,
+  OrchestratorStatus,
 } from "@/types";
 import { getAddressType } from "../utils";
 
@@ -85,13 +86,8 @@ export class Orchestrator {
   }
 
   static async getRecommendedFee() {
-    const res = (await actor.get_mempool_tx_fee_rate()) as {
-      low: bigint;
-      high: bigint;
-      update_time: string;
-      medium: bigint;
-    };
-    return Number(res.medium);
+    const res = (await actor.get_status()) as OrchestratorStatus;
+    return Number(res.mempool_tx_fee_rate.medium);
   }
 
   static async getEstimateMinTxFee(args: EstimateMinTxFeeArgs) {

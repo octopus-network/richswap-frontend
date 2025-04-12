@@ -36,6 +36,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     pool_address: IDL.Text,
   });
   const IntentionSet = IDL.Record({
+    tx_fee_in_sats: IDL.Nat64,
     initiator_address: IDL.Text,
     intentions: IDL.Vec(Intention),
   });
@@ -47,17 +48,12 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     psbt_hex: IDL.Text,
   });
   const Result_1 = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
-  const FinalizeTxArgs = IDL.Record({
-    txid: IDL.Text,
-    pool_key: IDL.Text,
-  });
-  const Result_2 = IDL.Variant({ Ok: IDL.Null, Err: IDL.Text });
   const Liquidity = IDL.Record({
     total_share: IDL.Nat,
     user_share: IDL.Nat,
     user_incomes: IDL.Nat64,
   });
-  const Result_3 = IDL.Variant({ Ok: Liquidity, Err: ExchangeError });
+  const Result_2 = IDL.Variant({ Ok: Liquidity, Err: ExchangeError });
   const GetMinimalTxValueArgs = IDL.Record({
     zero_confirmed_tx_queue_length: IDL.Nat32,
     pool_address: IDL.Text,
@@ -80,10 +76,14 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     nonce: IDL.Nat64,
     utxos: IDL.Vec(Utxo),
   });
-  const GetPoolListArgs = IDL.Record({
-    from: IDL.Opt(IDL.Text),
-    limit: IDL.Nat32,
+  const PoolBasic = IDL.Record({ name: IDL.Text, address: IDL.Text });
+  const NewBlockInfo = IDL.Record({
+    block_hash: IDL.Text,
+    confirmed_txids: IDL.Vec(IDL.Text),
+    block_timestamp: IDL.Nat64,
+    block_height: IDL.Nat32,
   });
+  const Result_3 = IDL.Variant({ Ok: IDL.Null, Err: IDL.Text });
   const LiquidityOffer = IDL.Record({
     output: CoinBalance,
     inputs: IDL.Opt(Utxo),
@@ -117,19 +117,25 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     Ok: WithdrawalOffer,
     Err: ExchangeError,
   });
+  const RollbackTxArgs = IDL.Record({ txid: IDL.Text });
   return IDL.Service({
     create: IDL.Func([IDL.Text], [Result], []),
     execute_tx: IDL.Func([ExecuteTxArgs], [Result_1], []),
-    finalize_tx: IDL.Func([FinalizeTxArgs], [Result_2], []),
     get_fee_collector: IDL.Func([], [IDL.Text], ["query"]),
-    get_lp: IDL.Func([IDL.Text, IDL.Text], [Result_3], ["query"]),
+    get_lp: IDL.Func([IDL.Text, IDL.Text], [Result_2], ["query"]),
     get_minimal_tx_value: IDL.Func(
       [GetMinimalTxValueArgs],
       [IDL.Nat64],
       ["query"]
     ),
     get_pool_info: IDL.Func([GetPoolInfoArgs], [IDL.Opt(PoolInfo)], ["query"]),
-    get_pool_list: IDL.Func([GetPoolListArgs], [IDL.Vec(PoolInfo)], ["query"]),
+    get_pool_list: IDL.Func([], [IDL.Vec(PoolBasic)], ["query"]),
+    list_pools: IDL.Func(
+      [IDL.Opt(IDL.Text), IDL.Nat64],
+      [IDL.Vec(PoolInfo)],
+      ["query"]
+    ),
+    new_block: IDL.Func([NewBlockInfo], [Result_3], []),
     pre_add_liquidity: IDL.Func([IDL.Text, CoinBalance], [Result_4], ["query"]),
     pre_extract_fee: IDL.Func([IDL.Text], [Result_5], ["query"]),
     pre_swap: IDL.Func([IDL.Text, CoinBalance], [Result_6], ["query"]),
@@ -138,7 +144,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
       [Result_7],
       ["query"]
     ),
-    rollback_tx: IDL.Func([FinalizeTxArgs], [Result_2], []),
+    rollback_tx: IDL.Func([RollbackTxArgs], [Result_3], []),
     set_fee_collector: IDL.Func([IDL.Text], [], []),
     set_orchestrator: IDL.Func([IDL.Principal], [], []),
   });

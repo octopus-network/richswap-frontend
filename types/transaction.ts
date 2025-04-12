@@ -29,7 +29,6 @@ export interface TransactionInfo {
   coinB: Coin;
   coinAAmount: string;
   coinBAmount: string;
-  poolKey: string;
   timestamp: number;
   nonce?: string;
   message?: string;

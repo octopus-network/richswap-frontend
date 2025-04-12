@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import { usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -70,10 +70,7 @@ export function PortfolioRow({ position }: { position: Position }) {
     [positionYield, btcPrice]
   );
 
-  const poolAddress = useMemo(() => {
-    const { address } = getP2trAressAndScript(position.pool.key);
-    return address;
-  }, [position]);
+  const poolAddress = useMemo(() => position.pool.address, [position]);
 
   return (
     <>
