@@ -42,12 +42,6 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
     () =>
       apiUtxos
         ? apiUtxos
-            .filter(
-              (c) =>
-                spentUtxos.findIndex(
-                  (s) => s.txid === c.txid && s.vout === c.vout
-                ) < 0
-            )
             .concat(
               pendingUtxos.filter(
                 (p) =>
@@ -56,6 +50,12 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
                     (c) => c.txid === p.txid && c.vout === p.vout
                   ) < 0
               )
+            )
+            .filter(
+              (c) =>
+                spentUtxos.findIndex(
+                  (s) => s.txid === c.txid && s.vout === c.vout
+                ) < 0
             )
         : undefined,
     [apiUtxos, pendingUtxos, spentUtxos]
@@ -89,12 +89,6 @@ export function useRuneUtxos(
     () =>
       apiUtxos
         ? apiUtxos
-            .filter(
-              (c) =>
-                spentUtxos.findIndex(
-                  (s) => s.txid === c.txid && s.vout === c.vout
-                ) < 0
-            )
             .concat(
               pendingUtxos.filter(
                 (p) =>
@@ -103,6 +97,12 @@ export function useRuneUtxos(
                     (c) => c.txid === p.txid && c.vout === p.vout
                   ) < 0
               )
+            )
+            .filter(
+              (c) =>
+                spentUtxos.findIndex(
+                  (s) => s.txid === c.txid && s.vout === c.vout
+                ) < 0
             )
         : undefined,
     [apiUtxos, pendingUtxos, spentUtxos]
@@ -118,6 +118,8 @@ export function useWalletBtcUtxos() {
   );
 
   const paymentUtxos = useBtcUtxos(paymentAddress, paymentPublicKey);
+
+  console.log("paymentUtxos", paymentUtxos);
 
   return useMemo(() => paymentUtxos, [paymentUtxos]);
 }

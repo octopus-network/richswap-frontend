@@ -332,7 +332,7 @@ export async function runeSwapRuneTx({
         ],
         output_coins: [
           {
-            to: paymentAddress,
+            to: pool0Address,
             coin: {
               id: BITCOIN.id,
               value: btcAmount,
@@ -350,7 +350,7 @@ export async function runeSwapRuneTx({
         pool_utxo_receive: pool1Vouts.map((vout) => `${txid}:${vout}`),
         input_coins: [
           {
-            from: paymentAddress,
+            from: pool0Address,
             coin: {
               id: BITCOIN.id,
               value: btcAmount,

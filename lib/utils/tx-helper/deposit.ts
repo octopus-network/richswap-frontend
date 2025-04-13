@@ -219,6 +219,8 @@ export async function depositTx({
 
   const inputs = tx.getInputs();
 
+  console.log("inputs", inputs);
+
   const psbt = tx.toPsbt();
 
   //@ts-expect-error: todo
