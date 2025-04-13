@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { get } from "@vercel/edge-config";
 
 export const config = {
-  matcher: ["/swap", "/pools", "/"],
+  matcher: ["/swap", "/pools", "/", "portfolio"],
 };
 
 export async function middleware(req) {
