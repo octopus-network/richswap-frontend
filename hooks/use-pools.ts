@@ -62,7 +62,6 @@ export function usePoolsTrades() {
     () => poolList.reduce((acc, pool) => acc + pool.nonce, 0),
     [poolList]
   );
-
 }
 
 export function usePoolsFee() {
@@ -97,14 +96,14 @@ export function usePoolsFee() {
   return fees;
 }
 
-export function usePoolTvl(poolKey: string) {
+export function usePoolTvl(poolKey: string | undefined) {
   const tvls = usePoolsTvl();
 
-  return tvls[poolKey];
+  return useMemo(() => (poolKey ? tvls[poolKey] : undefined), [poolKey, tvls]);
 }
 
-export function usePoolFee(poolKey: string) {
+export function usePoolFee(poolKey: string | undefined) {
   const fees = usePoolsFee();
 
-  return fees[poolKey];
+  return useMemo(() => (poolKey ? fees[poolKey] : undefined), [poolKey, fees]);
 }

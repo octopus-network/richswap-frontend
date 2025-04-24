@@ -12,12 +12,18 @@ export function CoinIcon({
 }: {
   coin: Coin;
   className?: string;
-  size?: "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl";
 }) {
   return (
     <Avatar
       className={cn(
-        size === "md" ? "size-8" : size === "lg" ? "size-10" : "size-12",
+        size === "sm"
+          ? "size-6"
+          : size === "md"
+          ? "size-8"
+          : size === "lg"
+          ? "size-10"
+          : "size-12",
         className
       )}
     >

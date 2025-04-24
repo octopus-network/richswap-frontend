@@ -93,6 +93,7 @@ export function CoinField({
   onUserInput,
   placeholder,
   disabled,
+  size = "md",
 }: {
   label: string;
   coin: Coin | null | undefined;
@@ -105,6 +106,7 @@ export function CoinField({
   onSelectCoin?: (coin: Coin) => void;
   onUserInput: (value: string) => void;
   disabled?: boolean;
+  size?: "sm" | "md";
 }) {
   const [selectCoinModalOpen, setSelectCoinModalOpen] = useState(false);
   const { address } = useLaserEyes((x) => ({ address: x.address }));
@@ -134,14 +136,15 @@ export function CoinField({
     <>
       <div
         className={cn(
-          "bg-card/80 px-4 py-2 rounded-xl focus-within:border-primary/80 focus-within:shadow-swap-input border border-transparent transition-colors duration-200",
+          "bg-card/80 rounded-xl focus-within:border-primary/80 focus-within:shadow-swap-input border border-transparent transition-colors duration-200",
           className,
           !disabled &&
             "hover:focus-within:border-primary/60 hover:border-primary/30",
-          !disabled && pulsing && "animate-pulse duration-600"
+          !disabled && pulsing && "animate-pulse duration-600",
+          size === "sm" ? "px-2 py-1" : "px-4 py-2"
         )}
       >
-        <div className="flex justify-between h-9 items-center">
+        <div className={cn("flex justify-between items-center", size === "sm" ? "h-8" : "h-10")}>
           <span className="text-sm">{label}</span>
           {address && coin && (
             <div className="flex space-x-2 items-center">
@@ -180,7 +183,7 @@ export function CoinField({
             </div>
           )}
         </div>
-        <div className="flex mt-2 mb-2 h-[41px] gap-2 items-center">
+        <div className="flex mb-2 h-[41px] gap-2 items-center">
           {onSelectCoin ? (
             <CoinButton
               coin={coin}
