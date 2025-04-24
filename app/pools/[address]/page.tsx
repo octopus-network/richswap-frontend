@@ -14,7 +14,7 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { ExternalLink } from "lucide-react";
 import { usePoolTvl, usePoolFee } from "@/hooks/use-pools";
 import { useCoinPrice } from "@/hooks/use-prices";
-import { BITCOIN } from "@/lib/constants";
+import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
 import { ellipseMiddle, formatNumber } from "@/lib/utils";
 import Circle from "react-circle";
 
@@ -97,9 +97,7 @@ export default function Pool() {
                   </Button>
                 </Link>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-semibold">
-                    {poolInfo.name}
-                  </span>
+                  <span className="text-xl font-semibold">{poolInfo.name}</span>
                 </div>
               </>
             ) : (
@@ -137,10 +135,11 @@ export default function Pool() {
                     <div className="flex items-center gap-1">
                       <CoinIcon coin={poolInfo.coinB} size="sm" />
                       <Link
-                        href=""
+                        href={`${RUNESCAN_URL}/runes/${poolInfo.name}`}
+                        target="_blank"
                         className="inline-flex items-center gap-1 group hover:underline"
                       >
-                        <span>{poolInfo?.name}</span>
+                        <span>{poolInfo.name}</span>
                         <ExternalLink className="text-muted-foreground size-3 group-hover:text-foreground" />
                       </Link>
                     </div>
@@ -153,7 +152,8 @@ export default function Pool() {
                   <div className="flex flex-col items-end gap-0.5">
                     {poolTvlInBtc ? (
                       <Link
-                        href=""
+                        href={`${RUNESCAN_URL}/exchange/RICH_SWAP/pool/${poolInfo.address}`}
+                        target="_blank"
                         className="inline-flex items-center gap-1 group hover:underline"
                       >
                         <span>{formatNumber(poolTvlInBtc)} ₿</span>
@@ -174,12 +174,12 @@ export default function Pool() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Fee</span>
                   <div className="flex flex-col items-end gap-0.5">
-                    {poolFeeInSats ? (
+                    {poolFeeInSats !== undefined ? (
                       <span>{formatNumber(poolFeeInSats, true)} sats</span>
                     ) : (
                       <Skeleton className="h-6 w-24" />
                     )}
-                    {poolFee ? (
+                    {poolFee !== undefined ? (
                       <span className="text-muted-foreground truncate">
                         ${formatNumber(poolFee, true)}
                       </span>
@@ -225,7 +225,14 @@ export default function Pool() {
               {lps.length
                 ? lps.map((lp) => (
                     <div className="flex justify-between" key={lp.address}>
-                      <span>{ellipseMiddle(lp.address, 14)}</span>
+                      <Link
+                        href={`${RUNESCAN_URL}/address/${lp.address}`}
+                        className="group hover:underline inline-flex items-center"
+                        target="_blank"
+                      >
+                        <span>{ellipseMiddle(lp.address, 14)}</span>
+                        <ExternalLink className="ml-1 size-3 group-hover:text-foreground text-muted-foreground" />
+                      </Link>
                       <div className="flex items-center">
                         <Circle
                           progress={lp.percentage}
