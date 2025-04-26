@@ -62,7 +62,6 @@ export function WithdrawContent({
             coinAAmount={coinAAmount}
             coinBAmount={coinBAmount}
             onSuccess={onSuccess}
-            showCancelButton
             nonce={nonce}
             poolUtxos={poolUtxos}
             onBack={onBack}

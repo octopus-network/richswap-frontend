@@ -12,7 +12,7 @@ export function WithdrawReviewModal({
   position,
   nonce,
   poolUtxos,
-  sqrtK
+  sqrtK,
 }: {
   open: boolean;
   coinAAmount: string;
@@ -42,7 +42,6 @@ export function WithdrawReviewModal({
           poolKey={position?.pool.key ?? ""}
           coinAAmount={coinAAmount}
           coinBAmount={coinBAmount}
-          showCancelButton
           nonce={nonce}
           poolUtxos={poolUtxos}
           sqrtK={sqrtK}

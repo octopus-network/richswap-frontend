@@ -49,6 +49,7 @@ export function DepositReview({
   onSuccess,
   onBack,
   nonce,
+  showCancelButton = false,
 }: {
   coinA: Coin | null;
   coinB: Coin | null;
@@ -59,6 +60,7 @@ export function DepositReview({
   onSuccess: () => void;
   onBack: () => void;
   nonce: string;
+  showCancelButton?: boolean;
 }) {
   const { address, paymentAddress, provider, signPsbt } = useLaserEyes(
     ({ address, paymentAddress, provider, signPsbt }) => ({
@@ -397,6 +399,16 @@ export function DepositReview({
                 ? "Unsupported Address Type"
                 : "Sign PSBT"}
             </Button>
+            {showCancelButton && (
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full"
+                onClick={onBack}
+              >
+                Cancel
+              </Button>
+            )}
           </div>
         </>
       ) : (
