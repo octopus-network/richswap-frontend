@@ -118,13 +118,14 @@ export default function Pool() {
         <div className="mt-4">
           <div className="grid grid-cols-5 md:grid-cols-9 gap-4">
             <div className="border bg-secondary/50 px-4 py-3 rounded-xl col-span-5">
-              <div>
-                {poolInfo ? (
-                  <ManageLiquidityPanel pool={poolInfo} position={position} />
-                ) : (
-                  <Skeleton className="w-full h-48" />
-                )}
-              </div>
+              {poolInfo ? (
+                <ManageLiquidityPanel pool={poolInfo} position={position} />
+              ) : (
+                <div className="flex flex-col">
+                  <Skeleton className="w-full h-60" />
+                  <Skeleton className="w-full h-10 mt-6 rounded-xl" />
+                </div>
+              )}
             </div>
             <div className="border bg-secondary/50 px-4 py-3 rounded-xl col-span-5 md:col-span-4 ">
               <div className="font-semibold text-lg">Pool Info</div>
@@ -152,7 +153,7 @@ export default function Pool() {
                   <div className="flex flex-col items-end gap-0.5">
                     {poolTvlInBtc ? (
                       <Link
-                        href={`${RUNESCAN_URL}/exchange/RICH_SWAP/pool/${poolInfo.address}`}
+                        href={`${RUNESCAN_URL}/exchange/RICH_SWAP/pool/${poolInfo?.address}`}
                         target="_blank"
                         className="inline-flex items-center gap-1 group hover:underline"
                       >

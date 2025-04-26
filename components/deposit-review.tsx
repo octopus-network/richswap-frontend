@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 import {
   Coin,
   TransactionStatus,
@@ -49,7 +49,6 @@ export function DepositReview({
   onSuccess,
   onBack,
   nonce,
-  showCancelButton = false,
 }: {
   coinA: Coin | null;
   coinB: Coin | null;
@@ -60,7 +59,6 @@ export function DepositReview({
   onSuccess: () => void;
   onBack: () => void;
   nonce: string;
-  showCancelButton?: boolean;
 }) {
   const { address, paymentAddress, provider, signPsbt } = useLaserEyes(
     ({ address, paymentAddress, provider, signPsbt }) => ({
@@ -321,21 +319,7 @@ export function DepositReview({
     </div>
   ) : (
     <>
-      {!showCancelButton && (
-        <div className="flex items-center gap-3">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={onBack}
-            disabled={step !== 0}
-            className="rounded-full size-8"
-          >
-            <ChevronLeft className="size-6" />
-          </Button>
-          <div className="font-bold text-muted-foreground">Add Liquidity</div>
-        </div>
-      )}
-      <div className="flex justify-between mt-3 items-center">
+      <div className="flex justify-between items-center">
         {coinA && coinB && (
           <>
             <span className="font-bold text-xl">
@@ -413,16 +397,6 @@ export function DepositReview({
                 ? "Unsupported Address Type"
                 : "Sign PSBT"}
             </Button>
-            {showCancelButton && (
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full"
-                onClick={onBack}
-              >
-                Cancel
-              </Button>
-            )}
           </div>
         </>
       ) : (

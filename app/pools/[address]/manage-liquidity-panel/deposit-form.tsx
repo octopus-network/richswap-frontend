@@ -1,4 +1,4 @@
-import { PoolInfo, Field, DepositState, UnspentOutput } from "@/types";
+import { PoolInfo, Field, DepositState } from "@/types";
 import { CoinField } from "@/components/coin-field";
 import { Plus } from "lucide-react";
 
@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 
+import { DepositReviewModal } from "./deposit-review-modal";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 
 import {
@@ -19,18 +20,7 @@ import {
   useDepositActionHandlers,
 } from "@/store/deposit/hooks";
 
-export function DepositForm({
-  pool,
-  onReview,
-}: {
-  pool: PoolInfo | undefined;
-  onReview: (
-    coinAAmount: string,
-    coinBAmount: string,
-    nonce: string,
-    poolUtxos: UnspentOutput[]
-  ) => void;
-}) {
+export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
   const { address } = useLaserEyes(({ address }) => ({ address }));
 
   const { onUserInput } = useDepositActionHandlers();
@@ -43,6 +33,7 @@ export function DepositForm({
   const [inputAmount, setInputAmount] = useState("");
   const [outputAmount, setOutputAmount] = useState("");
   const [isEmptyPool, setIsEmptyPool] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   const coinABalance = useCoinBalance(pool?.coinA);
   const coinBBalance = useCoinBalance(pool?.coinB);
@@ -207,14 +198,7 @@ export function DepositForm({
                 (!Number(outputAmount) || !Number(inputAmount))) ||
               tooSmallFunds
             }
-            onClick={() =>
-              onReview(
-                isEmptyPool ? inputAmount : formattedAmounts[Field.INPUT],
-                isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT],
-                deposit?.nonce ?? "0",
-                deposit?.utxos ?? []
-              )
-            }
+            onClick={() => setReviewModalOpen(true)}
           >
             {deposit?.state === DepositState.INVALID
               ? deposit?.errorMessage ?? "Review"
@@ -228,6 +212,21 @@ export function DepositForm({
           </Button>
         )}
       </div>
+      {pool && (
+        <DepositReviewModal
+          pool={pool}
+          open={reviewModalOpen}
+          setOpen={setReviewModalOpen}
+          coinAAmount={
+            isEmptyPool ? inputAmount : formattedAmounts[Field.INPUT]
+          }
+          coinBAmount={
+            isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT]
+          }
+          nonce={deposit?.nonce ?? "0"}
+          poolUtxos={deposit?.utxos ?? []}
+        />
+      )}
     </>
   );
 }

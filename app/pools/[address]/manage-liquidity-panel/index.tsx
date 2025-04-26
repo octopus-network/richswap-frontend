@@ -2,9 +2,9 @@
 
 import { Position, PoolInfo } from "@/types";
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DepositContent } from "./deposit-content";
-import { WithdrawContent } from "./withdraw-content";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { DepositForm } from "./deposit-form";
+import { WithdrawForm } from "./withdraw-form";
 
 export function ManageLiquidityPanel({
   pool,
@@ -34,8 +34,12 @@ export function ManageLiquidityPanel({
             )}
           </TabsList>
         </div>
-        <DepositContent pool={pool} onSuccess={() => {}} />
-        <WithdrawContent onSuccess={() => {}} position={position} />
+        <TabsContent value="deposit">
+          <DepositForm pool={pool} />
+        </TabsContent>
+        <TabsContent value="withdraw">
+          <WithdrawForm position={position} />
+        </TabsContent>
       </Tabs>
     </div>
   );
