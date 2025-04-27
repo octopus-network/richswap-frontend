@@ -224,31 +224,33 @@ export default function Pool() {
             </div>
             <div className="flex flex-col gap-3 mt-3">
               {lps.length
-                ? lps.map((lp) => (
-                    <div className="flex justify-between" key={lp.address}>
-                      <Link
-                        href={`${RUNESCAN_URL}/address/${lp.address}`}
-                        className="group hover:underline inline-flex items-center"
-                        target="_blank"
-                      >
-                        <span>{ellipseMiddle(lp.address, 14)}</span>
-                        <ExternalLink className="ml-1 size-3 group-hover:text-foreground text-muted-foreground" />
-                      </Link>
-                      <div className="flex items-center">
-                        <Circle
-                          progress={lp.percentage}
-                          size="18"
-                          lineWidth="60"
-                          progressColor="#f6d75a"
-                          bgColor="#4c9aff"
-                          showPercentage={false}
-                        />
-                        <span className="ml-1">
-                          {lp.percentage.toFixed(2)}%
-                        </span>
+                ? lps
+                    .sort((a, b) => b.percentage - a.percentage)
+                    .map((lp) => (
+                      <div className="flex justify-between" key={lp.address}>
+                        <Link
+                          href={`${RUNESCAN_URL}/address/${lp.address}`}
+                          className="group hover:underline inline-flex items-center"
+                          target="_blank"
+                        >
+                          <span>{ellipseMiddle(lp.address, 14)}</span>
+                          <ExternalLink className="ml-1 size-3 group-hover:text-foreground text-muted-foreground" />
+                        </Link>
+                        <div className="flex items-center">
+                          <Circle
+                            progress={lp.percentage}
+                            size="18"
+                            lineWidth="60"
+                            progressColor="#f6d75a"
+                            bgColor="#4c9aff"
+                            showPercentage={false}
+                          />
+                          <span className="ml-1">
+                            {lp.percentage.toFixed(2)}%
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    ))
                 : [1, 2, 3, 4].map((idx) => (
                     <div className="flex justify-between" key={idx}>
                       <Skeleton className="h-6 w-2/3" />
