@@ -4,12 +4,13 @@ import { OKX } from "@omnisat/lasereyes";
 import {
   AddressType,
   Coin,
-  InputCoin,
-  OutputCoin,
   TransactionStatus,
   TransactionType,
   UnspentOutput,
   ToSignInput,
+  SwapQuote,
+  SwapState,
+  Intention,
 } from "@/types";
 
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
@@ -24,6 +25,7 @@ import {
   getP2trAressAndScript,
   swapRuneTx,
   swapBtcTx,
+  runeSwapRuneTx,
 } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState, useMemo } from "react";
@@ -36,34 +38,31 @@ import { useLaserEyes } from "@omnisat/lasereyes";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
-import { EXCHANGE_ID } from "@/lib/constants";
+
 import { useAddTransaction } from "@/store/transactions";
 
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
+import { Skeleton } from "./ui/skeleton";
 
 export function SwapReview({
   coinA,
   coinB,
   coinAAmount,
   coinBAmount,
-  poolKey,
   onSuccess,
   onBack,
-  poolUtxos,
-  nonce,
+  swapQuote,
   showCancelButton = false,
   setIsSubmiting,
 }: {
   coinA: Coin | null;
   coinB: Coin | null;
   coinAAmount: string;
-  poolKey: string;
   coinBAmount: string;
   onSuccess: () => void;
   onBack: () => void;
-  nonce: string;
-  poolUtxos?: UnspentOutput[];
+  swapQuote: SwapQuote | undefined;
   showCancelButton?: boolean;
   setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
@@ -84,10 +83,8 @@ export function SwapReview({
   const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
   const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
-  const [poolSpendUtxos, setPoolSpendUtxos] = useState<string[]>([]);
-  const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
-  const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
-  const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
+
+  const [intentions, setIntentions] = useState<Intention[]>([]);
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -114,40 +111,46 @@ export function SwapReview({
     [coinBAmount, coinBPrice]
   );
 
-  const [runeAmount, btcAmount] = useMemo(
-    () =>
-      coinA?.id === BITCOIN.id
-        ? [coinBAmount, coinAAmount]
-        : [coinAAmount, coinBAmount],
-    [coinA, coinAAmount, coinBAmount]
-  );
-
-  const runePriceInSats = useMemo(
-    () =>
-      btcAmount && runeAmount
-        ? new Decimal(btcAmount).mul(Math.pow(10, 8)).div(runeAmount).toFixed(2)
-        : "0",
-    [runeAmount, btcAmount]
-  );
-
   const btcPrice = useCoinPrice(BITCOIN.id);
+
+  const swapPrice = useMemo(
+    () =>
+      coinAAmount && coinBFiatValue
+        ? coinBFiatValue / Number(coinAAmount)
+        : undefined,
+    [coinBFiatValue, coinAAmount]
+  );
+
+  const swapPriceInSats = useMemo(
+    () =>
+      swapPrice && btcPrice
+        ? new Decimal(swapPrice)
+            .div(new Decimal(btcPrice).div(Math.pow(10, 8)))
+            .toFixed(0)
+        : undefined,
+    [swapPrice, btcPrice]
+  );
 
   useEffect(() => {
     if (
-      !poolKey ||
+      swapQuote?.state !== SwapState.VALID ||
       !coinA ||
       !coinB ||
       !coinAAmount ||
       !coinBAmount ||
       !btcUtxos?.length ||
-      !poolUtxos?.length ||
       step !== 0
     ) {
       return;
     }
 
     const genPsbt = async () => {
-      const { address: poolAddress } = getP2trAressAndScript(poolKey);
+      if (!swapQuote.routes?.length) {
+        return;
+      }
+      const route = swapQuote.routes[0];
+
+      const { address: poolAddress } = getP2trAressAndScript(route.pool.key);
       if (!poolAddress) {
         return;
       }
@@ -165,7 +168,8 @@ export function SwapReview({
             runeid: involvedRune.id,
             runeAmount: coinBAmountBigInt,
             btcUtxos,
-            poolUtxos,
+            nonce: BigInt(route.nonce),
+            poolUtxos: route.poolUtxos,
             poolAddress,
             address,
             paymentAddress,
@@ -174,13 +178,10 @@ export function SwapReview({
 
           setPsbt(tx.psbt);
           setToSpendUtxos(tx.toSpendUtxos);
-          setPoolSpendUtxos(tx.poolSpendUtxos);
-          setPoolReceiveUtxos(tx.poolReceiveUtxos);
           setTxid(tx.txid);
-          setInputCoins(tx.inputCoins);
-          setOutputCoins(tx.outputCoins);
           setToSignInputs(tx.toSignInputs);
           setFee(tx.fee);
+          setIntentions(tx.intentions);
         } catch (err: any) {
           setErrorMessage(err?.message || "Unknown Error");
           console.log(err);
@@ -227,7 +228,8 @@ export function SwapReview({
             btcAmount: coinBAmountBigInt,
             btcUtxos,
             runeUtxos: _runeUtxos,
-            poolUtxos,
+            nonce: BigInt(route.nonce),
+            poolUtxos: route.poolUtxos,
             poolAddress,
             address,
             paymentAddress,
@@ -237,13 +239,10 @@ export function SwapReview({
           setPsbt(tx.psbt);
 
           setToSpendUtxos(tx.toSpendUtxos);
-          setPoolSpendUtxos(tx.poolSpendUtxos);
-          setPoolReceiveUtxos(tx.poolReceiveUtxos);
           setTxid(tx.txid);
-          setInputCoins(tx.inputCoins);
-          setOutputCoins(tx.outputCoins);
           setToSignInputs(tx.toSignInputs);
           setFee(tx.fee);
+          setIntentions(tx.intentions);
         } catch (err: any) {
           // setErrorMessage(err?.message || "Unknown Error");
           console.log(err);
@@ -251,16 +250,89 @@ export function SwapReview({
       }
     };
 
-    genPsbt();
+    const genPsbtForRuneSwapRune = async () => {
+      if (!swapQuote.routes?.length) {
+        return;
+      }
+      try {
+        if (!runeUtxos?.length) {
+          return;
+        }
+
+        const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
+
+        const selectedRuneUtxos: UnspentOutput[] = [];
+
+        const runeAmount = coinAAmountBigInt;
+        const runeId = coinA.id;
+
+        for (let i = 0; i < runeUtxos.length; i++) {
+          const v = runeUtxos[i];
+          if (v.runes.length) {
+            const balance = v.runes.find((r) => r.id == runeId);
+            if (balance && BigInt(balance.amount) == runeAmount) {
+              selectedRuneUtxos.push(v);
+              break;
+            }
+          }
+        }
+
+        if (selectedRuneUtxos.length == 0) {
+          let total = BigInt(0);
+          for (let i = 0; i < runeUtxos.length; i++) {
+            const v = runeUtxos[i];
+            v.runes.forEach((r) => {
+              if (r.id == runeId) {
+                total = total + BigInt(r.amount);
+              }
+            });
+            selectedRuneUtxos.push(v);
+            if (total >= runeAmount) {
+              break;
+            }
+          }
+        }
+
+        const tx = await runeSwapRuneTx({
+          runeA: coinA,
+          runeB: coinB,
+          runeUtxos: selectedRuneUtxos,
+          btcUtxos,
+          address,
+          paymentAddress,
+          swapQuote,
+        });
+
+        if (!tx) {
+          return;
+        }
+
+        setPsbt(tx.psbt);
+
+        setToSpendUtxos(tx.toSpendUtxos);
+        setTxid(tx.txid);
+        setToSignInputs(tx.toSignInputs);
+        setFee(tx.fee);
+        setIntentions(tx.intentions);
+      } catch (err: any) {
+        // setErrorMessage(err?.message || "Unknown Error");
+        console.log(err);
+      }
+    };
+
+    if (swapQuote.routes?.length === 1) {
+      genPsbt();
+    } else {
+      genPsbtForRuneSwapRune();
+    }
   }, [
-    poolKey,
     coinA,
     coinB,
     coinAAmount,
     coinBAmount,
     btcUtxos,
     runeUtxos,
-    poolUtxos,
+    swapQuote,
     paymentAddress,
     address,
     step,
@@ -272,31 +344,20 @@ export function SwapReview({
       !psbt ||
       !coinA ||
       !coinB ||
-      !poolUtxos?.length ||
-      !poolKey ||
       !toSpendUtxos.length ||
-      !poolSpendUtxos.length ||
-      !poolReceiveUtxos.length ||
       !txid ||
-      !inputCoins.length ||
-      !outputCoins.length
+      !intentions.length
     ) {
       return;
     }
 
     setIsSubmiting(true);
     try {
-      const { address: poolAddress } = getP2trAressAndScript(poolKey);
-      if (!poolAddress) {
-        return;
-      }
-
       setStep(1);
 
       let signedPsbtHex = "";
 
       if (provider === OKX) {
-        console.log("is okx wallet", toSignInputs, toSpendUtxos);
         const psbtHex = psbt.toHex();
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
@@ -322,19 +383,7 @@ export function SwapReview({
         intention_set: {
           tx_fee_in_sats: fee,
           initiator_address: paymentAddress,
-          intentions: [
-            {
-              action: "swap",
-              exchange_id: EXCHANGE_ID,
-              input_coins: inputCoins,
-              pool_utxo_spend: poolSpendUtxos,
-              pool_utxo_receive: poolReceiveUtxos,
-              output_coins: outputCoins,
-              action_params: "",
-              pool_address: poolAddress,
-              nonce: BigInt(nonce),
-            },
-          ],
+          intentions,
         },
         psbt_hex: signedPsbtHex,
       });
@@ -343,7 +392,6 @@ export function SwapReview({
         txid,
         coinA,
         coinB,
-        poolKey,
         coinAAmount,
         utxos: toSpendUtxos,
         coinBAmount,
@@ -400,7 +448,7 @@ export function SwapReview({
   ) : (
     <>
       <div className="flex flex-col">
-        <div className="flex justify-between">
+        <div className="flex justify-between h-11 items-center">
           <div className="flex flex-col">
             <span className="font-semibold">
               {formatNumber(coinAAmount)} {getCoinSymbol(coinA)}
@@ -414,15 +462,22 @@ export function SwapReview({
         <div className="flex items-center my-4">
           <ArrowDown className="text-muted-foreground size-5" />
         </div>
-        <div className="flex justify-between">
-          <div className="flex flex-col">
-            <span className="font-semibold">
-              {formatNumber(coinBAmount)} {getCoinSymbol(coinB)}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {coinBFiatValue ? `$${formatNumber(coinBFiatValue)}` : "-"}
-            </span>
-          </div>
+        <div className="flex justify-between h-11 items-center">
+          {swapQuote?.state === SwapState.VALID ? (
+            <div className="flex flex-col">
+              <span className="font-semibold">
+                {formatNumber(coinBAmount)} {getCoinSymbol(coinB)}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {coinBFiatValue ? `$${formatNumber(coinBFiatValue)}` : "-"}
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-4 w-12 mt-1" />
+            </div>
+          )}
           {coinB && <CoinIcon size="lg" coin={coinB} />}
         </div>
       </div>
@@ -430,22 +485,24 @@ export function SwapReview({
       {step === 0 ? (
         <>
           <div className="space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Rune Price</span>
-              <div className="flex flex-col items-end">
-                <span>
-                  {runePriceInSats}{" "}
-                  <em className="text-muted-foreground">sats</em>
-                </span>
-                <span className="text-primary/80 text-xs">
-                  {btcPrice
-                    ? `$${new Decimal(runePriceInSats)
-                        .mul(btcPrice)
-                        .div(Math.pow(10, 8))
-                        .toFixed(4)}`
-                    : ""}
-                </span>
-              </div>
+            <div className="flex justify-between h-9">
+              <span className="text-muted-foreground">Price</span>
+              {swapQuote?.state === SwapState.VALID ? (
+                <div className="flex flex-col items-end">
+                  <span>
+                    {swapPriceInSats ?? "-"}{" "}
+                    <em className="text-muted-foreground">sats</em>
+                  </span>
+                  <span className="text-primary/80 text-xs">
+                    {swapPrice ? `$${formatNumber(swapPrice)}` : ""}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-end">
+                  <Skeleton className="h-4 w-16"/>
+                  <Skeleton className="h-3 w-8 mt-1" />
+                </div>
+              )}
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Fee rate</span>
@@ -477,7 +534,11 @@ export function SwapReview({
               size="xl"
               className="w-full"
               onClick={onSubmit}
-              disabled={!psbt || invalidAddressType}
+              disabled={
+                !psbt ||
+                invalidAddressType ||
+                swapQuote?.state !== SwapState.VALID
+              }
             >
               {!psbt && <Loader2 className="size-4 animate-spin" />}
               {!psbt

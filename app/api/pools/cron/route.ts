@@ -90,7 +90,7 @@ export async function GET() {
 
     const limitGetRunesInfoList = limitFunction(
       async (coinId: string) => openApi.getRunesInfoList(coinId),
-      { concurrency: 2 }
+      { concurrency: 1 }
     );
 
     const coinRes = await Promise.all(
@@ -102,7 +102,7 @@ export async function GET() {
     );
 
     for (let i = 0; i < res.length; i++) {
-      const { name, address, btc_reserved, coin_reserveds, key } = res[i];
+      const { name, address, btc_reserved, coin_reserveds, key, nonce } = res[i];
 
       const coinA = BITCOIN;
       const { detail: coinBRes } = coinRes[i];
@@ -135,6 +135,7 @@ export async function GET() {
         address,
         name,
         coinA: { ...coinA, balance: btc_reserved.toString() },
+        nonce,
         coinB: {
           ...coinB,
           balance: coin_reserveds[0]?.value.toString() ?? "0",

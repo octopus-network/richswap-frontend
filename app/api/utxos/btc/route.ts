@@ -26,8 +26,8 @@ export async function GET(req: NextRequest) {
     const utxos = await openApi.getAddressUtxoData(address).then((res) => {
       return res.utxo
         .filter(
-          ({ height, inscriptions, satoshi }) =>
-            height <= blocks && !inscriptions.length && satoshi !== 546
+          ({ height, inscriptions, satoshi, txid }) =>
+            txid && height <= blocks && !inscriptions.length && satoshi !== 546
         )
         .map((utxo) => ({
           pubkey,

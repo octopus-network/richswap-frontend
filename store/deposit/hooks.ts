@@ -42,7 +42,7 @@ export function useDerivedDepositInfo(poolInfo: PoolInfo | undefined) {
 
   const inputCoin = isExactIn ? poolInfo?.coinA : poolInfo?.coinB;
 
-  const deposit = useDebouncedDeposit(poolInfo?.key, parsedAmount, inputCoin);
+  const deposit = useDebouncedDeposit(poolInfo, parsedAmount, inputCoin);
 
   return useMemo(
     () => ({

@@ -84,9 +84,9 @@ export function CreateForm({
         const pool = await Exchange.getPool(coinA, coinB);
 
         if (pool) {
-          if (pool.btc_reserved === BigInt(0)) {
+          if (BigInt(pool.coinA.balance) === BigInt(0)) {
             setIsCreating(false);
-            onNextStep(pool.key, pool.nonce);
+            onNextStep(pool.key, BigInt(pool.nonce));
           } else {
             const poolInfo = poolList.find((pool) => pool.key === pool.key);
             if (poolInfo && onPoolExsists) {

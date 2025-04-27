@@ -1,15 +1,13 @@
 import { actor } from "./actor";
 import {
   Coin,
-  SwapQuote,
-  SwapState,
   DepositState,
   DepositQuote,
   UnspentOutput,
   PoolInfo,
   AddressType,
   PoolData,
-  PoolOverview,
+  SwapRoute,
 } from "@/types";
 
 import { BITCOIN } from "../constants";
@@ -20,38 +18,35 @@ import {
 } from "../utils";
 import Decimal from "decimal.js";
 
+import axios from "axios";
+
 export class Exchange {
   public static async getPool(inputCoin: Coin, outputCoin: Coin) {
     if (inputCoin.id !== BITCOIN.id && outputCoin.id !== BITCOIN.id) {
       return undefined;
     }
-    const poolList = await this.getPoolList();
+    const poolList = await axios
+      .get<{
+        data: PoolInfo[];
+      }>("/api/pools")
+      .then((res) => res.data.data);
 
     const runeId = inputCoin.id === BITCOIN.id ? outputCoin.id : inputCoin.id;
 
-    const pool = poolList?.find((p) => p.coin_reserved[0].id === runeId);
+    const pool = poolList.find((p) => p.coinB.id === runeId);
 
     return pool;
   }
 
-  public static async getPoolList(): Promise<PoolOverview[]> {
-    const res = (await actor.get_pool_list({
-      from: [],
-      limit: 20,
-    })) as PoolOverview[];
-
-    return res;
-  }
-
   public static async createPool(coinId: string) {
-    const poolKey = await actor.create(coinId).then((data: any) => {
+    const poolAddress = await actor.create(coinId).then((data: any) => {
       if (data.Ok) {
         return data.Ok;
       } else {
         throw new Error(data.Err ? Object.keys(data.Err)[0] : "Unknown Error");
       }
     });
-    return poolKey;
+    return poolAddress;
   }
 
   public static async getPoolData(
@@ -92,6 +87,7 @@ export class Exchange {
 
       return {
         key: data.key,
+        address,
         coinAId: BITCOIN.id,
         coinBId: coinReserved?.id,
         coinAAmount: ((utxo?.sats ?? BigInt(0)) - incomes).toString(),
@@ -104,7 +100,7 @@ export class Exchange {
   public static async getPosition(pool: PoolInfo, userAddress: string) {
     try {
       const [res, poolData] = await Promise.all([
-        actor.get_lp(pool.key, userAddress).then((data: any) => {
+        actor.get_lp(pool.address, userAddress).then((data: any) => {
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -164,16 +160,66 @@ export class Exchange {
     }
   }
 
+  public static async getLps(poolAddress: string) {
+    try {
+      const res = await actor.get_all_lp(poolAddress).then((data: any) => {
+        if (data.Ok) {
+          return data.Ok;
+        } else {
+          throw new Error(
+            data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+          );
+        }
+      });
+
+      if (!res) {
+        return [];
+      }
+
+      const promises = res.map(([userAddress]: [string, string]) =>
+        actor
+          .get_lp(poolAddress, userAddress)
+          .then((data: any) => {
+            if (data.Ok) {
+              return data.Ok;
+            } else {
+              throw new Error(
+                data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+              );
+            }
+          })
+          .then(({ total_share, user_share }) => {
+            return {
+              address: userAddress,
+              percentage: new Decimal(user_share.toString())
+                .mul(100)
+                .div(total_share.toString())
+                .toNumber(),
+            };
+          })
+          .catch(() => null)
+      );
+
+      return Promise.all(promises);
+    } catch (err: any) {
+      console.log("get all lp error", err);
+      return [];
+    }
+  }
+
   public static async preAddLiquidity(
-    poolKey: string,
+    pool: PoolInfo,
     coin: Coin,
     coinAmount: string
   ): Promise<DepositQuote | undefined> {
     try {
       const { output, inputs, nonce } = await actor
-        .pre_add_liquidity(poolKey, { id: coin.id, value: BigInt(coinAmount) })
+        .pre_add_liquidity(pool.address, {
+          id: coin.id,
+          value: BigInt(coinAmount),
+        })
         .then((data: any) => {
-          console.log("preAddLiquidity", data);
+          console.log("pre add liquidity", pool, data);
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -186,7 +232,7 @@ export class Exchange {
       const utxos: UnspentOutput[] = [];
 
       inputs.forEach(async ({ txid, vout, sats, maybe_rune }: any) => {
-        const { address, output } = getP2trAressAndScript(poolKey);
+        const { output } = getP2trAressAndScript(pool.key);
 
         const rune = maybe_rune[0];
 
@@ -194,7 +240,7 @@ export class Exchange {
           txid,
           vout,
           satoshis: sats.toString(),
-          address: address!,
+          address: pool.address,
           scriptPk: output,
           pubkey: "",
           addressType: AddressType.P2TR,
@@ -231,7 +277,7 @@ export class Exchange {
   }
 
   public static async preWithdrawLiquidity(
-    poolKey: string,
+    pool: PoolInfo,
     userAddress: string,
     sqrK: bigint
   ): Promise<{
@@ -246,7 +292,7 @@ export class Exchange {
   } | null> {
     try {
       const res = await actor
-        .pre_withdraw_liquidity(poolKey, userAddress, sqrK)
+        .pre_withdraw_liquidity(pool.address, userAddress, sqrK)
         .then((data: any) => {
           console.log("withdraw liquidity", data);
           if (data.Ok) {
@@ -286,7 +332,7 @@ export class Exchange {
 
       const coinB = await fetchCoinById(_coinB.id);
 
-      const { address, output } = getP2trAressAndScript(poolKey);
+      const { output } = getP2trAressAndScript(pool.key);
 
       const rune = res.input.maybe_rune[0];
 
@@ -294,7 +340,7 @@ export class Exchange {
         txid: res.input.txid,
         vout: res.input.vout,
         satoshis: res.input.sats.toString(),
-        address: address!,
+        address: pool.address,
         pubkey: "",
         addressType: AddressType.P2TR,
         scriptPk: output,
@@ -322,90 +368,69 @@ export class Exchange {
     }
   }
 
-  public static async preSwap(
-    inputCoin: Coin | null,
-    outputCoin: Coin | null,
+  public static async getSwapRoute(
+    inputCoin: Coin,
+    outputCoin: Coin,
     inputAmount: string
-  ): Promise<SwapQuote | undefined> {
-    if (
-      !inputCoin ||
-      !outputCoin ||
-      !inputAmount ||
-      Number(inputAmount) === 0
-    ) {
-      return undefined;
-    }
-
+  ): Promise<SwapRoute> {
     const pool = await Exchange.getPool(inputCoin, outputCoin);
 
     if (!pool) {
-      return {
-        state: SwapState.NO_POOL,
-        inputAmount,
-      };
+      throw new Error("No Pool");
     }
 
-    try {
-      const { output, input, nonce } = await actor
-        .pre_swap(pool.key, {
-          id: inputCoin.id,
-          value: BigInt(inputAmount),
-        })
-        .then((data: any) => {
-          console.log("data", data);
-          if (data.Ok) {
-            return data.Ok;
-          } else {
-            throw new Error(
-              data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
-            );
-          }
-        });
+    const { output, input, nonce } = await actor
+      .pre_swap(pool.address, {
+        id: inputCoin.id,
+        value: BigInt(inputAmount),
+      })
+      .then((data: any) => {
+        console.log("data", data);
+        if (data.Ok) {
+          return data.Ok;
+        } else {
+          throw new Error(
+            data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+          );
+        }
+      });
 
-      const { txid, vout, sats, maybe_rune } = input;
+    const { txid, vout, sats, maybe_rune } = input;
 
-      const rune = maybe_rune[0];
+    const rune = maybe_rune[0];
 
-      const { output: outputScript, address } = getP2trAressAndScript(pool.key);
+    const { output: outputScript } = getP2trAressAndScript(pool.key);
 
-      const utxo: UnspentOutput = {
-        txid,
-        vout,
-        satoshis: sats.toString(),
-        address: address!,
-        pubkey: "",
-        addressType: AddressType.P2TR,
-        scriptPk: outputScript,
-        runes: [
-          {
-            id: rune.id,
-            amount: rune.value.toString(),
-          },
-        ],
-      };
+    const utxo: UnspentOutput = {
+      txid,
+      vout,
+      satoshis: sats.toString(),
+      address: pool.address,
+      pubkey: "",
+      addressType: AddressType.P2TR,
+      scriptPk: outputScript,
+      runes: [
+        {
+          id: rune.id,
+          amount: rune.value.toString(),
+        },
+      ],
+    };
 
-      const poolData = await Exchange.getPoolData(pool.address);
+    const poolData = await Exchange.getPoolData(pool.address);
 
-      if (!poolData) {
-        throw new Error("Invalid pool");
-      }
-
-      const quote = {
-        state: SwapState.VALID,
-        pool: poolData,
-        inputAmount,
-        outputAmount: output.value.toString(),
-        utxos: [utxo],
-        nonce: nonce.toString(),
-      };
-
-      return quote;
-    } catch (error) {
-      return {
-        state: SwapState.INVALID,
-        inputAmount,
-        errorMessage: error instanceof Error ? error.message : "Unknown Error",
-      };
+    if (!poolData) {
+      throw new Error("Invalid pool");
     }
+
+    const route = {
+      pool: poolData,
+      inputAmount,
+      outputAmount: output.value.toString(),
+      poolUtxos: [utxo],
+      nonce: nonce.toString(),
+    };
+
+    return route;
   }
 }

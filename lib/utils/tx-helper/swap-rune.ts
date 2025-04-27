@@ -1,8 +1,8 @@
 import { UnspentOutput, ToSignInput } from "@/types";
 
-import { BITCOIN, UTXO_DUST } from "@/lib/constants";
+import { BITCOIN, UTXO_DUST, EXCHANGE_ID } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
-import { InputCoin, OutputCoin } from "@/types";
+
 import { RuneId, Runestone, none, Edict } from "runelib";
 import { addressTypeToString, getAddressType } from "@/lib/utils/address";
 import { Orchestrator } from "@/lib/orchestrator";
@@ -20,6 +20,7 @@ export async function swapRuneTx({
   paymentAddress,
   poolAddress,
   feeRate,
+  nonce,
 }: {
   btcAmount: bigint;
   runeid: string;
@@ -30,6 +31,7 @@ export async function swapRuneTx({
   paymentAddress: string;
   poolAddress: string;
   feeRate: number;
+  nonce: bigint;
 }) {
   let poolRuneAmount = BigInt(0),
     poolBtcAmount = BigInt(0);
@@ -114,14 +116,13 @@ export async function swapRuneTx({
 
     currentFee = await Orchestrator.getEstimateMinTxFee({
       input_types: inputTypes,
-      pool_address: poolAddress,
+      pool_address: [poolAddress],
       output_types: outputTypes,
     });
 
     currentFee += BigInt(1);
 
     if (currentFee > lastFee) {
-      
       targetBtcAmount = btcAmount + currentFee + UTXO_DUST;
 
       const { selectedUtxos: _selectedUtxos } = selectBtcUtxos(
@@ -181,7 +182,6 @@ export async function swapRuneTx({
   //@ts-expect-error: todo
   const unsignedTx = psbt.__CACHE.__TX;
 
-  const poolSpendUtxos = poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`);
   const poolVouts = needChange ? [0] : [1];
 
   const toSignInputs: ToSignInput[] = [];
@@ -225,37 +225,40 @@ export async function swapRuneTx({
 
   const txid = unsignedTxClone.getId();
 
-  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
-
-  const inputCoins: InputCoin[] = [
-    {
-      from: paymentAddress,
-      coin: {
-        id: BITCOIN.id,
-        value: btcAmount,
-      },
-    },
-  ];
-
-  const outputCoins: OutputCoin[] = [
-    {
-      to: address,
-      coin: {
-        id: runeid,
-        value: runeAmount,
-      },
-    },
-  ];
-
   return {
     psbt,
     toSpendUtxos,
     toSignInputs,
-    poolSpendUtxos,
-    poolReceiveUtxos,
     txid,
     fee: currentFee,
-    inputCoins,
-    outputCoins,
+    intentions: [
+      {
+        action: "swap",
+        exchange_id: EXCHANGE_ID,
+        pool_utxo_spend: poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`),
+        pool_utxo_receive: poolVouts.map((vout) => `${txid}:${vout}`),
+        input_coins: [
+          {
+            from: paymentAddress,
+            coin: {
+              id: BITCOIN.id,
+              value: btcAmount,
+            },
+          },
+        ],
+        output_coins: [
+          {
+            to: address,
+            coin: {
+              id: runeid,
+              value: runeAmount,
+            },
+          },
+        ],
+        action_params: "",
+        pool_address: poolAddress,
+        nonce,
+      },
+    ],
   };
 }

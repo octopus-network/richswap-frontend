@@ -156,7 +156,7 @@ export async function depositTx({
 
     currentFee = await Orchestrator.getEstimateMinTxFee({
       input_types: inputTypes,
-      pool_address: poolAddress,
+      pool_address: [poolAddress],
       output_types: outputTypes,
     });
 
@@ -218,6 +218,8 @@ export async function depositTx({
   }
 
   const inputs = tx.getInputs();
+
+  console.log("inputs", inputs);
 
   const psbt = tx.toPsbt();
 

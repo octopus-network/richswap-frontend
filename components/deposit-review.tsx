@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 import {
   Coin,
   TransactionStatus,
@@ -21,11 +21,7 @@ import { CoinIcon } from "@/components/coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { Loader2 } from "lucide-react";
 
-import {
-  formatNumber,
-  getCoinSymbol,
-  getP2trAressAndScript,
-} from "@/lib/utils";
+import { formatNumber, getCoinSymbol } from "@/lib/utils";
 
 import { useWalletBtcUtxos, useWalletRuneUtxos } from "@/hooks/use-utxos";
 import { Separator } from "@/components/ui/separator";
@@ -48,7 +44,7 @@ export function DepositReview({
   coinB,
   coinAAmount,
   coinBAmount,
-  poolKey,
+  poolAddress,
   poolUtxos,
   onSuccess,
   onBack,
@@ -58,7 +54,7 @@ export function DepositReview({
   coinA: Coin | null;
   coinB: Coin | null;
   coinAAmount: string;
-  poolKey: string;
+  poolAddress: string;
   poolUtxos?: UnspentOutput[];
   coinBAmount: string;
   onSuccess: () => void;
@@ -113,7 +109,7 @@ export function DepositReview({
 
   useEffect(() => {
     if (
-      !poolKey ||
+      !poolAddress ||
       !coinA ||
       !coinB ||
       !coinAAmount ||
@@ -123,11 +119,6 @@ export function DepositReview({
       !poolUtxos ||
       step !== 0
     ) {
-      return;
-    }
-
-    const { address: poolAddress } = getP2trAressAndScript(poolKey);
-    if (!poolAddress) {
       return;
     }
 
@@ -197,7 +188,7 @@ export function DepositReview({
     };
     genPsbt();
   }, [
-    poolKey,
+    poolAddress,
     coinA,
     coinB,
     poolUtxos,
@@ -212,16 +203,18 @@ export function DepositReview({
   ]);
 
   const onSubmit = async () => {
-    if (!psbt || !coinA || !coinB || !poolUtxos || !toSpendUtxos.length) {
+    if (
+      !psbt ||
+      !coinA ||
+      !coinB ||
+      !poolUtxos ||
+      !toSpendUtxos.length ||
+      !poolAddress
+    ) {
       return;
     }
 
     try {
-      const { address: poolAddress } = getP2trAressAndScript(poolKey);
-      if (!poolAddress) {
-        return;
-      }
-
       setStep(1);
 
       let signedPsbtHex = "";
@@ -274,7 +267,6 @@ export function DepositReview({
         txid,
         coinA,
         coinB,
-        poolKey,
         coinAAmount,
         coinBAmount,
         utxos: toSpendUtxos,
@@ -329,21 +321,7 @@ export function DepositReview({
     </div>
   ) : (
     <>
-      {!showCancelButton && (
-        <div className="flex items-center gap-3">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={onBack}
-            disabled={step !== 0}
-            className="rounded-full size-8"
-          >
-            <ChevronLeft className="size-6" />
-          </Button>
-          <div className="font-bold text-muted-foreground">Add Liquidity</div>
-        </div>
-      )}
-      <div className="flex justify-between mt-3 items-center">
+      <div className="flex justify-between items-center">
         {coinA && coinB && (
           <>
             <span className="font-bold text-xl">

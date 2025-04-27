@@ -18,7 +18,7 @@ export function CreatePoolModal({
   const [coinB, setCoinB] = useState<Coin | null>(null);
   const [coinAAmount, setCoinAAmount] = useState("");
   const [coinBAmount, setCoinBAmount] = useState("");
-  const [poolKey, setPoolKey] = useState("");
+  const [poolAddress, setPoolAddress] = useState("");
   const [pool, setPool] = useState<PoolInfo>();
   const [showReview, setShowReview] = useState(false);
   const [nonce, setNonce] = useState(BigInt(0));
@@ -31,8 +31,8 @@ export function CreatePoolModal({
     }
   }, [open]);
 
-  const onNextStep = (key: string, nonce = BigInt(0)) => {
-    setPoolKey(key);
+  const onNextStep = (address: string, nonce = BigInt(0)) => {
+    setPoolAddress(address);
     setShowReview(true);
     setNonce(nonce);
   };
@@ -62,7 +62,7 @@ export function CreatePoolModal({
               <DepositReview
                 coinA={coinA}
                 coinB={coinB}
-                poolKey={poolKey}
+                poolAddress={poolAddress}
                 poolUtxos={[]}
                 coinAAmount={coinAAmount}
                 coinBAmount={coinBAmount}

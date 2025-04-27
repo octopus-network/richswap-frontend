@@ -4,7 +4,7 @@ import { CoinField } from "@/components/coin-field";
 import { Button } from "@/components/ui/button";
 import { ArrowDownUp } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
-import { Field, Coin, SwapState, PoolData } from "@/types";
+import { Field, Coin, SwapState } from "@/types";
 import { ReviewModal } from "./review-modal";
 import { useSearchParams } from "next/navigation";
 import { useLaserEyes } from "@omnisat/lasereyes";
@@ -20,15 +20,9 @@ import {
   useDerivedSwapInfo,
 } from "@/store/swap/hooks";
 
-import {
-  formatCoinAmount,
-  formatNumber,
-  getCoinSymbol,
-  getRunePriceInSats,
-} from "@/lib/utils";
+import { formatCoinAmount, formatNumber, getCoinSymbol } from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN, COIN_LIST } from "@/lib/constants";
-import { Exchange } from "@/lib/exchange";
 
 export function SwapPanel() {
   const { address } = useLaserEyes((x) => ({
@@ -42,7 +36,6 @@ export function SwapPanel() {
     useSwapActionHandlers();
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [poolData, setPoolData] = useState<PoolData>();
 
   const swapState = useSwapState();
 
@@ -62,11 +55,15 @@ export function SwapPanel() {
       [Field.INPUT]:
         independentField === Field.INPUT
           ? parsedAmount
-          : swap?.outputAmount ?? "",
+          : swap?.routes?.length
+          ? swap.routes[swap.routes.length - 1].outputAmount
+          : "",
       [Field.OUTPUT]:
         independentField === Field.OUTPUT
           ? parsedAmount
-          : swap?.outputAmount ?? "",
+          : swap?.routes?.length
+          ? swap.routes[swap.routes.length - 1].outputAmount
+          : "",
     }),
     [independentField, parsedAmount, swap]
   );
@@ -113,31 +110,25 @@ export function SwapPanel() {
     onUpdateCoins(_coinA, _coinB);
   }, [onUpdateCoins, coins]);
 
-  useEffect(() => {
-    if (!coinA || !coinB) {
-      return;
-    }
-    Exchange.getPool(coinA, coinB)
-      .then((pool) => {
-        if (pool) {
-          return Exchange.getPoolData(pool.address);
-        }
-        return undefined;
-      })
-      .then(setPoolData);
-  }, [coinA, coinB, swap]);
-
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinBPrice = useCoinPrice(coinB?.id);
 
+  const [coinAAmount, coinBAmount] = useMemo(
+    () => [
+      Number(formattedAmounts[Field.INPUT]),
+      Number(formattedAmounts[Field.OUTPUT]),
+    ],
+    [formattedAmounts]
+  );
+
   const coinAFiatValue = useMemo(
-    () => Number(formattedAmounts[Field.INPUT]) * coinAPrice,
-    [coinAPrice, formattedAmounts]
+    () => coinAAmount * coinAPrice,
+    [coinAPrice, coinAAmount]
   );
 
   const coinBFiatValue = useMemo(
-    () => Number(formattedAmounts[Field.OUTPUT]) * coinBPrice,
-    [coinBPrice, formattedAmounts]
+    () => coinBAmount * coinBPrice,
+    [coinBPrice, coinBAmount]
   );
 
   const handleSelectCoin = (field: Field, coin: Coin) => {
@@ -170,19 +161,6 @@ export function SwapPanel() {
     window.history.replaceState(null, "", newUrl);
   };
 
-  const tooSmallFunds = useMemo(
-    () =>
-      Boolean(
-        coinA &&
-          new Decimal(
-            coinA.id === BITCOIN.id
-              ? formattedAmounts[Field.INPUT] || 0
-              : formattedAmounts[Field.OUTPUT] || 0
-          ).lt(0.0001)
-      ),
-    [coinA, formattedAmounts]
-  );
-
   const handleSwitchCoins = () => {
     onSwitchCoins();
     onUserInput(Field.INPUT, "");
@@ -210,63 +188,37 @@ export function SwapPanel() {
     window.history.replaceState(null, "", newUrl);
   };
 
-  const [runeAmount, btcAmount] = useMemo(
-    () =>
-      coinA?.id === BITCOIN.id
-        ? [formattedAmounts[Field.OUTPUT], formattedAmounts[Field.INPUT]]
-        : [formattedAmounts[Field.INPUT], formattedAmounts[Field.OUTPUT]],
-    [coinA, formattedAmounts]
-  );
-
-  const runePriceInSats = useMemo(
-    () =>
-      Number(runeAmount) && Number(btcAmount)
-        ? getRunePriceInSats(btcAmount, runeAmount)
-        : undefined,
-    [runeAmount, btcAmount]
-  );
-
   const btcPrice = useCoinPrice(BITCOIN.id);
 
+  const swapPrice = useMemo(
+    () =>
+      coinAAmount && coinBFiatValue ? coinBFiatValue / coinAAmount : undefined,
+    [coinBFiatValue, coinAAmount]
+  );
+
+  const coinAPriceInSats = useMemo(
+    () =>
+      coinA?.id === BITCOIN.id || !coinAPrice || !btcPrice
+        ? undefined
+        : new Decimal(coinAPrice).mul(Math.pow(10, 8)).div(btcPrice).toNumber(),
+    [coinAPrice, btcPrice, coinA]
+  );
+
+  const coinBPriceInSats = useMemo(
+    () =>
+      coinB?.id === BITCOIN.id || !coinBPrice || !btcPrice
+        ? undefined
+        : new Decimal(coinBPrice).mul(Math.pow(10, 8)).div(btcPrice).toNumber(),
+    [coinBPrice, btcPrice, coinB]
+  );
+
   const priceImpact = useMemo(() => {
-    if (!poolData || !coinA || !coinB || !runeAmount || !btcAmount) {
-      return;
+    if (!coinAPrice || !swapPrice) {
+      return undefined;
     }
-    const btcAmountInDecimal = new Decimal(btcAmount);
-    const runeAmountInDecimal = new Decimal(runeAmount);
-
-    const isSwapRune = coinA.id === BITCOIN.id;
-
-    const rune = isSwapRune ? coinB : coinA;
-
-    const btcAmountBefore = new Decimal(
-      formatCoinAmount(poolData.coinAAmount, BITCOIN)
-    );
-    const runeAmountBefore = new Decimal(
-      formatCoinAmount(poolData.coinBAmount, rune)
-    );
-
-    const btcAmountAfter = isSwapRune
-      ? btcAmountBefore.plus(btcAmountInDecimal)
-      : btcAmountBefore.sub(btcAmountInDecimal);
-
-    const runeAmountAfter = isSwapRune
-      ? runeAmountBefore.sub(runeAmountInDecimal)
-      : runeAmountBefore.plus(runeAmountInDecimal);
-
-    const priceBefore = btcAmountBefore
-      .mul(Math.pow(10, 8))
-      .div(runeAmountBefore);
-    const priceAfter = btcAmountAfter.mul(Math.pow(10, 8)).div(runeAmountAfter);
-
-    const impact = priceAfter
-      .sub(priceBefore)
-      .mul(100)
-      .div(priceBefore)
-      .toNumber();
-
+    const impact = ((swapPrice - coinAPrice) * 100) / coinAPrice;
     return impact;
-  }, [poolData, runeAmount, btcAmount, coinA, coinB]);
+  }, [coinAPrice, swapPrice]);
 
   return (
     <>
@@ -334,8 +286,7 @@ export function SwapPanel() {
                 swap.state === SwapState.INVALID ||
                 swap.state === SwapState.LOADING ||
                 insufficientBalance ||
-                !formattedAmounts[Field.OUTPUT] ||
-                tooSmallFunds
+                !formattedAmounts[Field.OUTPUT]
               }
             >
               {insufficientBalance
@@ -345,12 +296,8 @@ export function SwapPanel() {
                 : !coinB
                 ? "Select Coin B"
                 : swap
-                ? swap.state === SwapState.NO_POOL
-                  ? "No Pool"
-                  : swap.state === SwapState.INVALID
+                ? swap.state === SwapState.INVALID
                   ? swap.errorMessage
-                  : tooSmallFunds
-                  ? "Too Small Funds"
                   : "Review"
                 : "Review"}
             </Button>
@@ -368,29 +315,43 @@ export function SwapPanel() {
                 : "-"}
             </span>
           </div>
-
-          <div className="justify-between flex">
-            <span className="text-muted-foreground">Price</span>
-            {runePriceInSats !== undefined ? (
+          {coinA && coinAPriceInSats !== undefined ? (
+            <div className="justify-between flex">
+              <span className="text-muted-foreground">
+                {getCoinSymbol(coinA)} Price
+              </span>
               <div className="flex flex-col items-end">
                 <span>
-                  {runePriceInSats} sats
-                  {btcPrice ? (
+                  {coinAPriceInSats.toFixed(2)} sats
+                  {coinAPrice ? (
                     <em className="text-muted-foreground">
                       {" "}
-                      $
-                      {new Decimal(runePriceInSats)
-                        .mul(btcPrice)
-                        .div(Math.pow(10, 8))
-                        .toFixed(4)}
+                      ${formatNumber(coinAPrice)}
                     </em>
                   ) : null}
                 </span>
               </div>
-            ) : (
-              "-"
-            )}
-          </div>
+            </div>
+          ) : null}
+          {coinB && coinBPriceInSats !== undefined ? (
+            <div className="justify-between flex">
+              <span className="text-muted-foreground">
+                {getCoinSymbol(coinB)} Price
+              </span>
+              <div className="flex flex-col items-end">
+                <span>
+                  {coinBPriceInSats.toFixed(2)} sats
+                  {coinBPrice ? (
+                    <em className="text-muted-foreground">
+                      {" "}
+                      ${formatNumber(coinBPrice)}
+                    </em>
+                  ) : null}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
           {priceImpact !== undefined ? (
             <div className="justify-between flex">
               <span className="text-muted-foreground">Price Impact</span>
@@ -413,9 +374,7 @@ export function SwapPanel() {
         coinB={coinB}
         coinAAmount={formattedAmounts[Field.INPUT]}
         coinBAmount={formattedAmounts[Field.OUTPUT]}
-        poolKey={swap?.pool?.key ?? ""}
-        poolUtxos={swap?.utxos ?? []}
-        nonce={swap?.nonce ?? "0"}
+        swapQuote={swap}
         open={reviewModalOpen}
         setOpen={setReviewModalOpen}
       />

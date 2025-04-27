@@ -2,10 +2,14 @@ import { Coin, TransactionInfo, UnspentOutput, TransactionType } from "@/types";
 
 import { getCoinSymbol } from "../common";
 import { Runestone, Edict } from "runelib";
-import { AddressType } from "@/types";
+import { AddressType, TxInput } from "@/types";
 import { getTxInfo, getRawTx } from "@/lib/chain-api";
 import { getAddressType } from "../address";
 import { formatNumber } from "../format-number";
+import { toPsbtNetwork } from "../network";
+import { hexToBytes } from "../common";
+import { NETWORK } from "@/lib/constants";
+import * as bitcoin from "bitcoinjs-lib";
 
 export async function getTxScript(outpoint: string) {
   const [txid, vout] = outpoint.split(":");
@@ -197,5 +201,68 @@ export function getTxTitleAndDescription(transaction: TransactionInfo): {
   return {
     title,
     description,
+  };
+}
+
+export function utxoToInput(utxo: UnspentOutput, estimate?: boolean): TxInput {
+  let data: any = {
+    hash: utxo.txid,
+    index: utxo.vout,
+    witnessUtxo: {
+      value: BigInt(utxo.satoshis),
+      script: hexToBytes(utxo.scriptPk),
+    },
+  };
+  if (
+    (utxo.addressType === AddressType.P2TR ||
+      utxo.addressType === AddressType.M44_P2TR) &&
+    utxo.pubkey
+  ) {
+    const pubkey =
+      utxo.pubkey.length === 66 ? utxo.pubkey.slice(2) : utxo.pubkey;
+    data = {
+      hash: utxo.txid,
+      index: utxo.vout,
+      witnessUtxo: {
+        value: BigInt(utxo.satoshis),
+        script: hexToBytes(utxo.scriptPk),
+      },
+      tapInternalKey: hexToBytes(pubkey),
+    };
+  } else if (utxo.addressType === AddressType.P2PKH) {
+    if (!utxo.rawtx || estimate) {
+      const data = {
+        hash: utxo.txid,
+        index: utxo.vout,
+        witnessUtxo: {
+          value: BigInt(utxo.satoshis),
+          script: hexToBytes(utxo.scriptPk),
+        },
+      };
+      return {
+        data,
+        utxo,
+      };
+    }
+  } else if (utxo.addressType === AddressType.P2SH_P2WPKH && utxo.pubkey) {
+    const redeemData = bitcoin.payments.p2wpkh({
+      pubkey: hexToBytes(utxo.pubkey),
+      network: toPsbtNetwork(NETWORK),
+    });
+
+    data = {
+      hash: utxo.txid,
+      index: utxo.vout,
+      witnessUtxo: {
+        value: BigInt(utxo.satoshis),
+        script: hexToBytes(utxo.scriptPk),
+      },
+      redeemScript: redeemData.output,
+    };
+  }
+
+  return {
+    data,
+    utxo,
   };
 }

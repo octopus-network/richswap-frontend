@@ -12,7 +12,7 @@ import {
   MessageSquare,
   Package,
   Code,
-  Globe
+  Globe,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
+import { RUNESCAN_URL } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -124,6 +125,12 @@ export const Nav = () => {
           </a>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[180px] border-none shadow-none text-foreground">
+          <Link href={`${RUNESCAN_URL}/exchange/RICH_SWAP`} target="_blank">
+            <DropdownMenuItem>
+              <Globe />
+              <span className="ml-2 mr-1">Explorer</span>
+            </DropdownMenuItem>
+          </Link>
           <Link href="https://x.com/RichSwap_REE" target="_blank">
             <DropdownMenuItem>
               <FaXTwitter /> <span className="ml-2 mr-1">Twitter</span>{" "}
@@ -154,15 +161,6 @@ export const Nav = () => {
             <DropdownMenuItem>
               <Code />
               <span className="ml-2 mr-1">Source Code</span>
-            </DropdownMenuItem>
-          </Link>
-          <Link
-            href="https://www.runescan.net/exchange/RICH_SWAP"
-            target="_blank"
-          >
-            <DropdownMenuItem>
-              <Globe />
-              <span className="ml-2 mr-1">Explorer</span>
             </DropdownMenuItem>
           </Link>
         </DropdownMenuContent>
