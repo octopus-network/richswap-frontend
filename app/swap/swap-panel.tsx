@@ -196,14 +196,20 @@ export function SwapPanel() {
     [coinBFiatValue, coinAAmount]
   );
 
-  const swapPriceInSats = useMemo(
+  const coinAPriceInSats = useMemo(
     () =>
-      swapPrice && btcPrice
-        ? new Decimal(swapPrice)
-            .div(new Decimal(btcPrice).div(Math.pow(10, 8)))
-            .toFixed(0)
-        : undefined,
-    [swapPrice, btcPrice]
+      coinA?.id === BITCOIN.id || !coinAPrice || !btcPrice
+        ? undefined
+        : new Decimal(coinAPrice).mul(Math.pow(10, 8)).div(btcPrice).toNumber(),
+    [coinAPrice, btcPrice, coinA]
+  );
+
+  const coinBPriceInSats = useMemo(
+    () =>
+      coinB?.id === BITCOIN.id || !coinBPrice || !btcPrice
+        ? undefined
+        : new Decimal(coinBPrice).mul(Math.pow(10, 8)).div(btcPrice).toNumber(),
+    [coinBPrice, btcPrice, coinB]
   );
 
   const priceImpact = useMemo(() => {
@@ -309,25 +315,43 @@ export function SwapPanel() {
                 : "-"}
             </span>
           </div>
-
-          <div className="justify-between flex">
-            <span className="text-muted-foreground">Price</span>
-            {swapPriceInSats !== undefined ? (
+          {coinA && coinAPriceInSats !== undefined ? (
+            <div className="justify-between flex">
+              <span className="text-muted-foreground">
+                {getCoinSymbol(coinA)} Price
+              </span>
               <div className="flex flex-col items-end">
                 <span>
-                  {swapPriceInSats} sats
-                  {swapPrice ? (
+                  {coinAPriceInSats.toFixed(2)} sats
+                  {coinAPrice ? (
                     <em className="text-muted-foreground">
                       {" "}
-                      ${swapPrice.toFixed(4)}
+                      ${formatNumber(coinAPrice)}
                     </em>
                   ) : null}
                 </span>
               </div>
-            ) : (
-              "-"
-            )}
-          </div>
+            </div>
+          ) : null}
+          {coinB && coinBPriceInSats !== undefined ? (
+            <div className="justify-between flex">
+              <span className="text-muted-foreground">
+                {getCoinSymbol(coinB)} Price
+              </span>
+              <div className="flex flex-col items-end">
+                <span>
+                  {coinBPriceInSats.toFixed(2)} sats
+                  {coinBPrice ? (
+                    <em className="text-muted-foreground">
+                      {" "}
+                      ${formatNumber(coinBPrice)}
+                    </em>
+                  ) : null}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
           {priceImpact !== undefined ? (
             <div className="justify-between flex">
               <span className="text-muted-foreground">Price Impact</span>
