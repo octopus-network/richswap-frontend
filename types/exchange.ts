@@ -10,14 +10,18 @@ export enum SwapState {
   VALID = "valid",
 }
 
+export type SwapRoute = {
+  pool: PoolData;
+  nonce: string;
+  poolUtxos: UnspentOutput[];
+  inputAmount: string;
+  outputAmount: string;
+};
+
 export type SwapQuote = {
   state: SwapState;
-  inputAmount: string;
-  nonce?: string;
-  outputAmount?: string;
   errorMessage?: string;
-  utxos?: UnspentOutput[];
-  pool?: PoolData;
+  routes?: SwapRoute[];
 };
 
 export enum DepositState {
@@ -38,6 +42,7 @@ export type DepositQuote = {
 
 export type PoolData = {
   key: string;
+  address: string;
   coinAId: string;
   coinBId: string;
   coinAAmount: string;
@@ -49,17 +54,9 @@ export type PoolInfo = {
   key: string;
   address: string;
   name: string;
+  nonce: number;
   coinA: CoinWithBalance;
   coinB: CoinWithBalance;
-};
-
-export type PoolOverview = {
-  key: string;
-  name: string;
-  btc_reserved: bigint;
-  coin_reserved: CoinBalance[];
-  address: string;
-  nonce: bigint;
 };
 
 export interface Position {

@@ -33,7 +33,7 @@ export function usePoolList() {
 }
 
 export function usePoolsTvl() {
-  const poolsList = usePoolList();
+  const poolList = usePoolList();
 
   const [prices] = useCoinPrices();
 
@@ -42,7 +42,7 @@ export function usePoolsTvl() {
     if (!prices) {
       return tmpObj;
     }
-    poolsList.forEach(({ coinA, key }) => {
+    poolList.forEach(({ coinA, key }) => {
       const coinAPrice = prices?.[coinA.id] ?? 0;
       const coinAValue = new Decimal(
         formatCoinAmount(coinA.balance, coinA)
@@ -50,13 +50,22 @@ export function usePoolsTvl() {
       tmpObj[key] = coinAValue.mul(2).toNumber();
     });
     return tmpObj;
-  }, [poolsList, prices]);
+  }, [poolList, prices]);
 
   return tvls;
 }
 
+export function usePoolsTrades() {
+  const poolList = usePoolList();
+
+  return useMemo(
+    () => poolList.reduce((acc, pool) => acc + pool.nonce, 0),
+    [poolList]
+  );
+}
+
 export function usePoolsFee() {
-  const poolsList = usePoolList();
+  const poolList = usePoolList();
 
   const btcPrice = useCoinPrice(BITCOIN.id);
   const [fees, setFees] = useState<Record<string, number>>({});
@@ -65,7 +74,7 @@ export function usePoolsFee() {
     if (!btcPrice) {
       return;
     }
-    const promises = poolsList.map(({ address }) =>
+    const promises = poolList.map(({ address }) =>
       Exchange.getPoolData(address)
     );
 
@@ -82,19 +91,19 @@ export function usePoolsFee() {
       });
       setFees(tmpObj);
     });
-  }, [poolsList, btcPrice]);
+  }, [poolList, btcPrice]);
 
   return fees;
 }
 
-export function usePoolTvl(poolKey: string) {
+export function usePoolTvl(poolKey: string | undefined) {
   const tvls = usePoolsTvl();
 
-  return tvls[poolKey];
+  return useMemo(() => (poolKey ? tvls[poolKey] : undefined), [poolKey, tvls]);
 }
 
-export function usePoolFee(poolKey: string) {
+export function usePoolFee(poolKey: string | undefined) {
   const fees = usePoolsFee();
 
-  return fees[poolKey];
+  return useMemo(() => (poolKey ? fees[poolKey] : undefined), [poolKey, fees]);
 }

@@ -1,7 +1,12 @@
 "use client";
 
 import { CreateButton } from "./create-button";
-import { usePoolList, usePoolsFee, usePoolsTvl } from "@/hooks/use-pools";
+import {
+  usePoolList,
+  usePoolsFee,
+  usePoolsTrades,
+  usePoolsTvl,
+} from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { BITCOIN } from "@/lib/constants";
@@ -15,6 +20,7 @@ export default function Pools() {
   const poolList = usePoolList();
 
   const poolsTvl = usePoolsTvl();
+  const poolsTrades = usePoolsTrades();
   const poolsFee = usePoolsFee();
   const btcPrice = useCoinPrice(BITCOIN.id);
 
@@ -113,8 +119,8 @@ export default function Pools() {
             </div>
             <div className="flex flex-col space-y-0.5 ml-4">
               <span className="text-muted-foreground text-xs">Trades</span>
-              {poolsFeeInSats ? (
-                <span className="font-semibold text-xl">- </span>
+              {poolsTrades ? (
+                <span className="font-semibold text-xl">{poolsTrades}</span>
               ) : (
                 <Skeleton className="h-6 w-20" />
               )}
@@ -166,8 +172,8 @@ export default function Pools() {
           <div className="flex justify-between">
             <span className="text-muted-foreground text-sm">Trades</span>
             <div className="flex flex-col space-y-0.5 items-end">
-              {poolsFeeInSats ? (
-                <span className="font-semibold">-</span>
+              {poolsTrades ? (
+                <span className="font-semibold">{poolsTrades}</span>
               ) : (
                 <Skeleton className="h-6 w-20" />
               )}

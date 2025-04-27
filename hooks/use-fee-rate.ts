@@ -41,9 +41,11 @@ export function useRecommendedFeeRateFromOrchestrator(refetch?: boolean) {
   const [feeRate, setFeeRate] = useState(5);
   const [timer, setTimer] = useState<number>(0);
   useEffect(() => {
-    Orchestrator.getRecommendedFee().then((fee) => {
-      setFeeRate(fee);
-    });
+    Orchestrator.getRecommendedFee()
+      .then((fee) => {
+        setFeeRate(fee);
+      })
+      .catch(() => null);
   }, [timer]);
 
   useEffect(() => {

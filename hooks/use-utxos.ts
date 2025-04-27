@@ -35,19 +35,13 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
         }
         return res.data.data;
       }),
-    { refreshInterval: 15 * 1000 }
+    { refreshInterval: 3 * 60 * 1000 }
   );
 
   return useMemo(
     () =>
       apiUtxos
         ? apiUtxos
-            .filter(
-              (c) =>
-                spentUtxos.findIndex(
-                  (s) => s.txid === c.txid && s.vout === c.vout
-                ) < 0
-            )
             .concat(
               pendingUtxos.filter(
                 (p) =>
@@ -56,6 +50,12 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
                     (c) => c.txid === p.txid && c.vout === p.vout
                   ) < 0
               )
+            )
+            .filter(
+              (c) =>
+                spentUtxos.findIndex(
+                  (s) => s.txid === c.txid && s.vout === c.vout
+                ) < 0
             )
         : undefined,
     [apiUtxos, pendingUtxos, spentUtxos]
@@ -82,19 +82,13 @@ export function useRuneUtxos(
         }
         return res.data.data;
       }),
-    { refreshInterval: 15 * 1000 }
+    { refreshInterval: 3 * 60 * 1000 }
   );
 
   return useMemo(
     () =>
       apiUtxos
         ? apiUtxos
-            .filter(
-              (c) =>
-                spentUtxos.findIndex(
-                  (s) => s.txid === c.txid && s.vout === c.vout
-                ) < 0
-            )
             .concat(
               pendingUtxos.filter(
                 (p) =>
@@ -103,6 +97,12 @@ export function useRuneUtxos(
                     (c) => c.txid === p.txid && c.vout === p.vout
                   ) < 0
               )
+            )
+            .filter(
+              (c) =>
+                spentUtxos.findIndex(
+                  (s) => s.txid === c.txid && s.vout === c.vout
+                ) < 0
             )
         : undefined,
     [apiUtxos, pendingUtxos, spentUtxos]
@@ -118,6 +118,8 @@ export function useWalletBtcUtxos() {
   );
 
   const paymentUtxos = useBtcUtxos(paymentAddress, paymentPublicKey);
+
+  console.log("paymentUtxos", paymentUtxos);
 
   return useMemo(() => paymentUtxos, [paymentUtxos]);
 }

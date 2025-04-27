@@ -56,7 +56,7 @@ export function WithdrawForm({
     setSqrtK(_sqrtK);
 
     Exchange.preWithdrawLiquidity(
-      position.pool.key,
+      position.pool,
       position.userAddress,
       _sqrtK
     ).then((res) => {

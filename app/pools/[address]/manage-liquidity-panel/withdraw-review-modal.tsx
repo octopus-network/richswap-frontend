@@ -1,29 +1,32 @@
 import { BaseModal } from "@/components/base-modal";
-import { SwapReview } from "@/components/swap-review";
-import { Coin, SwapQuote } from "@/types";
-import { useState } from "react";
+import { Position, UnspentOutput } from "@/types";
 
-export function ReviewModal({
+import { useState } from "react";
+import { WithdrawReview } from "@/components/withdraw-review";
+
+export function WithdrawReviewModal({
   open,
   setOpen,
-  coinA,
-  coinB,
   coinAAmount,
   coinBAmount,
-  swapQuote,
+  position,
+  nonce,
+  poolUtxos,
+  sqrtK,
 }: {
   open: boolean;
-  coinA: Coin | null;
-  coinB: Coin | null;
   coinAAmount: string;
   coinBAmount: string;
-  swapQuote: SwapQuote | undefined;
+  position: Position;
+  nonce: string;
+  poolUtxos: UnspentOutput[];
   setOpen: (open: boolean) => void;
+  sqrtK: bigint;
 }) {
   const [isSubmiting, setIsSubmiting] = useState(false);
   return (
     <BaseModal
-      title="You're swapping"
+      title="You're withdrawing"
       open={open}
       setOpen={(open) => {
         setIsSubmiting(false);
@@ -33,15 +36,17 @@ export function ReviewModal({
       showCloseButton={!isSubmiting}
     >
       <div className="p-5 pt-2">
-        <SwapReview
-          coinA={coinA}
-          coinB={coinB}
+        <WithdrawReview
+          coinA={position?.coinA ?? null}
+          coinB={position?.coinB ?? null}
+          poolKey={position?.pool.key ?? ""}
           coinAAmount={coinAAmount}
           coinBAmount={coinBAmount}
-          setIsSubmiting={setIsSubmiting}
+          nonce={nonce}
+          poolUtxos={poolUtxos}
+          sqrtK={sqrtK}
           onSuccess={() => setOpen(false)}
           onBack={() => setOpen(false)}
-          swapQuote={swapQuote}
         />
       </div>
     </BaseModal>

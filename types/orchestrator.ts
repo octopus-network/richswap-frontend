@@ -41,7 +41,7 @@ export type TxOutputType =
 
 export type EstimateMinTxFeeArgs = {
   input_types: TxOutputType[];
-  pool_address: string;
+  pool_address: string[];
   output_types: TxOutputType[];
 };
 
@@ -50,4 +50,13 @@ export type OutpointWithValue = {
   value: bigint;
   script_pubkey_hex: string;
   outpoint: string;
+};
+
+export type OrchestratorStatus = {
+  mempool_tx_fee_rate: {
+    low: bigint;
+    high: bigint;
+    update_time: string;
+    medium: bigint;
+  };
 };

@@ -1,6 +1,5 @@
 import { AddressType, UnspentOutput } from "../types";
 import {
-  hexToBytes,
   bytesToHex,
   getEstimateAddress,
   addressToScriptPk,
@@ -8,94 +7,14 @@ import {
   selectBtcUtxos,
   toPsbtNetwork,
 } from "./utils";
-import { ToSignInput } from "../types";
+import { ToSignInput, TxInput, TxOutput } from "../types";
 import { NETWORK, UTXO_DUST } from "./constants";
-
+import { utxoToInput } from "./utils";
 import * as bitcoin from "bitcoinjs-lib";
 import { ECPairAPI, ECPairFactory } from "ecpair";
 import * as ecc from "@bitcoinerlab/secp256k1";
 
 const ECPair: ECPairAPI = ECPairFactory(ecc);
-
-interface TxInput {
-  data: {
-    hash: string;
-    index: number;
-    witnessUtxo?: { value: bigint; script: Uint8Array };
-    tapInternalKey?: Uint8Array;
-    nonWitnessUtxo?: Uint8Array;
-  };
-  utxo: UnspentOutput;
-}
-
-interface TxOutput {
-  address?: string;
-  script?: Uint8Array;
-  value: bigint;
-}
-
-function utxoToInput(utxo: UnspentOutput, estimate?: boolean): TxInput {
-  let data: any = {
-    hash: utxo.txid,
-    index: utxo.vout,
-    witnessUtxo: {
-      value: BigInt(utxo.satoshis),
-      script: hexToBytes(utxo.scriptPk),
-    },
-  };
-  if (
-    (utxo.addressType === AddressType.P2TR ||
-      utxo.addressType === AddressType.M44_P2TR) &&
-    utxo.pubkey
-  ) {
-    const pubkey =
-      utxo.pubkey.length === 66 ? utxo.pubkey.slice(2) : utxo.pubkey;
-    data = {
-      hash: utxo.txid,
-      index: utxo.vout,
-      witnessUtxo: {
-        value: BigInt(utxo.satoshis),
-        script: hexToBytes(utxo.scriptPk),
-      },
-      tapInternalKey: hexToBytes(pubkey),
-    };
-  } else if (utxo.addressType === AddressType.P2PKH) {
-    if (!utxo.rawtx || estimate) {
-      const data = {
-        hash: utxo.txid,
-        index: utxo.vout,
-        witnessUtxo: {
-          value: BigInt(utxo.satoshis),
-          script: hexToBytes(utxo.scriptPk),
-        },
-      };
-      return {
-        data,
-        utxo,
-      };
-    }
-  } else if (utxo.addressType === AddressType.P2SH_P2WPKH && utxo.pubkey) {
-    const redeemData = bitcoin.payments.p2wpkh({
-      pubkey: hexToBytes(utxo.pubkey),
-      network: toPsbtNetwork(NETWORK),
-    });
-
-    data = {
-      hash: utxo.txid,
-      index: utxo.vout,
-      witnessUtxo: {
-        value: BigInt(utxo.satoshis),
-        script: hexToBytes(utxo.scriptPk),
-      },
-      redeemScript: redeemData.output,
-    };
-  }
-
-  return {
-    data,
-    utxo,
-  };
-}
 
 /**
  * Transaction

@@ -1,7 +1,7 @@
 import { ToSignInput, UnspentOutput } from "@/types";
 
-import { InputCoin, OutputCoin, AddressType } from "@/types";
-import { UTXO_DUST, BITCOIN } from "@/lib/constants";
+import { AddressType } from "@/types";
+import { UTXO_DUST, BITCOIN, EXCHANGE_ID } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
 import { getAddressType, addressTypeToString } from "../address";
 import { Orchestrator } from "@/lib/orchestrator";
@@ -20,6 +20,7 @@ export async function swapBtcTx({
   paymentAddress,
   poolAddress,
   feeRate,
+  nonce,
 }: {
   btcAmount: bigint;
   runeid: string;
@@ -31,6 +32,7 @@ export async function swapBtcTx({
   paymentAddress: string;
   poolAddress: string;
   feeRate: number;
+  nonce: bigint;
 }) {
   let poolRuneAmount = BigInt(0),
     poolBtcAmount = BigInt(0);
@@ -104,7 +106,6 @@ export async function swapBtcTx({
 
   const runestone = new Runestone(edicts, none(), none(), none());
 
-  const poolSpendUtxos = poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`);
   const poolVouts: number[] = [];
 
   if (needChange) {
@@ -156,7 +157,7 @@ export async function swapBtcTx({
 
     currentFee = await Orchestrator.getEstimateMinTxFee({
       input_types: inputTypes,
-      pool_address: poolAddress,
+      pool_address: [poolAddress],
       output_types: outputTypes,
     });
 
@@ -265,37 +266,40 @@ export async function swapBtcTx({
 
   const txid = unsignedTxClone.getId();
 
-  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
-
-  const inputCoins: InputCoin[] = [
-    {
-      from: address,
-      coin: {
-        id: runeid,
-        value: runeAmount,
-      },
-    },
-  ];
-
-  const outputCoins: OutputCoin[] = [
-    {
-      to: paymentAddress,
-      coin: {
-        id: BITCOIN.id,
-        value: btcAmount,
-      },
-    },
-  ];
-
   return {
     psbt,
-    poolSpendUtxos,
-    poolReceiveUtxos,
     toSpendUtxos,
     toSignInputs,
     txid,
     fee: currentFee,
-    inputCoins,
-    outputCoins,
+    intentions: [
+      {
+        action: "swap",
+        exchange_id: EXCHANGE_ID,
+        pool_utxo_spend: poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`),
+        pool_utxo_receive: poolVouts.map((vout) => `${txid}:${vout}`),
+        input_coins: [
+          {
+            from: address,
+            coin: {
+              id: runeid,
+              value: runeAmount,
+            },
+          },
+        ],
+        output_coins: [
+          {
+            to: paymentAddress,
+            coin: {
+              id: BITCOIN.id,
+              value: btcAmount,
+            },
+          },
+        ],
+        action_params: "",
+        pool_address: poolAddress,
+        nonce,
+      },
+    ],
   };
 }

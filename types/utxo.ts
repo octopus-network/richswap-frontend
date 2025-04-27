@@ -24,3 +24,20 @@ export enum AddressType {
   P2SH,
   UNKNOWN,
 }
+
+export interface TxInput {
+  data: {
+    hash: string;
+    index: number;
+    witnessUtxo?: { value: bigint; script: Uint8Array };
+    tapInternalKey?: Uint8Array;
+    nonWitnessUtxo?: Uint8Array;
+  };
+  utxo: UnspentOutput;
+}
+
+export interface TxOutput {
+  address?: string;
+  script?: Uint8Array;
+  value: bigint;
+}

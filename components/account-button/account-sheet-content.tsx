@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import { ellipseMiddle, formatNumber } from "@/lib/utils";
 import { useLaserEyes } from "@omnisat/lasereyes";
-import { BITCOIN, WALLETS } from "@/lib/constants";
+import { BITCOIN, WALLETS, RUNESCAN_URL } from "@/lib/constants";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -85,7 +85,7 @@ export function AccountSheetContent() {
         </div>
         <div className="px-4">
           <Link
-            href={`https://www.runescan.net/address/${address}`}
+            href={`${RUNESCAN_URL}/address/${address}`}
             target="_blank"
           >
             <Button variant="secondary" className="w-full">

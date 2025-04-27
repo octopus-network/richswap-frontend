@@ -4,14 +4,14 @@ import { useState, useMemo } from "react";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import { usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatNumber, getP2trAressAndScript } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 
 import { useCoinPrice } from "@/hooks/use-prices";
 
 import Decimal from "decimal.js";
 import { CoinIcon } from "@/components/coin-icon";
-import { BITCOIN } from "@/lib/constants";
+import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
 
 export function PortfolioRow({ position }: { position: Position }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
@@ -70,10 +70,7 @@ export function PortfolioRow({ position }: { position: Position }) {
     [positionYield, btcPrice]
   );
 
-  const poolAddress = useMemo(() => {
-    const { address } = getP2trAressAndScript(position.pool.key);
-    return address;
-  }, [position]);
+  const poolAddress = useMemo(() => position.pool.address, [position]);
 
   return (
     <>
@@ -91,7 +88,7 @@ export function PortfolioRow({ position }: { position: Position }) {
               e.stopPropagation();
               e.preventDefault();
               window.open(
-                `https://www.runescan.net/runes/${position.pool.coinB.number}`,
+                `${RUNESCAN_URL}/runes/${position.pool.coinB.number}`,
                 "_blank"
               );
             }}
@@ -126,7 +123,7 @@ export function PortfolioRow({ position }: { position: Position }) {
                   e.stopPropagation();
                   e.preventDefault();
                   window.open(
-                    `https://www.runescan.net/address/${poolAddress}`,
+                    `${RUNESCAN_URL}/address/${poolAddress}`,
                     "_blank"
                   );
                 }}
