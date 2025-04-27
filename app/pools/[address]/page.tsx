@@ -243,7 +243,9 @@ export default function Pool() {
                           bgColor="#4c9aff"
                           showPercentage={false}
                         />
-                        <span className="ml-1">{lp.percentage}%</span>
+                        <span className="ml-1">
+                          {lp.percentage.toFixed(2)}%
+                        </span>
                       </div>
                     </div>
                   ))
