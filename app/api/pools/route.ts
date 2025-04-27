@@ -9,7 +9,7 @@ const STORAGE_URL = process.env.STORAGE_URL!;
 export async function GET() {
   try {
     const cache = (await axios
-      .get(`${STORAGE_URL}/pool-list.json`)
+      .get(`${STORAGE_URL}/pool-list.json?t=${Date.now()}`)
       .then((res) => res.data)) as PoolInfo[];
 
     return NextResponse.json({
