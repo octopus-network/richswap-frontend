@@ -156,6 +156,7 @@ export class Exchange {
         userIncomes: user_incomes.toString(),
       };
     } catch (err: any) {
+      console.error("Get position error", err);
       return null;
     }
   }
