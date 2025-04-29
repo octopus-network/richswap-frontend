@@ -20,7 +20,7 @@ import {
   useDerivedSwapInfo,
 } from "@/store/swap/hooks";
 
-import { formatCoinAmount, formatNumber, getCoinSymbol } from "@/lib/utils";
+import { cn, formatCoinAmount, formatNumber, getCoinSymbol } from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN, COIN_LIST } from "@/lib/constants";
 
@@ -190,35 +190,34 @@ export function SwapPanel() {
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
-  const swapPrice = useMemo(
-    () =>
-      coinAAmount && coinBFiatValue ? coinBFiatValue / coinAAmount : undefined,
-    [coinBFiatValue, coinAAmount]
-  );
-
-  const coinAPriceInSats = useMemo(
-    () =>
-      coinA?.id === BITCOIN.id || !coinAPrice || !btcPrice
-        ? undefined
-        : new Decimal(coinAPrice).mul(Math.pow(10, 8)).div(btcPrice).toNumber(),
-    [coinAPrice, btcPrice, coinA]
-  );
-
-  const coinBPriceInSats = useMemo(
-    () =>
-      coinB?.id === BITCOIN.id || !coinBPrice || !btcPrice
-        ? undefined
-        : new Decimal(coinBPrice).mul(Math.pow(10, 8)).div(btcPrice).toNumber(),
-    [coinBPrice, btcPrice, coinB]
-  );
-
-  const priceImpact = useMemo(() => {
-    if (!coinAPrice || !swapPrice) {
+  const priceImpacts = useMemo(() => {
+    if (!swap?.routes?.length || !btcPrice) {
       return undefined;
     }
-    const impact = ((swapPrice - coinAPrice) * 100) / coinAPrice;
-    return impact;
-  }, [coinAPrice, swapPrice]);
+    const [route0, route1] = swap.routes;
+
+    const impacts = [
+      {
+        runeName: route0.pool.name,
+        impact: route0.priceImpact,
+        runePrice: (route0.runePriceInSats * btcPrice) / Math.pow(10, 8),
+        runePriceInSats: route0.runePriceInSats,
+      },
+    ];
+
+    if (route1) {
+      impacts.push({
+        impact: route1.priceImpact,
+        runeName: route1.pool.name,
+        runePrice: (route1.runePriceInSats * btcPrice) / Math.pow(10, 8),
+        runePriceInSats: route1.runePriceInSats,
+      });
+    }
+
+    return impacts;
+  }, [swap, btcPrice]);
+
+  console.log(priceImpacts);
 
   return (
     <>
@@ -315,58 +314,63 @@ export function SwapPanel() {
                 : "-"}
             </span>
           </div>
-          {coinA && coinAPriceInSats !== undefined ? (
-            <div className="justify-between flex">
-              <span className="text-muted-foreground">
-                {getCoinSymbol(coinA)} Price
-              </span>
-              <div className="flex flex-col items-end">
-                <span>
-                  {coinAPriceInSats.toFixed(2)} sats
-                  {coinAPrice ? (
-                    <em className="text-muted-foreground">
-                      {" "}
-                      ${formatNumber(coinAPrice)}
-                    </em>
-                  ) : null}
-                </span>
-              </div>
-            </div>
-          ) : null}
-          {coinB && coinBPriceInSats !== undefined ? (
-            <div className="justify-between flex">
-              <span className="text-muted-foreground">
-                {getCoinSymbol(coinB)} Price
-              </span>
-              <div className="flex flex-col items-end">
-                <span>
-                  {coinBPriceInSats.toFixed(2)} sats
-                  {coinBPrice ? (
-                    <em className="text-muted-foreground">
-                      {" "}
-                      ${formatNumber(coinBPrice)}
-                    </em>
-                  ) : null}
-                </span>
-              </div>
-            </div>
-          ) : null}
 
-          {priceImpact !== undefined ? (
-            <div className="justify-between flex">
-              <span className="text-muted-foreground">Price Impact</span>
-              <div className="flex items-end">
-                <span
-                  className={
-                    priceImpact < 0 ? "text-red-400" : "text-green-400"
-                  }
-                >
-                  {priceImpact > 0 && "+"}
-                  {priceImpact.toFixed(3)}%
+          {priceImpacts && (
+            <>
+              <div className="justify-between flex">
+                <span className="text-muted-foreground">
+                  {priceImpacts[0].runeName} Price
                 </span>
+                <div className="flex flex-col items-end">
+                  <span>
+                    {priceImpacts[0].runePriceInSats.toFixed(2)} sats
+                    <em
+                      className={cn(
+                        "ml-1",
+                        priceImpacts[0].impact >= 0
+                          ? "text-green-500"
+                          : "text-red-500"
+                      )}
+                    >
+                      ({priceImpacts[0].impact >= 0 && "+"}
+                      {priceImpacts[0].impact.toFixed(2)}%)
+                    </em>
+                  </span>
+                  <span className="text-muted-foreground">
+                    {" "}
+                    ${formatNumber(priceImpacts[0].runePrice)}
+                  </span>
+                </div>
               </div>
-            </div>
-          ) : null}
+              {priceImpacts[1] && (
+                <div className="justify-between flex">
+                  <span className="text-muted-foreground">
+                    {priceImpacts[1].runeName} Price
+                  </span>
+                  <div className="flex flex-col items-end">
+                    <span>
+                      {priceImpacts[1].runePriceInSats.toFixed(2)} sats
+                      <em
+                        className={cn(
+                          "ml-1",
+                          priceImpacts[1].impact >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        )}
+                      >
+                        ({priceImpacts[1].impact >= 0 && "+"}
+                        {priceImpacts[1].impact.toFixed(2)}%)
+                      </em>
+                    </span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      ${formatNumber(priceImpacts[1].runePrice)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
       <ReviewModal
