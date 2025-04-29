@@ -14,7 +14,7 @@ const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
 const UNISAT_API = process.env.UNISAT_API!;
 
 const REE_INDEXER_URL = process.env.NEXT_PUBLIC_REE_INDEXER_URL!;
-const RUNES_INDEXER_URL = process.env.NEXT_PUBLIC_RUNES_INDEXER_URL!;
+// const RUNES_INDEXER_URL = process.env.NEXT_PUBLIC_RUNES_INDEXER_URL!;
 
 const query = gql`
   {
@@ -48,17 +48,17 @@ const query = gql`
   }
 `;
 
-const runesQuery = gql`
-  query GetRunes($ids: [String!]) {
-    runes(where: { rune_id: { _in: $ids }, reorg: { _eq: false } }) {
-      rune_id
-      symbol
-      spaced_rune
-      divisibility
-      etching
-    }
-  }
-`;
+// const runesQuery = gql`
+//   query GetRunes($ids: [String!]) {
+//     runes(where: { rune_id: { _in: $ids }, reorg: { _eq: false } }) {
+//       rune_id
+//       symbol
+//       spaced_rune
+//       divisibility
+//       etching
+//     }
+//   }
+// `;
 
 export async function GET() {
   try {
@@ -70,13 +70,13 @@ export async function GET() {
         }),
     });
 
-    const runesClient = new GraphQLClient(RUNES_INDEXER_URL, {
-      fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
-        fetch(url as string, {
-          ...options,
-          cache: "no-store",
-        }),
-    });
+    // const runesClient = new GraphQLClient(RUNES_INDEXER_URL, {
+    //   fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
+    //     fetch(url as string, {
+    //       ...options,
+    //       cache: "no-store",
+    //     }),
+    // });
 
     const { exchange_view } = (await client.request(query)) as {
       exchange_view: {
