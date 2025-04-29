@@ -16,6 +16,8 @@ export type SwapRoute = {
   poolUtxos: UnspentOutput[];
   inputAmount: string;
   outputAmount: string;
+  runePriceInSats: number;
+  priceImpact: number;
 };
 
 export type SwapQuote = {
@@ -43,6 +45,7 @@ export type DepositQuote = {
 export type PoolData = {
   key: string;
   address: string;
+  name: string;
   coinAId: string;
   coinBId: string;
   coinAAmount: string;

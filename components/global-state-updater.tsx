@@ -63,6 +63,7 @@ export function GlobalStateUpdater() {
                 )
                 .toNumber()
             : 0;
+
         const coinPrice = btcPrice * coinPriceInBtc;
         tmpObj[pool.coinB.id] = coinPrice;
       });

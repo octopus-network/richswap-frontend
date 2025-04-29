@@ -83,15 +83,16 @@ export class Exchange {
 
       const utxo = data.utxos[0];
 
-      const incomes = BigInt(0);
+      const btc_reserved = data.btc_reserved;
 
       return {
         key: data.key,
         address,
+        name: data.name,
         coinAId: BITCOIN.id,
         coinBId: coinReserved?.id,
-        coinAAmount: ((utxo?.sats ?? BigInt(0)) - incomes).toString(),
-        coinBAmount: utxo?.maybe_rune[0].value.toString(),
+        coinAAmount: btc_reserved.toString(),
+        coinBAmount: utxo?.maybe_rune[0]?.value.toString() ?? "0",
         incomes: attributes.incomes.toString(),
       };
     }
@@ -155,7 +156,6 @@ export class Exchange {
         userIncomes: user_incomes.toString(),
       };
     } catch (err: any) {
-      console.log("get position error", err);
       return null;
     }
   }
@@ -423,12 +423,45 @@ export class Exchange {
       throw new Error("Invalid pool");
     }
 
+    const inputCoinIsBitcoin = inputCoin.id === BITCOIN.id;
+
+    const swapPrice = new Decimal(inputAmount)
+      .div(output.value.toString())
+      .toNumber();
+
+    const marketPrice = new Decimal(
+      inputCoinIsBitcoin ? poolData.coinAAmount : poolData.coinBAmount
+    )
+      .div(inputCoinIsBitcoin ? poolData.coinBAmount : poolData.coinAAmount)
+      .toNumber();
+
+    const priceImpact = new Decimal((swapPrice - marketPrice) * 100)
+      .div(marketPrice)
+      .toNumber();
+
+    const runePriceInSats = new Decimal(
+      inputCoinIsBitcoin ? inputAmount : output.value.toString()
+    )
+      .div(
+        new Decimal(
+          inputCoinIsBitcoin ? output.value.toString() : inputAmount
+        ).div(
+          Math.pow(
+            10,
+            inputCoinIsBitcoin ? outputCoin.decimals : inputCoin.decimals
+          )
+        )
+      )
+      .toNumber();
+
     const route = {
       pool: poolData,
       inputAmount,
       outputAmount: output.value.toString(),
       poolUtxos: [utxo],
       nonce: nonce.toString(),
+      runePriceInSats,
+      priceImpact: inputCoinIsBitcoin ? priceImpact : -priceImpact,
     };
 
     return route;
