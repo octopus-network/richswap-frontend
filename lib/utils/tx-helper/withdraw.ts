@@ -1,10 +1,4 @@
-import {
-  UnspentOutput,
-  InputCoin,
-  OutputCoin,
-  ToSignInput,
-  AddressType,
-} from "@/types";
+import { UnspentOutput, ToSignInput, AddressType } from "@/types";
 
 import { UTXO_DUST, BITCOIN } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
