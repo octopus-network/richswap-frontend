@@ -191,6 +191,7 @@ export async function runeSwapRuneTx({
   let lastFee = BigInt(0);
   let currentFee = BigInt(0);
   let selectedUtxos: UnspentOutput[] = [];
+  let discardedSats = BigInt(0);
 
   const utxoDust = (needChange ? UTXO_DUST : BigInt(0)) + UTXO_DUST;
   let leftFeeAmount = BigInt(0);
@@ -261,6 +262,8 @@ export async function runeSwapRuneTx({
       address: paymentAddress,
       value: changeBtcAmount,
     });
+  } else if (changeBtcAmount > BigInt(0)) {
+    discardedSats = changeBtcAmount;
   }
 
   txInputs.forEach((input) => {
@@ -314,7 +317,7 @@ export async function runeSwapRuneTx({
     toSpendUtxos: _toSpendUtxos,
     toSignInputs,
     txid,
-    fee: currentFee,
+    fee: currentFee + discardedSats,
     intentions: [
       {
         action: "swap",

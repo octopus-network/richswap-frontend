@@ -110,6 +110,7 @@ export async function swapRuneTx({
   let currentFee = BigInt(0);
   let selectedUtxos: UnspentOutput[] = [];
   let targetBtcAmount = BigInt(0);
+  let discardedSats = BigInt(0);
 
   do {
     lastFee = currentFee;
@@ -171,9 +172,11 @@ export async function swapRuneTx({
   if (changeBtcAmount < 0) {
     throw new Error("Inssuficient UTXO(s)");
   }
-
+  
   if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
+  } else if (changeBtcAmount > BigInt(0)) {
+    discardedSats = changeBtcAmount;
   }
 
   const inputs = tx.getInputs();
@@ -230,7 +233,7 @@ export async function swapRuneTx({
     toSpendUtxos,
     toSignInputs,
     txid,
-    fee: currentFee,
+    fee: currentFee + discardedSats,
     intentions: [
       {
         action: "swap",
