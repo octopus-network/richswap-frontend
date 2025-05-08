@@ -148,6 +148,7 @@ export async function depositTx({
   let currentFee = BigInt(0);
   let selectedUtxos: UnspentOutput[] = [];
   let targetBtcAmount = BigInt(0);
+  let discardedSats = BigInt(0);
 
   const utxoDust = needChange ? UTXO_DUST : BigInt(0);
 
@@ -215,11 +216,11 @@ export async function depositTx({
 
   if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
+  } else if (changeBtcAmount > BigInt(0)) {
+    discardedSats = changeBtcAmount;
   }
 
   const inputs = tx.getInputs();
-
-  console.log("inputs", inputs);
 
   const psbt = tx.toPsbt();
 
@@ -267,25 +268,6 @@ export async function depositTx({
 
   const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
-  const inputCoins: InputCoin[] = [
-    {
-      from: paymentAddress,
-      coin: {
-        id: BITCOIN.id,
-        value: btcAmount,
-      },
-    },
-    {
-      from: address,
-      coin: {
-        id: runeid,
-        value: runeAmount,
-      },
-    },
-  ];
-
-  const outputCoins: OutputCoin[] = [];
-
   return {
     psbt,
     toSpendUtxos,
@@ -293,8 +275,23 @@ export async function depositTx({
     poolSpendUtxos,
     poolReceiveUtxos,
     txid,
-    fee: currentFee,
-    inputCoins,
-    outputCoins,
+    fee: currentFee + discardedSats,
+    inputCoins: [
+      {
+        from: paymentAddress,
+        coin: {
+          id: BITCOIN.id,
+          value: btcAmount,
+        },
+      },
+      {
+        from: address,
+        coin: {
+          id: runeid,
+          value: runeAmount,
+        },
+      },
+    ],
+    outputCoins: [],
   };
 }

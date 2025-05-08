@@ -137,7 +137,7 @@ export const Nav = () => {
             </DropdownMenuItem>
           </Link>
           <Link
-            href="https://docs.google.com/document/d/1aUYET886ysVDk3xsc3BaMwnhl5mK7f7qaern_-gV5L4/edit?usp=sharing"
+            href="https://omnitynetwork.notion.site/richswap"
             target="_blank"
           >
             <DropdownMenuItem>

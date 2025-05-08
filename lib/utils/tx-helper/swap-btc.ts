@@ -148,6 +148,7 @@ export async function swapBtcTx({
   let lastFee = BigInt(0);
   let currentFee = BigInt(0);
   let selectedUtxos: UnspentOutput[] = [];
+  let discardedSats = BigInt(0);
 
   const utxoDust = needChange ? UTXO_DUST : BigInt(0);
   let leftFeeAmount = BigInt(0);
@@ -216,6 +217,8 @@ export async function swapBtcTx({
 
   if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
+  } else if (changeBtcAmount > BigInt(0)) {
+    discardedSats = changeBtcAmount;
   }
 
   const inputs = tx.getInputs();
@@ -271,7 +274,7 @@ export async function swapBtcTx({
     toSpendUtxos,
     toSignInputs,
     txid,
-    fee: currentFee,
+    fee: currentFee + discardedSats,
     intentions: [
       {
         action: "swap",

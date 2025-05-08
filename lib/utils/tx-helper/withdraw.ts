@@ -120,6 +120,7 @@ export async function withdrawTx({
   let currentFee = BigInt(0);
   let selectedUtxos: UnspentOutput[] = [];
   let targetBtcAmount = BigInt(0);
+  let discardedSats = BigInt(0);
 
   do {
     lastFee = currentFee;
@@ -184,7 +185,10 @@ export async function withdrawTx({
 
   if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
+  } else if (changeBtcAmount > BigInt(0)) {
+    discardedSats = changeBtcAmount;
   }
+
   const inputs = tx.getInputs();
 
   const psbt = tx.toPsbt();
@@ -233,25 +237,6 @@ export async function withdrawTx({
 
   const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
 
-  const inputCoins: InputCoin[] = [];
-
-  const outputCoins: OutputCoin[] = [
-    {
-      to: paymentAddress,
-      coin: {
-        id: BITCOIN.id,
-        value: btcAmount,
-      },
-    },
-    {
-      to: address,
-      coin: {
-        id: runeid,
-        value: runeAmount,
-      },
-    },
-  ];
-
   return {
     psbt,
     poolSpendUtxos,
@@ -259,8 +244,23 @@ export async function withdrawTx({
     toSpendUtxos,
     toSignInputs,
     txid,
-    fee: currentFee,
-    inputCoins,
-    outputCoins,
+    fee: currentFee + discardedSats,
+    inputCoins: [],
+    outputCoins: [
+      {
+        to: paymentAddress,
+        coin: {
+          id: BITCOIN.id,
+          value: btcAmount,
+        },
+      },
+      {
+        to: address,
+        coin: {
+          id: runeid,
+          value: runeAmount,
+        },
+      },
+    ],
   };
 }
