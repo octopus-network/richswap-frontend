@@ -380,6 +380,11 @@ export class Exchange {
       throw new Error("No Pool");
     }
 
+    console.log(pool.address, {
+      id: inputCoin.id,
+      value: BigInt(inputAmount),
+    });
+
     const { output, input, nonce } = await actor
       .pre_swap(pool.address, {
         id: inputCoin.id,
@@ -395,7 +400,6 @@ export class Exchange {
           );
         }
       });
-
     const { txid, vout, sats, maybe_rune } = input;
 
     const rune = maybe_rune[0];
