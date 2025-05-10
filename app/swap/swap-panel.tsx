@@ -217,8 +217,6 @@ export function SwapPanel() {
     return impacts;
   }, [swap, btcPrice]);
 
-  console.log(priceImpacts);
-
   return (
     <>
       <div className="mt-4">

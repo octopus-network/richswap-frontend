@@ -24,21 +24,22 @@ export async function GET(req: NextRequest) {
 
     const utxos = await openapi
       .getAddressRunesUtxo(address, runeid)
-      .then((res) =>
-        res.utxo.map((utxo) => ({
+      .then((res) => {
+        return res.utxo.map((utxo) => ({
           pubkey,
           txid: utxo.txid,
           vout: utxo.vout,
           satoshis: utxo.satoshi.toString(),
           scriptPk: utxo.scriptPk,
           address,
+          height: utxo.height,
           addressType,
           runes: utxo.runes.map((rune) => ({
             id: rune.runeid,
             amount: rune.amount.toString(),
           })),
-        }))
-      );
+        }));
+      });
 
     return NextResponse.json({
       success: true,

@@ -83,6 +83,7 @@ export function useDebouncedSwap(
         //   });
         // }
       } catch (err: any) {
+        console.log("swap error", err);
         setSwapQuote({
           state: SwapState.INVALID,
           errorMessage: err.message,

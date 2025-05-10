@@ -76,7 +76,7 @@ export class OpenApi {
           scriptPk: string;
         }[];
       }
-    >(`/v1/indexer/address/${address}/utxo-data?cursor=${cursor}&size=${size}`);
+    >(`/v1/indexer/address/${address}/available-utxo-data?cursor=${cursor}&size=${size}`);
 
     return response;
   }
@@ -136,6 +136,7 @@ export class OpenApi {
         start: number;
         total: number;
         utxo: {
+          height: number;
           address: string;
           satoshi: number;
           scriptPk: string;

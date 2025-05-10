@@ -17,7 +17,7 @@ import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "@/components/coin-icon";
-import { getAddressType } from "@/lib/utils";
+import { getAddressType, cn } from "@/lib/utils";
 import {
   formatNumber,
   getCoinSymbol,
@@ -34,7 +34,7 @@ import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
 import { useWalletBtcUtxos, useWalletRuneUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes";
-
+import axios from "axios";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
@@ -83,6 +83,7 @@ export function SwapReview({
   const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
   const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
+  // const [initiatorUtxoProof, setInitiatorUtxoProof] = useState("");
 
   const [intentions, setIntentions] = useState<Intention[]>([]);
 
@@ -113,23 +114,54 @@ export function SwapReview({
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
-  const swapPrice = useMemo(
-    () =>
-      coinAAmount && coinBFiatValue
-        ? coinBFiatValue / Number(coinAAmount)
-        : undefined,
-    [coinBFiatValue, coinAAmount]
-  );
+  const priceImpacts = useMemo(() => {
+    if (!swapQuote?.routes?.length || !btcPrice) {
+      return undefined;
+    }
+    const [route0, route1] = swapQuote.routes;
 
-  const swapPriceInSats = useMemo(
-    () =>
-      swapPrice && btcPrice
-        ? new Decimal(swapPrice)
-            .div(new Decimal(btcPrice).div(Math.pow(10, 8)))
-            .toFixed(0)
-        : undefined,
-    [swapPrice, btcPrice]
-  );
+    const _priceImpacts = [
+      {
+        runeName: route0.pool.name,
+        impact: route0.priceImpact,
+        runePrice: (route0.runePriceInSats * btcPrice) / Math.pow(10, 8),
+        runePriceInSats: route0.runePriceInSats,
+      },
+    ];
+
+    if (route1) {
+      _priceImpacts.push({
+        runeName: route1.pool.name,
+        impact: route1.priceImpact,
+        runePrice: (route1.runePriceInSats * btcPrice) / Math.pow(10, 8),
+        runePriceInSats: route1.runePriceInSats,
+      });
+    }
+
+    return _priceImpacts;
+  }, [swapQuote, btcPrice]);
+
+  useEffect(() => {
+    if (!toSpendUtxos.length || !paymentAddress) {
+      return;
+    }
+
+    const utxos = toSpendUtxos.filter(
+      (utxo) => utxo.address === paymentAddress
+    );
+
+    console.log(utxos);
+
+    axios
+      .post(`/api/utxos/get-proof`, {
+        address: paymentAddress,
+        utxos,
+      })
+      .then((res) => res.data)
+      .then((data) => {
+        console.log(data);
+      });
+  }, [toSpendUtxos, paymentAddress]);
 
   useEffect(() => {
     if (
@@ -485,25 +517,63 @@ export function SwapReview({
       {step === 0 ? (
         <>
           <div className="space-y-1 text-sm">
-            <div className="flex justify-between h-9">
-              <span className="text-muted-foreground">Price</span>
-              {swapQuote?.state === SwapState.VALID ? (
-                <div className="flex flex-col items-end">
-                  <span>
-                    {swapPriceInSats ?? "-"}{" "}
-                    <em className="text-muted-foreground">sats</em>
+            {priceImpacts && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    {priceImpacts[0].runeName} Price
                   </span>
-                  <span className="text-primary/80 text-xs">
-                    {swapPrice ? `$${formatNumber(swapPrice)}` : ""}
-                  </span>
+                  <div className="flex flex-col items-end">
+                    <span>
+                      {priceImpacts[0].runePriceInSats.toFixed(2)} sats
+                      <em
+                        className={cn(
+                          "ml-1",
+                          priceImpacts[0].impact >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        )}
+                      >
+                        ({priceImpacts[0].impact >= 0 && "+"}
+                        {priceImpacts[0].impact.toFixed(2)}%)
+                      </em>
+                    </span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      ${formatNumber(priceImpacts[0].runePrice)}
+                    </span>
+                  </div>
                 </div>
-              ) : (
-                <div className="flex flex-col items-end">
-                  <Skeleton className="h-4 w-16"/>
-                  <Skeleton className="h-3 w-8 mt-1" />
-                </div>
-              )}
-            </div>
+                {priceImpacts[1] && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {priceImpacts[1].runeName} Price
+                    </span>
+                    <div className="flex flex-col items-end">
+                      <span>
+                        {priceImpacts[1].runePriceInSats.toFixed(2)} sats
+                        <em
+                          className={cn(
+                            "ml-1",
+                            priceImpacts[1].impact >= 0
+                              ? "text-green-500"
+                              : "text-red-500"
+                          )}
+                        >
+                          ({priceImpacts[1].impact >= 0 && "+"}
+                          {priceImpacts[1].impact.toFixed(2)}%)
+                        </em>
+                      </span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        ${formatNumber(priceImpacts[1].runePrice)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Fee rate</span>
               <span>
@@ -511,7 +581,7 @@ export function SwapReview({
                 <em className="text-muted-foreground">sats/vb</em>
               </span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between">
               <span className="text-muted-foreground">Network cost</span>
               <div className="flex flex-col items-end">
                 <span>
