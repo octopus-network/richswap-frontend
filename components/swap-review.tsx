@@ -83,7 +83,7 @@ export function SwapReview({
   const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
   const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
-  // const [initiatorUtxoProof, setInitiatorUtxoProof] = useState("");
+  const [initiatorUtxoProof, setInitiatorUtxoProof] = useState<number[]>();
 
   const [intentions, setIntentions] = useState<Intention[]>([]);
 
@@ -143,14 +143,13 @@ export function SwapReview({
 
   useEffect(() => {
     if (!toSpendUtxos.length || !paymentAddress) {
+      setInitiatorUtxoProof(undefined);
       return;
     }
 
     const utxos = toSpendUtxos.filter(
       (utxo) => utxo.address === paymentAddress
     );
-
-    console.log(utxos);
 
     axios
       .post(`/api/utxos/get-proof`, {
@@ -159,7 +158,7 @@ export function SwapReview({
       })
       .then((res) => res.data)
       .then((data) => {
-        console.log(data);
+        setInitiatorUtxoProof(data.data);
       });
   }, [toSpendUtxos, paymentAddress]);
 
@@ -378,7 +377,8 @@ export function SwapReview({
       !coinB ||
       !toSpendUtxos.length ||
       !txid ||
-      !intentions.length
+      !intentions.length ||
+      !initiatorUtxoProof
     ) {
       return;
     }
@@ -412,6 +412,7 @@ export function SwapReview({
       setStep(2);
 
       await Orchestrator.invoke({
+        initiator_utxo_proof: initiatorUtxoProof,
         intention_set: {
           tx_fee_in_sats: fee,
           initiator_address: paymentAddress,
@@ -606,16 +607,21 @@ export function SwapReview({
               onClick={onSubmit}
               disabled={
                 !psbt ||
+                !initiatorUtxoProof ||
                 invalidAddressType ||
                 swapQuote?.state !== SwapState.VALID
               }
             >
-              {!psbt && <Loader2 className="size-4 animate-spin" />}
+              {!psbt || !initiatorUtxoProof ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : null}
               {!psbt
                 ? "Generating PSBT"
                 : invalidAddressType
                 ? "Unsupported Address Type"
-                : "Sign Transaction"}
+                : initiatorUtxoProof
+                ? "Sign Transaction"
+                : "Fetching Proof"}
             </Button>
             {showCancelButton && (
               <Button

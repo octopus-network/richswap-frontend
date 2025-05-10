@@ -7,6 +7,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     InvalidSignPsbtArgs: IDL.Text,
     UtxoMismatch: IDL.Null,
     InvalidNumeric: IDL.Null,
+    PriceLimitExceeded: IDL.Null,
     Overflow: IDL.Null,
     InvalidInput: IDL.Null,
     PoolAddressNotFound: IDL.Null,

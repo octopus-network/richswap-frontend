@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
+import { NETWORK } from "./constants";
 
 class RequestError extends Error {
   constructor(
@@ -59,6 +60,7 @@ export class OpenApi {
   }
 
   async getAddressUtxoData(address: string, cursor = 0, size = 100) {
+    const path = NETWORK === "mainnet" ? "available-utxo-data" : "utxo-data";
     const response = await this.axios.get<
       null,
       {
@@ -76,7 +78,7 @@ export class OpenApi {
           scriptPk: string;
         }[];
       }
-    >(`/v1/indexer/address/${address}/available-utxo-data?cursor=${cursor}&size=${size}`);
+    >(`/v1/indexer/address/${address}/${path}?cursor=${cursor}&size=${size}`);
 
     return response;
   }

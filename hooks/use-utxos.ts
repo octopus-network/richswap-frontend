@@ -119,8 +119,6 @@ export function useWalletBtcUtxos() {
 
   const paymentUtxos = useBtcUtxos(paymentAddress, paymentPublicKey);
 
-  console.log("paymentUtxos", paymentUtxos);
-
   return useMemo(() => paymentUtxos, [paymentUtxos]);
 }
 
