@@ -83,7 +83,7 @@ export function SwapReview({
   const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
   const [toSignInputs, setToSignInputs] = useState<ToSignInput[]>([]);
-  const [initiatorUtxoProof, setInitiatorUtxoProof] = useState("");
+  // const [initiatorUtxoProof, setInitiatorUtxoProof] = useState("");
 
   const [intentions, setIntentions] = useState<Intention[]>([]);
 

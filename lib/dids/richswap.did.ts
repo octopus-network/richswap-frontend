@@ -222,6 +222,3 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     set_orchestrator: IDL.Func([IDL.Principal], [], []),
   });
 };
-export const init = ({ IDL }: { IDL: any }) => {
-  return [];
-};
