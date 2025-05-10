@@ -1,5 +1,4 @@
 export const idlFactory = ({ IDL }: { IDL: any }) => {
-  const DeployArgs = IDL.Variant({ Upgrade: IDL.Null, Init: IDL.Null });
   const Result = IDL.Variant({ Ok: IDL.Null, Err: IDL.Text });
   const TxOutputType = IDL.Variant({
     P2WPKH: IDL.Null,
