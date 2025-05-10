@@ -10,6 +10,7 @@ export interface UnspentOutput {
     id: string;
     amount: string;
   }[];
+  height?: number;
   rawtx?: string;
 }
 

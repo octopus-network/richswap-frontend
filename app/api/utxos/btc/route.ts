@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
           satoshis: utxo.satoshi.toString(),
           scriptPk: utxo.scriptPk,
           address,
+          height: utxo.height,
           runes: [],
         }));
     });

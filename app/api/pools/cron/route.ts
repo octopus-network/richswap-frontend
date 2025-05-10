@@ -97,8 +97,6 @@ export async function GET() {
       (ex) => ex.exchange_id === EXCHANGE_ID
     );
 
-    console.log("ExchangeData", exchangeData);
-
     const res =
       exchangeData?.pool_infos.sort(
         (a, b) => b.btc_reserved - a.btc_reserved
