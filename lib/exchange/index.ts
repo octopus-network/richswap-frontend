@@ -385,7 +385,7 @@ export class Exchange {
       value: BigInt(inputAmount),
     });
 
-    const { output, input, nonce } = await actor
+    const { output, input, nonce, price_impact } = await actor
       .pre_swap(pool.address, {
         id: inputCoin.id,
         value: BigInt(inputAmount),
@@ -467,6 +467,7 @@ export class Exchange {
       nonce: nonce.toString(),
       runePriceInSats,
       priceImpact: inputCoinIsBitcoin ? priceImpact : -priceImpact,
+      poolPriceImpact: price_impact / 100,
     };
 
     return route;

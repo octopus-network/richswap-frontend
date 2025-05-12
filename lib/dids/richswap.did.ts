@@ -143,6 +143,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   const SwapOffer = IDL.Record({
     output: CoinBalance,
     nonce: IDL.Nat64,
+    price_impact: IDL.Nat32,
     input: Utxo,
   });
   const Result_10 = IDL.Variant({ Ok: SwapOffer, Err: ExchangeError });
