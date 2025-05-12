@@ -14,6 +14,8 @@ export async function POST(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
+    console.log(utxos);
+
     const data = await axios
       .post(`${UTXO_PROOF_SERVER}/get_proof`, {
         network: NETWORK === "mainnet" ? "Mainnet" : "Testnet",
