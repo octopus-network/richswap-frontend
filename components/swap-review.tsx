@@ -159,6 +159,9 @@ export function SwapReview({
       .then((res) => res.data)
       .then((data) => {
         setInitiatorUtxoProof(data.data);
+      })
+      .catch(() => {
+        setErrorMessage("Fetch proof failed");
       });
   }, [toSpendUtxos, paymentAddress]);
 
