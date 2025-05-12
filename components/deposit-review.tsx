@@ -126,7 +126,11 @@ export function DepositReview({
       })
       .then((res) => res.data)
       .then((data) => {
-        setInitiatorUtxoProof(data.data);
+        if (data.data) {
+          setInitiatorUtxoProof(data.data);
+        } else {
+          setErrorMessage("Fetch proof failed");
+        }
       })
       .catch(() => {
         setErrorMessage("Fetch proof failed");
