@@ -25,6 +25,7 @@ export function WithdrawForm({
   const [nonce, setNonce] = useState("0");
   const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
   const [sqrtK, setSqrtK] = useState<bigint>();
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [output, setOutput] = useState<{
     coinA: Coin;
@@ -39,6 +40,7 @@ export function WithdrawForm({
     if (!debouncedPercentage || !position) {
       setNonce("0");
       setUtxos([]);
+      setErrorMessage("");
       setOutput(undefined);
       return;
     }
@@ -48,18 +50,20 @@ export function WithdrawForm({
 
     setSqrtK(_sqrtK);
 
-    Exchange.preWithdrawLiquidity(
-      position.pool,
-      position.userAddress,
-      _sqrtK
-    ).then((res) => {
-      if (res) {
-        setNonce(res.nonce);
-        setUtxos(res.utxos);
-        setOutput(res.output);
-      }
-    });
+    Exchange.preWithdrawLiquidity(position.pool, position.userAddress, _sqrtK)
+      .then((res) => {
+        if (res) {
+          setNonce(res.nonce);
+          setUtxos(res.utxos);
+          setOutput(res.output);
+        }
+      })
+      .catch((err) => {
+        setErrorMessage(err.message);
+      });
   }, [debouncedPercentage, position]);
+
+  console.log(errorMessage);
 
   return (
     <>
@@ -125,7 +129,7 @@ export function WithdrawForm({
               disabled={!position || !Number(nonce) || !output || !utxos.length}
               onClick={() => setReviewModalOpen(true)}
             >
-              Withdraw
+              {errorMessage ? errorMessage : "Withdraw"}
             </Button>
             <div className="mt-4">
               <div className="flex justify-between text-xs">

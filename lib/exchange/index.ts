@@ -291,82 +291,77 @@ export class Exchange {
       coinBAmount: string;
     };
   } | null> {
-    try {
-      const res = await actor
-        .pre_withdraw_liquidity(pool.address, userAddress, sqrK)
-        .then((data: any) => {
-          console.log("withdraw liquidity", data);
-          if (data.Ok) {
-            return data.Ok as {
-              input: {
-                maybe_rune: [
-                  {
-                    id: string;
-                    value: bigint;
-                  }
-                ];
-                sats: bigint;
-                txid: string;
-                vout: number;
-              };
-              nonce: bigint;
-              user_outputs: [
-                {
-                  id: string;
-                  value: bigint;
-                },
+    const res = await actor
+      .pre_withdraw_liquidity(pool.address, userAddress, sqrK)
+      .then((data: any) => {
+        console.log("withdraw liquidity", data);
+        if (data.Ok) {
+          return data.Ok as {
+            input: {
+              maybe_rune: [
                 {
                   id: string;
                   value: bigint;
                 }
               ];
+              sats: bigint;
+              txid: string;
+              vout: number;
             };
-          } else {
-            throw new Error(
-              data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
-            );
-          }
-        });
+            nonce: bigint;
+            user_outputs: [
+              {
+                id: string;
+                value: bigint;
+              },
+              {
+                id: string;
+                value: bigint;
+              }
+            ];
+          };
+        } else {
+          throw new Error(
+            data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+          );
+        }
+      });
 
-      const coinA = BITCOIN;
-      const [_coinA, _coinB] = res.user_outputs;
+    const coinA = BITCOIN;
+    const [_coinA, _coinB] = res.user_outputs;
 
-      const coinB = await fetchCoinById(_coinB.id);
+    const coinB = await fetchCoinById(_coinB.id);
 
-      const { output } = getP2trAressAndScript(pool.key);
+    const { output } = getP2trAressAndScript(pool.key);
 
-      const rune = res.input.maybe_rune[0];
+    const rune = res.input.maybe_rune[0];
 
-      const utxo: UnspentOutput = {
-        txid: res.input.txid,
-        vout: res.input.vout,
-        satoshis: res.input.sats.toString(),
-        address: pool.address,
-        pubkey: "",
-        addressType: AddressType.P2TR,
-        scriptPk: output,
-        runes: [
-          {
-            id: rune.id,
-            amount: rune.value.toString(),
-          },
-        ],
-      };
-
-      return {
-        utxos: [utxo],
-        nonce: res.nonce.toString(),
-        output: {
-          coinA,
-          coinB,
-          coinAAmount: formatCoinAmount(_coinA.value.toString(), coinA),
-          coinBAmount: formatCoinAmount(_coinB.value.toString(), coinB),
+    const utxo: UnspentOutput = {
+      txid: res.input.txid,
+      vout: res.input.vout,
+      satoshis: res.input.sats.toString(),
+      address: pool.address,
+      pubkey: "",
+      addressType: AddressType.P2TR,
+      scriptPk: output,
+      runes: [
+        {
+          id: rune.id,
+          amount: rune.value.toString(),
         },
-      };
-    } catch (err: any) {
-      console.log("pre_withdraw error", err);
-      return null;
-    }
+      ],
+    };
+
+    return {
+      utxos: [utxo],
+      nonce: res.nonce.toString(),
+      output: {
+        coinA,
+        coinB,
+        coinAAmount: formatCoinAmount(_coinA.value.toString(), coinA),
+        coinBAmount: formatCoinAmount(_coinB.value.toString(), coinB),
+      },
+    };
   }
 
   public static async getSwapRoute(
