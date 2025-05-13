@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     console.log(utxos);
 
-    const data = await axios
+    await axios
       .post(`${UTXO_PROOF_SERVER}/get_proof`, {
         network: NETWORK === "mainnet" ? "Mainnet" : "Testnet",
         btc_address: address,
@@ -33,8 +33,27 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: data.Ok ?? [],
+      data: [],
     });
+    // const data = await axios
+    //   .post(`${UTXO_PROOF_SERVER}/get_proof`, {
+    //     network: NETWORK === "mainnet" ? "Mainnet" : "Testnet",
+    //     btc_address: address,
+    //     utxos: utxos.map(({ height, txid, satoshis, vout }: UnspentOutput) => ({
+    //       outpoint: {
+    //         txid: Array.from(reverseBuffer(hexToBytes(txid))),
+    //         vout,
+    //       },
+    //       value: Number(satoshis),
+    //       height,
+    //     })),
+    //   })
+    //   .then((res) => res.data);
+
+    // return NextResponse.json({
+    //   success: true,
+    //   data: data.Ok ?? [],
+    // });
   } catch (error) {
     return NextResponse.json({
       error:
