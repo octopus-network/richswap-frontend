@@ -93,7 +93,7 @@ export class Exchange {
         coinBId: coinReserved?.id,
         coinAAmount: btc_reserved.toString(),
         coinBAmount: utxo?.maybe_rune[0]?.value.toString() ?? "0",
-        incomes: attributes.incomes.toString(),
+        incomes: attributes.protocol_revenue.toString(),
       };
     }
   }
