@@ -8,8 +8,10 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     UtxoMismatch: IDL.Null,
     InvalidNumeric: IDL.Null,
     Overflow: IDL.Null,
+    Paused: IDL.Null,
     InvalidInput: IDL.Null,
     PoolAddressNotFound: IDL.Null,
+    PriceImpactLimitExceeded: IDL.Null,
     RuneIndexerError: IDL.Text,
     PoolStateExpired: IDL.Nat64,
     TooSmallFunds: IDL.Null,
@@ -18,7 +20,6 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     InvalidPsbt: IDL.Text,
     PoolAlreadyExists: IDL.Null,
     InvalidTxid: IDL.Null,
-    Puased: IDL.Null,
     InvalidLiquidity: IDL.Null,
     EmptyPool: IDL.Null,
     FetchBitcoinCanisterError: IDL.Null,
@@ -142,6 +143,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   const SwapOffer = IDL.Record({
     output: CoinBalance,
     nonce: IDL.Nat64,
+    price_impact: IDL.Nat32,
     input: Utxo,
   });
   const Result_10 = IDL.Variant({ Ok: SwapOffer, Err: ExchangeError });

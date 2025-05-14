@@ -369,6 +369,19 @@ export function SwapPanel() {
               )}
             </>
           )}
+          {swap?.routes?.length ? (
+            <div className="justify-between flex">
+              <span className="text-muted-foreground">Price Impact</span>
+              <span>
+                {
+                  swap?.routes.sort(
+                    (a, b) => b.poolPriceImpact ?? 0 - (a.poolPriceImpact ?? 0)
+                  )[0].poolPriceImpact
+                }
+                %
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
       <ReviewModal
