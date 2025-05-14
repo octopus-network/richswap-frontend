@@ -29,6 +29,7 @@ export type IntentionSet = {
 };
 
 export type InvokeArgs = {
+  initiator_utxo_proof: number[],
   intention_set: IntentionSet;
   psbt_hex: string;
 };

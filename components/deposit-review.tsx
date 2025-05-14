@@ -12,6 +12,7 @@ import {
 
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import axios from "axios";
 import Decimal from "decimal.js";
 import { OKX } from "@omnisat/lasereyes";
 import { getAddressType } from "@/lib/utils";
@@ -83,6 +84,7 @@ export function DepositReview({
   const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
   const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
   const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
+  const [initiatorUtxoProof, setInitiatorUtxoProof] = useState<number[]>();
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -106,6 +108,34 @@ export function DepositReview({
       coinBAmount && coinBPrice ? Number(coinBAmount) * coinBPrice : undefined,
     [coinBAmount, coinBPrice]
   );
+
+  useEffect(() => {
+    if (!toSpendUtxos.length || !paymentAddress) {
+      setInitiatorUtxoProof(undefined);
+      return;
+    }
+
+    const utxos = toSpendUtxos.filter(
+      (utxo) => utxo.address === paymentAddress
+    );
+
+    axios
+      .post(`/api/utxos/get-proof`, {
+        address: paymentAddress,
+        utxos,
+      })
+      .then((res) => res.data)
+      .then((data) => {
+        if (data.data) {
+          setInitiatorUtxoProof(data.data);
+        } else {
+          setErrorMessage("Fetch proof failed");
+        }
+      })
+      .catch(() => {
+        setErrorMessage("Fetch proof failed");
+      });
+  }, [toSpendUtxos, paymentAddress]);
 
   useEffect(() => {
     if (
@@ -209,7 +239,8 @@ export function DepositReview({
       !coinB ||
       !poolUtxos ||
       !toSpendUtxos.length ||
-      !poolAddress
+      !poolAddress ||
+      !initiatorUtxoProof
     ) {
       return;
     }
@@ -243,6 +274,7 @@ export function DepositReview({
       setStep(2);
 
       await Orchestrator.invoke({
+        initiator_utxo_proof: [],
         intention_set: {
           tx_fee_in_sats: fee,
           initiator_address: paymentAddress,

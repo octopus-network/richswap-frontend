@@ -10,6 +10,7 @@ import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { Skeleton } from "../ui/skeleton";
 import { useEffect, useState } from "react";
 import { MenuButton } from "./menu-button";
+import Link from "next/link";
 
 export function Topbar() {
   const { address, isInitializing } = useLaserEyes(
@@ -36,10 +37,10 @@ export function Topbar() {
         />
         <span className="font-bold sm:text-lg">RichSwap</span>
       </div>
-      <div className="flex-none hidden md:flex">
+      <div className="flex-none hidden">
         <Nav />
       </div>
-      <div className="flex-1 justify-end space-x-2 flex">
+      <div className="flex-1 justify-end space-x-2 hidden">
         {!initialized ? (
           <Skeleton className="h-9 w-24 rounded-full" />
         ) : !address ? (
@@ -55,6 +56,18 @@ export function Topbar() {
         )}
         <MenuButton />
       </div>
+      <Link
+        href="https://x.com/RichSwap_REE/status/1901604760438099979"
+        target="_blank"
+      >
+        <Button
+          variant="outline"
+          className="rounded-full"
+          onClick={() => updateConnectWalletModalOpen(true)}
+        >
+          Support
+        </Button>
+      </Link>
     </div>
   );
 }

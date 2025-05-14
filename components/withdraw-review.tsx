@@ -10,6 +10,7 @@ import {
   ToSignInput,
 } from "@/types";
 
+import axios from "axios";
 import { formatNumber, withdrawTx } from "@/lib/utils";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
@@ -85,6 +86,7 @@ export function WithdrawReview({
   const [poolReceiveUtxos, setPoolReceiveUtxos] = useState<string[]>([]);
   const [inputCoins, setInputCoins] = useState<InputCoin[]>([]);
   const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
+  const [initiatorUtxoProof, setInitiatorUtxoProof] = useState<number[]>();
 
   const addSpentUtxos = useAddSpentUtxos();
   const removeSpentUtxos = useRemoveSpentUtxos();
@@ -107,6 +109,34 @@ export function WithdrawReview({
       coinBAmount && coinBPrice ? Number(coinBAmount) * coinBPrice : undefined,
     [coinBAmount, coinBPrice]
   );
+
+  useEffect(() => {
+    if (!toSpendUtxos.length || !paymentAddress) {
+      setInitiatorUtxoProof(undefined);
+      return;
+    }
+
+    const utxos = toSpendUtxos.filter(
+      (utxo) => utxo.address === paymentAddress
+    );
+
+    axios
+      .post(`/api/utxos/get-proof`, {
+        address: paymentAddress,
+        utxos,
+      })
+      .then((res) => res.data)
+      .then((data) => {
+        if (data.data) {
+          setInitiatorUtxoProof(data.data);
+        } else {
+          setErrorMessage("Fetch proof failed");
+        }
+      })
+      .catch(() => {
+        setErrorMessage("Fetch proof failed");
+      });
+  }, [toSpendUtxos, paymentAddress]);
 
   useEffect(() => {
     if (
@@ -179,7 +209,8 @@ export function WithdrawReview({
       !coinB ||
       !poolUtxos ||
       !toSpendUtxos.length ||
-      !sqrtK
+      !sqrtK ||
+      !initiatorUtxoProof
     ) {
       return;
     }
@@ -218,6 +249,7 @@ export function WithdrawReview({
       setStep(2);
 
       await Orchestrator.invoke({
+        initiator_utxo_proof: [],
         intention_set: {
           tx_fee_in_sats: fee,
           initiator_address: paymentAddress,

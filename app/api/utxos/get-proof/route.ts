@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { UnspentOutput } from "@/types";
-import { hexToBytes } from "@/lib/utils";
+import { hexToBytes, reverseBuffer } from "@/lib/utils";
+import { NETWORK } from "@/lib/constants";
 
 const UTXO_PROOF_SERVER = process.env.UTXO_PROOF_SERVER!;
 
@@ -13,20 +14,45 @@ export async function POST(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const res = await axios.post(`${UTXO_PROOF_SERVER}/get_proof`, {
-      network: "Mainnet",
-      btc_address: address,
-      utxos: utxos.map(({ height, txid, satoshis, vout }: UnspentOutput) => ({
-        outpoint: {
-          txid: Array.from(hexToBytes(txid)),
-          vout,
-        },
-        value: Number(satoshis),
-        height,
-      })),
-    });
+    await axios
+      .post(`${UTXO_PROOF_SERVER}/get_proof`, {
+        network: NETWORK === "mainnet" ? "Mainnet" : "Testnet",
+        btc_address: address,
+        utxos: utxos.map(({ height, txid, satoshis, vout }: UnspentOutput) => ({
+          outpoint: {
+            txid: Array.from(reverseBuffer(hexToBytes(txid))),
+            vout,
+          },
+          value: Number(satoshis),
+          height,
+        })),
+      })
+      .then((res) => res.data)
+      .catch(() => {});
 
-    console.log(res);
+    return NextResponse.json({
+      success: true,
+      data: [],
+    });
+    // const data = await axios
+    //   .post(`${UTXO_PROOF_SERVER}/get_proof`, {
+    //     network: NETWORK === "mainnet" ? "Mainnet" : "Testnet",
+    //     btc_address: address,
+    //     utxos: utxos.map(({ height, txid, satoshis, vout }: UnspentOutput) => ({
+    //       outpoint: {
+    //         txid: Array.from(reverseBuffer(hexToBytes(txid))),
+    //         vout,
+    //       },
+    //       value: Number(satoshis),
+    //       height,
+    //     })),
+    //   })
+    //   .then((res) => res.data);
+
+    // return NextResponse.json({
+    //   success: true,
+    //   data: data.Ok ?? [],
+    // });
   } catch (error) {
     return NextResponse.json({
       error:
