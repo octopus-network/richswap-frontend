@@ -57,13 +57,13 @@ export function Topbar() {
         <MenuButton />
       </div>
       <Link
-        href="https://x.com/RichSwap_REE/status/1901604760438099979"
+        href="https://oc.app/community/o5uz6-dqaaa-aaaar-bhnia-cai/channel/1529837122"
         target="_blank"
       >
         <Button
           variant="outline"
           className="rounded-full"
-          onClick={() => updateConnectWalletModalOpen(true)}
+          // onClick={() => updateConnectWalletModalOpen(true)}
         >
           Support
         </Button>
