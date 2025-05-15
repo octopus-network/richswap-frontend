@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CoinsContent } from "./coins-content";
 import { usePendingTransactions } from "@/store/transactions";
 import { TransactionsContent } from "./transactions-content";
+import { useTranslations } from "next-intl";
 
 export function AccountSheetContent() {
   const { provider, address, paymentAddress, disconnect } = useLaserEyes(
@@ -27,6 +28,8 @@ export function AccountSheetContent() {
     useClipboard(paymentAddress);
   const btcBalacne = useCoinBalance(BITCOIN);
   const pendingTransactions = usePendingTransactions();
+  const t = useTranslations("AccountSheet");
+
   return (
     <SheetContent className="p-0" hideCloseButton>
       <div className="flex flex-col h-full">
@@ -45,7 +48,7 @@ export function AccountSheetContent() {
               </span>
               {paymentAddress !== address ? (
                 <div className="flex text-xs text-muted-foreground items-center">
-                  <span>Payment:</span>
+                  <span>{t("payment")}:</span>
                   <span className="ml-2">
                     {ellipseMiddle(paymentAddress, 6)}
                   </span>
@@ -84,19 +87,16 @@ export function AccountSheetContent() {
           </span>
         </div>
         <div className="px-4">
-          <Link
-            href={`${RUNESCAN_URL}/address/${address}`}
-            target="_blank"
-          >
+          <Link href={`${RUNESCAN_URL}/address/${address}`} target="_blank">
             <Button variant="secondary" className="w-full">
-              View on Explorer <ExternalLink className="size-4" />
+              {t("viewOnExplorer")} <ExternalLink className="size-4" />
             </Button>
           </Link>
         </div>
         <Tabs defaultValue="coins" className="h-[calc(100%_-_182px)] mt-4">
           <TabsList className="bg-transparent p-0 h-auto w-full rounded-none justify-start px-2">
             <TabsTrigger value="coins" className="px-2 h-8">
-              Coins
+              {t("coins")}
             </TabsTrigger>
             <TabsTrigger value="transactions" className="px-2 h-8 relative">
               {pendingTransactions.length > 0 && (
@@ -104,7 +104,7 @@ export function AccountSheetContent() {
                   <span className="animate-ping -left-0.5 -top-0.5 absolute inline-flex size-3 rounded-full bg-yellow-300 opacity-75" />
                 </div>
               )}
-              Transactions
+              {t("transactions")}
               {pendingTransactions.length > 0
                 ? ` (${pendingTransactions.length} pending)`
                 : ""}

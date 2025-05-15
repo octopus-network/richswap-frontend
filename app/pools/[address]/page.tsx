@@ -18,12 +18,13 @@ import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
 import { ellipseMiddle, formatNumber } from "@/lib/utils";
 import Circle from "react-circle";
 
+import { useTranslations } from "next-intl";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 import { ManageLiquidityPanel } from "./manage-liquidity-panel";
 
 export default function Pool() {
   const poolList = usePoolList();
-
+  const t = useTranslations("Pools");
   const { address } = useParams();
 
   const { paymentAddress } = useLaserEyes((x) => ({
@@ -93,7 +94,7 @@ export default function Pool() {
                 <Link href="/pools">
                   <Button variant="secondary" size="sm">
                     <ArrowLeft className="size-4" />
-                    Back
+                    {t("back")}
                   </Button>
                 </Link>
                 <div className="flex items-center gap-2">
@@ -128,10 +129,10 @@ export default function Pool() {
               )}
             </div>
             <div className="border bg-secondary/50 px-4 py-3 rounded-xl col-span-5 md:col-span-4 ">
-              <div className="font-semibold text-lg">Pool Info</div>
+              <div className="font-semibold text-lg">{t("poolInfo")}</div>
               <div className="mt-3 flex flex-col gap-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Rune</span>
+                  <span className="text-muted-foreground">{t("rune")}</span>
                   {poolInfo ? (
                     <div className="flex items-center gap-1">
                       <CoinIcon coin={poolInfo.coinB} size="sm" />
@@ -149,7 +150,7 @@ export default function Pool() {
                   )}
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">TVL</span>
+                  <span className="text-muted-foreground">{t("tvl")}</span>
                   <div className="flex flex-col items-end gap-0.5">
                     {poolTvlInBtc ? (
                       <Link
@@ -173,7 +174,7 @@ export default function Pool() {
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Fee</span>
+                  <span className="text-muted-foreground">{t("fee")}</span>
                   <div className="flex flex-col items-end gap-0.5">
                     {poolFeeInSats !== undefined ? (
                       <span>{formatNumber(poolFeeInSats, true)} sats</span>
@@ -190,7 +191,7 @@ export default function Pool() {
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Coin Reserves</span>
+                  <span className="text-muted-foreground">{t("currencyReserves")}</span>
                   <div className="flex flex-col items-end">
                     <span>
                       {poolInfo
@@ -217,10 +218,10 @@ export default function Pool() {
           </div>
 
           <div className="border bg-secondary/50 px-4 py-3 rounded-xl col-span-4 mt-4">
-            <span className="font-semibold text-lg">Liquidity Providers</span>
+            <span className="font-semibold text-lg">{t("liquidityProviders")}</span>
             <div className="flex justify-between mt-3 text-muted-foreground text-sm">
-              <span>Address</span>
-              <span>Percentage</span>
+              <span>{t("address")}</span>
+              <span>{t("percentage")}</span>
             </div>
             <div className="flex flex-col gap-3 mt-3">
               {lps.length

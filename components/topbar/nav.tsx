@@ -3,7 +3,10 @@
 import { usePathname } from "next/navigation";
 import { useRef, useState, useMemo } from "react";
 import type { MouseEvent, ReactNode } from "react";
+import { useTranslations } from "next-intl";
+
 import { FaXTwitter } from "react-icons/fa6";
+
 import {
   ArrowLeftRight,
   Waves,
@@ -33,17 +36,17 @@ type NavItem = {
 
 export const navItems: NavItem[] = [
   {
-    title: "Swap",
+    title: "swap",
     href: "/swap",
     icon: <ArrowLeftRight className="size-4" />,
   },
   {
-    title: "Pools",
+    title: "pools",
     href: "/pools",
     icon: <Waves className="size-4" />,
   },
   {
-    title: "Portfolio",
+    title: "portfolio",
     href: "/portfolio",
     icon: <Package className="size-4" />,
   },
@@ -58,6 +61,8 @@ export const Nav = () => {
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
+
+  const t = useTranslations("Topbar");
 
   const pathname = usePathname();
   const activeNavIdx = navItems.findIndex(
@@ -92,11 +97,11 @@ export const Nav = () => {
   return (
     <nav
       ref={wrapperRef}
-      className="hidden md:flex items-center justify-center relative font-semibold space-x-3"
+      className="hidden md:flex items-center justify-center relative font-medium space-x-3 text-sm"
       onMouseLeave={() => setHighlightTab(false)}
     >
       <div
-        className="bg-card absolute top-0 left-0 h-[34px] rounded-lg transition-all duration-150 ease"
+        className="bg-card absolute top-[2px] left-0 h-[32px] rounded-lg transition-all duration-150 ease"
         ref={highlightRef}
         style={highlightStyles}
       />
@@ -106,34 +111,34 @@ export const Nav = () => {
           href={item.href}
           onMouseOver={(ev) => repositionHighlight(ev)}
           className={cn(
-            "flex items-center bg-transparent px-[16px] h-[34px] rounded-lg leading-[34px] cursor-pointer hover:text-gray-1000 transition-colors duration-200 relative",
+            "flex items-center bg-transparent px-[15px] h-[32px] rounded-lg leading-[32px] cursor-pointer hover:text-gray-1000 transition-colors duration-200 relative",
             activeNavIdx === idx ? "text-primary bg-card" : "text-foreground"
           )}
         >
           {item.icon}
-          <span className="ml-2">{item.title}</span>
+          <span className="ml-2">{t(item.title)}</span>
         </Link>
       ))}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <a
             onMouseOver={(ev) => repositionHighlight(ev)}
-            className="flex items-center bg-transparent  px-[16px] h-[34px] rounded-lg leading-[34px] cursor-pointer hover:text-gray-1000 transition-colors duration-200 relative"
+            className="flex items-center bg-transparent  px-[15px] h-[32px] rounded-lg leading-[32px] cursor-pointer hover:text-gray-1000 transition-colors duration-200 relative"
           >
             <Ellipsis className="size-4" />
-            <span className="ml-2">More</span>
+            <span className="ml-2">{t("more")}</span>
           </a>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[180px] border-none shadow-none text-foreground">
           <Link href={`${RUNESCAN_URL}/exchange/RICH_SWAP`} target="_blank">
             <DropdownMenuItem>
               <Globe />
-              <span className="ml-2 mr-1">Explorer</span>
+              <span className="ml-2 mr-1">{t("explorer")}</span>
             </DropdownMenuItem>
           </Link>
           <Link href="https://x.com/RichSwap_REE" target="_blank">
             <DropdownMenuItem>
-              <FaXTwitter /> <span className="ml-2 mr-1">Twitter</span>{" "}
+              <FaXTwitter /> <span className="ml-2 mr-1">{t("twitter")}</span>{" "}
             </DropdownMenuItem>
           </Link>
           <Link
@@ -142,7 +147,7 @@ export const Nav = () => {
           >
             <DropdownMenuItem>
               <BookOpen />
-              <span className="ml-2 mr-1">FAQ</span>
+              <span className="ml-2 mr-1">{t("faq")}</span>
             </DropdownMenuItem>
           </Link>
           <Link
@@ -151,7 +156,7 @@ export const Nav = () => {
           >
             <DropdownMenuItem>
               <MessageSquare />
-              <span className="ml-2 mr-1">Support</span>
+              <span className="ml-2 mr-1">{t("support")}</span>
             </DropdownMenuItem>
           </Link>
           <Link
@@ -160,7 +165,7 @@ export const Nav = () => {
           >
             <DropdownMenuItem>
               <Code />
-              <span className="ml-2 mr-1">Source Code</span>
+              <span className="ml-2 mr-1">{t("sourceCode")}</span>
             </DropdownMenuItem>
           </Link>
         </DropdownMenuContent>

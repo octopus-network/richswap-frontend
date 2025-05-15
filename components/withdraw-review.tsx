@@ -15,6 +15,7 @@ import { formatNumber, withdrawTx } from "@/lib/utils";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
+import { useTranslations } from "next-intl";
 import { BITCOIN } from "@/lib/constants";
 import { OKX } from "@omnisat/lasereyes";
 import { Loader2 } from "lucide-react";
@@ -75,7 +76,7 @@ export function WithdrawReview({
   );
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
-
+  const t = useTranslations("Pools");
   const [errorMessage, setErrorMessage] = useState("");
   const [txid, setTxid] = useState("");
 
@@ -226,14 +227,12 @@ export function WithdrawReview({
       let signedPsbtHex = "";
 
       if (provider === OKX) {
-        console.log("is okx wallet", toSignInputs);
         const psbtHex = psbt.toHex();
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
           toSignInputs,
           autoFinalized: false,
         });
-        console.log(signedPsbtHex);
       } else {
         const psbtBase64 = psbt.toBase64();
         const res = await signPsbt(psbtBase64);
@@ -313,7 +312,7 @@ export function WithdrawReview({
     <div className="mt-4 flex flex-col gap-4">
       <div className="p-4 border rounded-lg flex flex-col items-center">
         <TriangleAlert className="size-12 text-destructive" />
-        <div className="break-all mt-2 text-sm">{errorMessage}</div>
+        <div className="break-all mt-2 text-sm">{t(errorMessage)}</div>
       </div>
 
       <Button
@@ -322,27 +321,11 @@ export function WithdrawReview({
         className="text-destructive"
         size="lg"
       >
-        Dismiss
+        {t("dismiss")}
       </Button>
     </div>
   ) : (
     <>
-      {!showCancelButton && (
-        <div className="flex items-center gap-3">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={onBack}
-            disabled={step !== 0}
-            className="rounded-full size-8"
-          >
-            <ChevronLeft className="size-6" />
-          </Button>
-          <div className="font-bold text-muted-foreground">
-            Withdraw Liquidity
-          </div>
-        </div>
-      )}
       <div className="flex justify-between mt-3 items-center">
         {coinA && coinB && (
           <>
@@ -354,7 +337,7 @@ export function WithdrawReview({
         )}
       </div>
       <div className="flex flex-col space-y-3 mt-3">
-        <div className="flex text-muted-foreground">Withdrawing</div>
+        <div className="flex text-muted-foreground">{t("withdrawing")}</div>
         <div className="flex justify-between">
           <div className="flex flex-col">
             <span className="font-semibold">
@@ -383,14 +366,14 @@ export function WithdrawReview({
         <>
           <div className="space-y-1 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Fee rate</span>
+              <span className="text-muted-foreground">{t("feeRate")}</span>
               <span>
                 ≈{recommendedFeeRate}{" "}
                 <em className="text-muted-foreground">sats/vb</em>
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Network cost</span>
+              <span className="text-muted-foreground">{t("networkCost")}</span>
               <div className="flex flex-col items-end">
                 <span>
                   {fee > 0 ? Number(fee) : "-"}{" "}
@@ -416,10 +399,10 @@ export function WithdrawReview({
             >
               {!psbt && <Loader2 className="size-4 animate-spin" />}
               {!psbt
-                ? "Generating PSBT"
+                ? t("generatingPsbt")
                 : invalidAddressType
-                ? "Unsupported Address Type"
-                : "Sign Transaction"}
+                ? t("unsupportedAddressType")
+                : t("signTransaction")}
             </Button>
             {showCancelButton && (
               <Button
@@ -428,7 +411,7 @@ export function WithdrawReview({
                 className="w-full"
                 onClick={onBack}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             )}
           </div>
@@ -436,21 +419,21 @@ export function WithdrawReview({
       ) : (
         <div className="flex flex-col gap-1">
           <Step
-            title="Sign PSBT"
-            description="Please confirm in wallet"
+            title={t("SignPsbt")}
+            description={t("pleaseConfirmInWallet")}
             icon={<FileSignature className="size-4" />}
             isActive={step === 1}
           />
           <Separator orientation="vertical" className="h-3 w-[2px] ml-[14px]" />
           <Step
-            title="Invoke exchange"
+            title={t("invokeExchange")}
             countdown={5}
             icon={<Shuffle className="size-4" />}
             isActive={step === 2}
           />
           <Separator orientation="vertical" className="h-3 w-[2px] ml-[14px]" />
           <Step
-            title="Wait for confirmation"
+            title={t("waitForConfirmation")}
             countdown={180}
             icon={<Ellipsis className="size-4" />}
             isActive={step === 3}

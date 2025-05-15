@@ -5,12 +5,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { AlignJustify } from "lucide-react";
 import { Button } from "../ui/button";
 import { navItems } from "./nav";
 
 export function MenuButton() {
+  const t = useTranslations("Topbar");
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -28,7 +31,7 @@ export function MenuButton() {
             <DropdownMenuItem className="text-foreground flex">
               <div className="flex space-x-2 items-center">
                 {nav.icon}
-                <span>{nav.title}</span>
+                <span>{t(nav.title)}</span>
               </div>
             </DropdownMenuItem>
           </Link>

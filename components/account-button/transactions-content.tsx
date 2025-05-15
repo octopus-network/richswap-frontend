@@ -9,11 +9,13 @@ import moment from "moment";
 import { MEMPOOL_URL } from "@/lib/constants";
 import { useUpdateTransactionStatus } from "@/store/transactions";
 import { useLatestBlock } from "@/hooks/use-latest-block";
+import { useTranslations } from "next-intl";
 
 function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   const updateTransactionStatus = useUpdateTransactionStatus();
+  const t = useTranslations("AccountSheet");
 
   const { data: latestBlock } = useLatestBlock();
 
@@ -49,6 +51,7 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
       setShowErrorMessage((prev) => !prev);
     }
   };
+
   return (
     <div
       className={cn(
@@ -57,7 +60,7 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
       onClick={onClick}
     >
       <div className="flex justify-between items-center gap-3">
-        <span className="text-sm truncate">{title}</span>
+        <span className="text-sm truncate">{t(title.key, title.data)}</span>
         <div className="flex items-center space-x-1">
           <TxStatusBadge transaction={transaction} />
           {transaction.status === TransactionStatus.REJECTED ? (
@@ -76,7 +79,7 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
       )}
       <div className="flex justify-between items-center gap-3">
         <span className="text-xs text-muted-foreground truncate">
-          {description}
+          {t(description.key, description.data)}
         </span>
         <span className="text-xs text-muted-foreground truncate">
           {moment(transaction.timestamp).fromNow()}

@@ -16,6 +16,7 @@ import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { useEffect, useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
+import { useTranslations } from "next-intl";
 
 import {
   formatCoinAmount,
@@ -44,7 +45,7 @@ export function DepositForm({
   ) => void;
 }) {
   const { address } = useLaserEyes(({ address }) => ({ address }));
-
+  const t = useTranslations("Pools");
   const { onUserInput } = useDepositActionHandlers();
   const depositState = useDepositState();
 
@@ -214,7 +215,7 @@ export function DepositForm({
             className="w-full"
             onClick={() => updateConnectWalletModalOpen(true)}
           >
-            Connect Wallet
+            {t("connectWallet")}
           </Button>
         ) : (
           <Button
@@ -240,20 +241,20 @@ export function DepositForm({
             }
           >
             {deposit?.state === DepositState.INVALID
-              ? deposit?.errorMessage ?? "Review"
+              ? t(deposit?.errorMessage ?? "review")
               : insufficientCoinABalance
-              ? `Insufficient ${getCoinSymbol(pool?.coinA)} Balance`
+              ? t("insufficientBalance", { symbol: getCoinSymbol(pool?.coinA) })
               : insufficientCoinBBalance
-              ? `Insufficient ${getCoinSymbol(pool?.coinB)} Balance`
+              ? t("insufficientBalance", { symbol: getCoinSymbol(pool?.coinB) })
               : tooSmallFunds
-              ? "Too Small Funds"
-              : "Deposit"}
+              ? t("tooSmallFunds")
+              : t("deposit")}
           </Button>
         )}
       </div>
       <div className="mt-4 flex flex-col gap-1">
         <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground">Currency Reserves</span>
+          <span className="text-muted-foreground">{t("currencyReserves")}</span>
           <div className="flex flex-col items-end text-muted-foreground">
             <span>
               {pool
@@ -271,7 +272,7 @@ export function DepositForm({
         </div>
         {runePriceInSats && (
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Rune Price</span>
+            <span className="text-muted-foreground">{t("runePrice")}</span>
             <div className="flex flex-col items-end">
               <span>{runePriceInSats} sats</span>
               <span className="text-primary/80 text-xs">

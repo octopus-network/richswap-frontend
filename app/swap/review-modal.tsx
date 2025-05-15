@@ -2,6 +2,7 @@ import { BaseModal } from "@/components/base-modal";
 import { SwapReview } from "@/components/swap-review";
 import { Coin, SwapQuote } from "@/types";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function ReviewModal({
   open,
@@ -21,9 +22,10 @@ export function ReviewModal({
   setOpen: (open: boolean) => void;
 }) {
   const [isSubmiting, setIsSubmiting] = useState(false);
+  const t  = useTranslations("Swap");
   return (
     <BaseModal
-      title="You're swapping"
+      title={t("youAreSwapping")}
       open={open}
       setOpen={(open) => {
         setIsSubmiting(false);

@@ -205,7 +205,7 @@ export async function depositTx({
   const changeBtcAmount = totalBtcAmount - targetBtcAmount + inputUtxoDusts;
 
   if (changeBtcAmount < 0) {
-    throw new Error("Insufficient UTXO(s)");
+    throw new Error("insufficientUtxos");
   }
 
   if (changeBtcAmount > UTXO_DUST) {

@@ -10,7 +10,7 @@ import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { useEffect, useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
-
+import { useTranslations } from "next-intl";
 import { DepositReviewModal } from "./deposit-review-modal";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 
@@ -26,6 +26,7 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
   const { onUserInput } = useDepositActionHandlers();
   const depositState = useDepositState();
 
+  const t = useTranslations("Pools");
   const { independentField, typedValue } = depositState;
 
   const { deposit, parsedAmount } = useDerivedDepositInfo(pool);
@@ -201,14 +202,14 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
             onClick={() => setReviewModalOpen(true)}
           >
             {deposit?.state === DepositState.INVALID
-              ? deposit?.errorMessage ?? "Review"
+              ? t(deposit?.errorMessage ?? "review")
               : insufficientCoinABalance
-              ? `Insufficient ${getCoinSymbol(pool?.coinA)} Balance`
+              ? t("insufficientBalance", { symbol: getCoinSymbol(pool?.coinA) })
               : insufficientCoinBBalance
-              ? `Insufficient ${getCoinSymbol(pool?.coinB)} Balance`
+              ? t("insufficientBalance", { symbol: getCoinSymbol(pool?.coinB) })
               : tooSmallFunds
-              ? "Too Small Funds"
-              : "Deposit"}
+              ? t("tooSmallFunds")
+              : t("deposit")}
           </Button>
         )}
       </div>

@@ -12,6 +12,7 @@ import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
+import { useTranslations } from "next-intl";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 
 import {
@@ -30,6 +31,7 @@ export function SwapPanel() {
   }));
   const searchParams = useSearchParams();
 
+  const t = useTranslations("Swap");
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
 
   const { onUpdateCoins, onSwitchCoins, onSelectCoin, onUserInput } =
@@ -221,7 +223,7 @@ export function SwapPanel() {
     <>
       <div className="mt-4">
         <CoinField
-          label="You're selling"
+          label={t("youAreSelling")}
           coin={coinA}
           onUserInput={(value) => onUserInput(Field.INPUT, value)}
           value={formattedAmounts[Field.INPUT]}
@@ -245,7 +247,7 @@ export function SwapPanel() {
           <div className="absolute inset-x-0 top-[50%] bg-border/60 h-[1px]" />
         </div>
         <CoinField
-          label="You're buying"
+          label={t("youAreBuying")}
           placeholder=""
           coin={coinB}
           pulsing={
@@ -267,7 +269,7 @@ export function SwapPanel() {
               className="w-full"
               onClick={() => updateConnectWalletModalOpen(true)}
             >
-              Connect Wallet
+              {t("connectWallet")}
             </Button>
           ) : (
             <Button
@@ -287,22 +289,22 @@ export function SwapPanel() {
               }
             >
               {insufficientBalance
-                ? `Insufficient Balance`
+                ? t("insufficentBallance")
                 : !coinA
-                ? "Select Coin A"
+                ? t("selectCoinA")
                 : !coinB
-                ? "Select Coin B"
+                ? t("selectCoinB")
                 : swap
                 ? swap.state === SwapState.INVALID
                   ? swap.errorMessage
-                  : "Review"
-                : "Review"}
+                  : t("review")
+                : t("review")}
             </Button>
           )}
         </div>
         <div className="mt-4 text-xs flex flex-col gap-1">
           <div className="justify-between flex">
-            <span className="text-muted-foreground">Exchange Rate</span>
+            <span className="text-muted-foreground">{t("exchangeRate")}</span>
             <span>
               {formattedAmounts[Field.INPUT] && formattedAmounts[Field.OUTPUT]
                 ? `1 ${getCoinSymbol(coinB)} = ${formatNumber(
@@ -317,7 +319,7 @@ export function SwapPanel() {
             <>
               <div className="justify-between flex">
                 <span className="text-muted-foreground">
-                  {priceImpacts[0].runeName} Price
+                  {priceImpacts[0].runeName} {t("price")}
                 </span>
                 <div className="flex flex-col items-end">
                   <span>
@@ -343,7 +345,7 @@ export function SwapPanel() {
               {priceImpacts[1] && (
                 <div className="justify-between flex">
                   <span className="text-muted-foreground">
-                    {priceImpacts[1].runeName} Price
+                    {priceImpacts[1].runeName} {t("price")}
                   </span>
                   <div className="flex flex-col items-end">
                     <span>
@@ -371,7 +373,7 @@ export function SwapPanel() {
           )}
           {swap?.routes?.length ? (
             <div className="justify-between flex">
-              <span className="text-muted-foreground">Price Impact</span>
+              <span className="text-muted-foreground">{t("priceImpact")}</span>
               <span>
                 {
                   swap?.routes.sort(

@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { Exchange } from "@/lib/exchange";
 import { WithdrawReviewModal } from "./withdraw-review-modal";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useTranslations } from "next-intl";
 
 export function WithdrawForm({
   position,
@@ -26,6 +27,8 @@ export function WithdrawForm({
   const [utxos, setUtxos] = useState<UnspentOutput[]>([]);
   const [sqrtK, setSqrtK] = useState<bigint>();
   const [errorMessage, setErrorMessage] = useState("");
+
+  const t = useTranslations("Pools");
 
   const [output, setOutput] = useState<{
     coinA: Coin;
@@ -63,14 +66,12 @@ export function WithdrawForm({
       });
   }, [debouncedPercentage, position]);
 
-  console.log(errorMessage);
-
   return (
     <>
       <div>
         {position ? (
           <>
-            <span className="text-muted-foreground">Pooled tokens</span>
+            <span className="text-muted-foreground">{t("pooledTokens")}</span>
             <div className="flex flex-col gap-2 mt-2">
               <div className="flex-1 bg-secondary rounded-lg px-3 py-2 flex justify-between items-center">
                 <div className="flex flex-col space-y-0">
@@ -112,7 +113,9 @@ export function WithdrawForm({
               </div>
             </div>
             <div className="mt-4 flex flex-col gap-2">
-              <span className="text-muted-foreground">Withdraw percentage</span>
+              <span className="text-muted-foreground">
+                {t("withdrawPercentage")}
+              </span>
               <div className="flex gap-2">
                 <Slider
                   defaultValue={[0]}
@@ -129,11 +132,13 @@ export function WithdrawForm({
               disabled={!position || !Number(nonce) || !output || !utxos.length}
               onClick={() => setReviewModalOpen(true)}
             >
-              {errorMessage ? errorMessage : "Withdraw"}
+              {t(errorMessage ? errorMessage : "withdraw")}
             </Button>
             <div className="mt-4">
               <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">You will receive</span>
+                <span className="text-muted-foreground">
+                  {t("youWillReceive")}
+                </span>
                 {output ? (
                   <div className="flex flex-col items-end">
                     <span>
@@ -152,7 +157,7 @@ export function WithdrawForm({
         ) : (
           <div className="p-4 flex items-center justify-center flex-col h-64">
             <Waves className="text-muted-foreground" />
-            <div className="text-muted-foreground mt-2">No Position</div>
+            <div className="text-muted-foreground mt-2">{t("noPosition")}</div>
           </div>
         )}
       </div>
