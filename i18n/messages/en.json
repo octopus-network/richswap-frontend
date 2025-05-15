@@ -116,5 +116,15 @@
     "addLiquidityDescription": "Deposit {amountA} {coinA} and {amountB} {coinB} to {poolName} pool",
     "withdrawLiquidityTitle": "Withdraw Liquidity from {poolName}",
     "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool"
+  },
+  "Transaction": {
+    "transactionConfirmed": "Transaction Confirmed",
+    "transactionFailed": "Transaction Failed",
+    "swapTitle": "Swap {coinA} to {coinB}",
+    "swapDescription": "Convert {amountA} {coinA} to {amountB} {coinB}",
+    "addLiquidityTitle": "Add Liquidity to {poolName}",
+    "addLiquidityDescription": "Deposit {amountA} {coinA} and {amountB} {coinB} to {poolName} pool",
+    "withdrawLiquidityTitle": "Withdraw Liquidity from {poolName}",
+    "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool"
   }
 }

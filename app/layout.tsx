@@ -26,7 +26,7 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={`${GeistSans.className} antialiased`}>
         <NextIntlClientProvider messages={messages}>
           <Providers>

@@ -116,5 +116,15 @@
     "addLiquidityDescription": "向 {poolName} 池中存入 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
     "withdrawLiquidityTitle": "从 {poolName} 取出流动性",
     "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}"
+  },
+  "Transaction": {
+    "transactionConfirmed": "交易已确认",
+    "transactionFailed": "交易失败",
+    "swapTitle": "将 {coinA} 兑换为 {coinB}",
+    "swapDescription": "将 {amountA} 个 {coinA} 兑换为 {amountB} 个 {coinB}",
+    "addLiquidityTitle": "添加流动性到 {poolName}",
+    "addLiquidityDescription": "向 {poolName} 池中存入 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
+    "withdrawLiquidityTitle": "从 {poolName} 取出流动性",
+    "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}"
   }
 }

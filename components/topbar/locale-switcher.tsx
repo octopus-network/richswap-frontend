@@ -16,7 +16,7 @@ import axios from "axios";
 export function LocaleSwitcher() {
   const t = useTranslations("Application");
   const router = useRouter();
-  const [_, setIsSwitching] = useState(false);
+  const [, setIsSwitching] = useState(false);
 
   const onSetLocale = async (locale: string) => {
     setIsSwitching(true);
