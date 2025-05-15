@@ -65,6 +65,7 @@ export function DepositContent({
               nonce={nonce}
               poolUtxos={poolUtxos}
               onBack={onBack}
+              showCancelButton={true}
             />
           </>
         ) : (

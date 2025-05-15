@@ -3,6 +3,7 @@ import { Position, UnspentOutput } from "@/types";
 
 import { useState } from "react";
 import { WithdrawReview } from "@/components/withdraw-review";
+import { useTranslations } from "next-intl";
 
 export function WithdrawReviewModal({
   open,
@@ -24,9 +25,11 @@ export function WithdrawReviewModal({
   sqrtK: bigint;
 }) {
   const [isSubmiting, setIsSubmiting] = useState(false);
+  const t = useTranslations("Pools");
+
   return (
     <BaseModal
-      title="You're withdrawing"
+      title={t("youAreWithdrawing")}
       open={open}
       setOpen={(open) => {
         setIsSubmiting(false);
@@ -47,6 +50,7 @@ export function WithdrawReviewModal({
           sqrtK={sqrtK}
           onSuccess={() => setOpen(false)}
           onBack={() => setOpen(false)}
+          showCancelButton={false}
         />
       </div>
     </BaseModal>

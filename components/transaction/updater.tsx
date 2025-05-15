@@ -14,6 +14,7 @@ import { useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { getTxTitleAndDescription } from "@/lib/utils";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { MEMPOOL_URL } from "@/lib/constants";
+import { useTranslations } from "next-intl";
 
 export function TransactionUpdater() {
   const transactions = useTransactions();
@@ -30,6 +31,8 @@ export function TransactionUpdater() {
   const addPopup = useAddPopup();
 
   const [timer, setTimer] = useState<number>(0);
+
+  const t = useTranslations("Transaction");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -63,12 +66,14 @@ export function TransactionUpdater() {
         const { promise, cancel } = getReceipt(tx.txid!);
         promise
           .then((receipt) => {
-            console.log("receipt:", receipt);
             if (receipt?.status?.confirmed) {
               addPopup(
-                "Transaction Confirmed",
+                t("transactionConfirmed"),
                 PopupStatus.SUCCESS,
-                getTxTitleAndDescription(tx).description
+                t(
+                  getTxTitleAndDescription(tx).description.key,
+                  getTxTitleAndDescription(tx).description.data
+                )
               );
               updateTransactionStatus({
                 txid: tx.txid,
@@ -82,9 +87,12 @@ export function TransactionUpdater() {
               }
 
               addPopup(
-                "Transaction Failed",
+                t("transactionFailed"),
                 PopupStatus.ERROR,
-                getTxTitleAndDescription(tx).description
+                t(
+                  getTxTitleAndDescription(tx).description.key,
+                  getTxTitleAndDescription(tx).description.data
+                )
               );
 
               updateTransactionStatus({
@@ -122,6 +130,7 @@ export function TransactionUpdater() {
     updateTransactionStatus,
     timer,
     removeSpentUtxos,
+    t
   ]);
 
   return null;

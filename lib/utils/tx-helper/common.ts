@@ -170,32 +170,67 @@ export function getAddedVirtualSize(addressType: AddressType) {
   throw new Error("unknown address type");
 }
 
-export function getTxTitleAndDescription(transaction: TransactionInfo): {
-  title: string;
-  description: string;
-} {
+export function getTxTitleAndDescription(transaction: TransactionInfo) {
   const { type, coinA, coinB, coinAAmount, coinBAmount } = transaction;
-  let title = "",
-    description = "";
+  let title = {
+      key: "",
+      data: {},
+    },
+    description = {
+      key: "",
+      data: {},
+    };
   if (type === TransactionType.ADD_LIQUIDITY) {
-    title = `Add Liquidity to ${getCoinSymbol(coinB)} pool`;
-    description = `Deposit ${formatNumber(coinAAmount)} ${getCoinSymbol(
-      coinA
-    )} and ${formatNumber(coinBAmount)} ${getCoinSymbol(
-      coinB
-    )} to ${getCoinSymbol(coinB)} pool`;
+    title = {
+      key: "addLiquidityTitle",
+      data: {
+        poolName: getCoinSymbol(coinB),
+      },
+    };
+    description = {
+      key: "addLiquidityDescription",
+      data: {
+        coinA: getCoinSymbol(coinA),
+        coinB: getCoinSymbol(coinB),
+        amountA: formatNumber(coinAAmount),
+        amountB: formatNumber(coinBAmount),
+        poolName: getCoinSymbol(coinB),
+      },
+    };
   } else if (type === TransactionType.SWAP) {
-    title = `Swap ${getCoinSymbol(coinA)} to ${getCoinSymbol(coinB)}`;
-    description = `Convert ${formatNumber(coinAAmount)} ${getCoinSymbol(
-      coinA
-    )} to ${formatNumber(coinBAmount)} ${getCoinSymbol(coinB)}`;
+    title = {
+      key: "swapTitle",
+      data: {
+        coinA: getCoinSymbol(coinA),
+        coinB: getCoinSymbol(coinB),
+      },
+    };
+    description = {
+      key: "swapDescription",
+      data: {
+        coinA: getCoinSymbol(coinA),
+        coinB: getCoinSymbol(coinB),
+        amountA: formatNumber(coinAAmount),
+        amountB: formatNumber(coinBAmount),
+      },
+    };
   } else if (type === TransactionType.WITHDRAW_LIQUIDITY) {
-    title = `Withdraw Liquidity from ${getCoinSymbol(coinB)} pool`;
-    description = `Widthdraw ${formatNumber(coinAAmount)} ${getCoinSymbol(
-      coinA
-    )} and ${formatNumber(coinBAmount)} ${getCoinSymbol(
-      coinB
-    )} from ${getCoinSymbol(coinB)} pool`;
+    title = {
+      key: "withdrawLiquidityTitle",
+      data: {
+        poolName: getCoinSymbol(coinB),
+      },
+    };
+    description = {
+      key: "withdrawLiquidityDescription",
+      data: {
+        coinA: getCoinSymbol(coinA),
+        coinB: getCoinSymbol(coinB),
+        amountA: formatNumber(coinAAmount),
+        amountB: formatNumber(coinBAmount),
+        poolName: getCoinSymbol(coinB),
+      },
+    };
   }
 
   return {

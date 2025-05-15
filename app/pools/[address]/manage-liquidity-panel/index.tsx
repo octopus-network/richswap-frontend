@@ -5,6 +5,7 @@ import { Position, PoolInfo } from "@/types";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DepositForm } from "./deposit-form";
 import { WithdrawForm } from "./withdraw-form";
+import { useTranslations } from "next-intl";
 
 export function ManageLiquidityPanel({
   pool,
@@ -13,6 +14,8 @@ export function ManageLiquidityPanel({
   pool: PoolInfo;
   position: Position | null | undefined;
 }) {
+  const t = useTranslations("Pools");
+
   return (
     <div>
       <Tabs defaultValue="deposit">
@@ -22,14 +25,14 @@ export function ManageLiquidityPanel({
               value="deposit"
               className="h-10 rounded-none text-foreground text-lg font-semibold px-0 border-b-[2px] border-transparent data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:border-primary"
             >
-              Deposit
+              {t("deposit")}
             </TabsTrigger>
             {position && (
               <TabsTrigger
                 value="withdraw"
                 className="h-10 rounded-none text-foreground text-lg font-semibold px-0 border-b-[2px] border-transparent data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:border-primary"
               >
-                Withdraw
+                {t("withdraw")}
               </TabsTrigger>
             )}
           </TabsList>

@@ -3,6 +3,7 @@ import { PoolInfo, UnspentOutput } from "@/types";
 
 import { useState } from "react";
 import { DepositReview } from "@/components/deposit-review";
+import { useTranslations } from "next-intl";
 
 export function DepositReviewModal({
   open,
@@ -22,9 +23,11 @@ export function DepositReviewModal({
   setOpen: (open: boolean) => void;
 }) {
   const [isSubmiting, setIsSubmiting] = useState(false);
+  const t = useTranslations("Pools");
+
   return (
     <BaseModal
-      title="You're depositing"
+      title={t("youAreDepositing")}
       open={open}
       setOpen={(open) => {
         setIsSubmiting(false);

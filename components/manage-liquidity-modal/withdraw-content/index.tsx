@@ -66,6 +66,7 @@ export function WithdrawContent({
             poolUtxos={poolUtxos}
             onBack={onBack}
             sqrtK={sqrtK}
+            showCancelButton={true}
           />
         ) : (
           <WithdrawForm position={position} onReview={onReview} />

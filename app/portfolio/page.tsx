@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useSetAtom } from "jotai";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { Empty } from "@/components/empty";
+import { useTranslations } from "next-intl";
 
 export default function Portolios() {
   const { paymentAddress } = useLaserEyes((x) => ({
@@ -15,21 +16,22 @@ export default function Portolios() {
   }));
   const [portfolios] = usePortfolios();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
+  const t = useTranslations("Portfolio");
 
   return (
     <div className="md:pt-6 w-full flex flex-col items-center">
       <div className="w-full max-w-4xl">
         <div className="flex justify-between items-center">
-          <span className="text-3xl font-semibold">Portfolio</span>
+          <span className="text-3xl font-semibold">{t("portfolio")}</span>
         </div>
         <div className="mt-6 border rounded-xl overflow-hidden">
           <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl grid-cols-10 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
-            <div className="col-span-3">Pool</div>
+            <div className="col-span-3">{t("pool")}</div>
             <div className="col-span-3">
-              <span>Balance</span>
+              <span>{t("balance")}</span>
             </div>
             <div className="col-span-3">
-              <span>Yield</span>
+              <span>{t("yield")}</span>
             </div>
           </div>
           {portfolios?.length ? (
@@ -71,7 +73,7 @@ export default function Portolios() {
                 size="lg"
                 onClick={() => updateConnectWalletModalOpen(true)}
               >
-                Connect wallet
+                {t("connectWallet")}
               </Button>
             </div>
           )}

@@ -170,7 +170,7 @@ export async function swapRuneTx({
   const changeBtcAmount = totalBtcAmount - targetBtcAmount;
 
   if (changeBtcAmount < 0) {
-    throw new Error("Insufficient UTXO(s)");
+    throw new Error("insufficientUtxos");
   }
   
   if (changeBtcAmount > UTXO_DUST) {

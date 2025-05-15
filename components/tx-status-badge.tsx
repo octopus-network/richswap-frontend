@@ -2,21 +2,22 @@ import { TransactionInfo, TransactionStatus } from "@/types";
 import { Badge } from "./ui/badge";
 import { cn } from "@/lib/utils";
 import { useLatestBlock } from "@/hooks/use-latest-block";
+import { useTranslations } from "next-intl";
 
 const status2Label = (transaction: TransactionInfo, latestBlock: number) => {
   const { status, blockHeight } = transaction;
   if (status === TransactionStatus.BROADCASTED) {
-    return "Broadcasted";
+    return "broadcasted";
   } else if (status === TransactionStatus.CONFIRMING) {
     const diff =
       Math.max(latestBlock, blockHeight || 0) - (blockHeight || 0) + 1;
-    return `Confirming(${diff}/4)`;
+    return `confirming(${diff}/4)`;
   } else if (status === TransactionStatus.FINALIZED) {
-    return "Finalized";
+    return "finalized";
   } else if (status === TransactionStatus.REJECTED) {
-    return "Rejected";
+    return "rejected";
   } else if (status === TransactionStatus.FAILED) {
-    return "Failed";
+    return "failed";
   }
 };
 
@@ -41,12 +42,13 @@ export function TxStatusBadge({
   transaction: TransactionInfo;
 }) {
   const { data: latestBlock } = useLatestBlock();
+  const t = useTranslations("AccountSheet");
   return (
     <Badge
       className={cn("px-1 py-0 font-normal", status2Color(transaction))}
       variant="outline"
     >
-      {status2Label(transaction, latestBlock ?? 0)}
+      {t(status2Label(transaction, latestBlock ?? 0) ?? "unknown")}
     </Badge>
   );
 }

@@ -15,6 +15,7 @@ import { formatNumber } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useMemo } from "react";
 import { Waves, Coins, ArrowLeftRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function Pools() {
   const poolList = usePoolList();
@@ -23,6 +24,8 @@ export default function Pools() {
   const poolsTrades = usePoolsTrades();
   const poolsFee = usePoolsFee();
   const btcPrice = useCoinPrice(BITCOIN.id);
+
+  const t = useTranslations("Pools");
 
   const totalPoolsTvl = useMemo(
     () => Object.values(poolsTvl).reduce((total, curr) => total + curr, 0),
@@ -64,7 +67,7 @@ export default function Pools() {
     <div className="md:pt-6 w-full flex flex-col items-center">
       <div className="w-full max-w-5xl">
         <div className="flex justify-between items-center">
-          <span className="text-3xl font-semibold">Pools</span>
+          <span className="text-3xl font-semibold">{t("pools")}</span>
           <CreateButton />
         </div>
         <div className="hidden md:grid mt-6 md:grid-cols-3 gap-4">
@@ -73,7 +76,7 @@ export default function Pools() {
               <Waves className="size-4 text-green-400" />
             </div>
             <div className="flex flex-col space-y-0.5 ml-4">
-              <span className="text-muted-foreground text-xs">TVL</span>
+              <span className="text-muted-foreground text-xs">{t("tvl")}</span>
               {poolsTvlInBtc ? (
                 <span className="font-semibold text-xl">
                   {formatNumber(poolsTvlInBtc)} ₿
@@ -95,7 +98,7 @@ export default function Pools() {
               <Coins className="size-4 text-purple-400" />
             </div>
             <div className="flex flex-col space-y-0.5 ml-4">
-              <span className="text-muted-foreground text-xs">Fee</span>
+              <span className="text-muted-foreground text-xs">{t("fee")}</span>
               {poolsFeeInSats ? (
                 <span className="font-semibold text-xl">
                   {formatNumber(poolsFeeInSats, true)}{" "}
@@ -118,7 +121,9 @@ export default function Pools() {
               <ArrowLeftRight className="size-4 text-primary" />
             </div>
             <div className="flex flex-col space-y-0.5 ml-4">
-              <span className="text-muted-foreground text-xs">Trades</span>
+              <span className="text-muted-foreground text-xs">
+                {t("trades")}
+              </span>
               {poolsTrades ? (
                 <span className="font-semibold text-xl">{poolsTrades}</span>
               ) : (
@@ -129,7 +134,7 @@ export default function Pools() {
         </div>
         <div className="mt-6 flex flex-col space-y-2 md:hidden px-4 py-3 border bg-secondary/50 rounded-xl">
           <div className="flex justify-between">
-            <span className="text-muted-foreground text-sm">TVL</span>
+            <span className="text-muted-foreground text-sm">{t("tvl")}</span>
             <div className="flex flex-col space-y-0.5 items-end">
               {poolsTvlInBtc ? (
                 <span className="font-semibold">
@@ -149,7 +154,7 @@ export default function Pools() {
           </div>
           <Separator />
           <div className="flex justify-between">
-            <span className="text-muted-foreground text-sm">Fee</span>
+            <span className="text-muted-foreground text-sm">{t("fee")}</span>
             <div className="flex flex-col space-y-0.5 items-end">
               {poolsFeeInSats ? (
                 <span className="font-semibold">
@@ -170,7 +175,7 @@ export default function Pools() {
           </div>
           <Separator />
           <div className="flex justify-between">
-            <span className="text-muted-foreground text-sm">Trades</span>
+            <span className="text-muted-foreground text-sm">{t("trades")}</span>
             <div className="flex flex-col space-y-0.5 items-end">
               {poolsTrades ? (
                 <span className="font-semibold">{poolsTrades}</span>
@@ -182,14 +187,14 @@ export default function Pools() {
         </div>
         <div className="mt-6 border rounded-xl overflow-hidden">
           <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl md:grid-cols-12 grid-cols-9 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
-            <div className="col-span-4">Pool</div>
+            <div className="col-span-4">{t("pool")}</div>
             <div className="col-span-3">
-              <span>TVL</span>
+              <span>{t("tvl")}</span>
             </div>
             <div className="col-span-2">
-              <span>Fee</span>
+              <span>{t("fee")}</span>
             </div>
-            <div className="col-span-2 hidden md:flex">Yield/TVL</div>
+            <div className="col-span-2 hidden md:flex">{t("yieldTvl")}</div>
             {/* <div className="col-span-2 hidden md:flex">Your Share</div> */}
             <div className="col-span-1 hidden md:flex" />
           </div>

@@ -21,7 +21,7 @@ export function AccountButton() {
       <SheetTrigger asChild>
         <Button
           variant="secondary"
-          className="text-foreground relative rounded-full px-3"
+          className="text-foreground relative rounded-lg px-3"
         >
           {provider && (
             <Image
