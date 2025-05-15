@@ -4,7 +4,8 @@
   },
   "Common": {
     "half": "一半",
-    "max": "全部"
+    "max": "全部",
+    "selectCoin": "选择代币"
   },
   "Topbar": {
     "swap": "兑换",
@@ -137,5 +138,9 @@
     "balance": "余额",
     "yield": "收益",
     "connectWallet": "连接钱包"
+  },
+  "SelectCoin": {
+    "selectCoin": "选择代币",
+    "searchPlaceholder": "输入代币 id 或名称进行搜索"
   }
 }

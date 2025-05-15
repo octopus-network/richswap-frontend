@@ -4,7 +4,8 @@
   },
   "Common": {
     "half": "Half",
-    "max": "Max"
+    "max": "Max",
+    "selectCoin": "Select Coin"
   },
   "Topbar": {
     "swap": "Swap",
@@ -137,5 +138,9 @@
     "balance": "Balance",
     "yield": "Yield",
     "connectWallet": "Connect Wallet"
+  },
+  "SelectCoin": {
+    "selectCoin": "Select Coin",
+    "searchPlaceholder": "Input coin id or name"
   }
 }
