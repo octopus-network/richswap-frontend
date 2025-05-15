@@ -13,6 +13,7 @@
     "more": "More",
     "connectWallet": "Connect Wallet",
     "explorer": "Explorer",
+    "twitter": "Twitter",
     "faq": "FAQ",
     "support": "Support",
     "sourceCode": "Source Code"
@@ -46,6 +47,7 @@
     "networkCost": "Network cost"
   },
   "Pools": {
+    "pool": "Pool",
     "pools": "Pools",
     "tvl": "TVL",
     "fee": "Fee",
@@ -99,7 +101,9 @@
     "connectAWallet": "Connect a Wallet",
     "supportedWallets": "Supported Wallets",
     "tips": "To use RichSwap, you need to connect a wallet",
-    "detected": "Detected"
+    "detected": "Detected",
+    "walletConnected": "Wallet Connected",
+    "connectedWithWallet": "Connected with {wallet}"
   },
   "AccountSheet": {
     "viewOnExplorer": "View On Explorer",
@@ -126,5 +130,12 @@
     "addLiquidityDescription": "Deposit {amountA} {coinA} and {amountB} {coinB} to {poolName} pool",
     "withdrawLiquidityTitle": "Withdraw Liquidity from {poolName}",
     "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool"
+  },
+  "Portfolio": {
+    "portfolio": "Portfolio",
+    "pool": "Pool",
+    "balance": "Balance",
+    "yield": "Yield",
+    "connectWallet": "Connect Wallet"
   }
 }

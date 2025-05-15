@@ -141,7 +141,7 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
       <CoinField
         coin={pool?.coinA ?? null}
         size="sm"
-        label="Bitcoin"
+        label={t("bitcoin")}
         pulsing={
           independentField === Field.OUTPUT &&
           deposit?.state === DepositState.LOADING
@@ -162,7 +162,7 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
       <CoinField
         coin={pool?.coinB}
         size="sm"
-        label="Rune"
+        label={t("rune")}
         pulsing={
           independentField === Field.INPUT &&
           deposit?.state === DepositState.LOADING
@@ -183,7 +183,7 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
             className="w-full"
             onClick={() => updateConnectWalletModalOpen(true)}
           >
-            Connect Wallet
+            {t("connectWallet")}
           </Button>
         ) : (
           <Button

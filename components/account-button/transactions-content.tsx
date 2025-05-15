@@ -5,11 +5,11 @@ import { TransactionInfo, TransactionStatus } from "@/types";
 import { useTransactions } from "@/store/transactions";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TxStatusBadge } from "../tx-status-badge";
-import moment from "moment";
+
 import { MEMPOOL_URL } from "@/lib/constants";
 import { useUpdateTransactionStatus } from "@/store/transactions";
 import { useLatestBlock } from "@/hooks/use-latest-block";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 
 function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
   const [showErrorMessage, setShowErrorMessage] = useState(false);
@@ -52,6 +52,8 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
     }
   };
 
+  const format = useFormatter();
+
   return (
     <div
       className={cn(
@@ -82,7 +84,7 @@ function TransactionRow({ transaction }: { transaction: TransactionInfo }) {
           {t(description.key, description.data)}
         </span>
         <span className="text-xs text-muted-foreground truncate">
-          {moment(transaction.timestamp).fromNow()}
+          {format.relativeTime(transaction.timestamp, Date.now())}
         </span>
       </div>
     </div>

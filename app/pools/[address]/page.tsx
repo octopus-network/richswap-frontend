@@ -112,7 +112,7 @@ export default function Pool() {
               )}&coinB=${getCoinSymbol(poolInfo.coinB ?? null)}`}
               className="text-primary/80 hover:text-primary ml-3 inline-flex items-center"
             >
-              <ArrowLeftRight className="mr-1 size-4" /> Swap
+              <ArrowLeftRight className="mr-1 size-4" /> {t("swap")}
             </Link>
           )}
         </div>

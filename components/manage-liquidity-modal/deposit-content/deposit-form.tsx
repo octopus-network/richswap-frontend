@@ -174,7 +174,7 @@ export function DepositForm({
     <>
       <CoinField
         coin={pool?.coinA ?? null}
-        label="Bitcoin"
+        label={t("bitcoin")}
         pulsing={
           independentField === Field.OUTPUT &&
           deposit?.state === DepositState.LOADING
@@ -194,7 +194,7 @@ export function DepositForm({
       </div>
       <CoinField
         coin={pool?.coinB}
-        label="Rune"
+        label={t("rune")}
         pulsing={
           independentField === Field.INPUT &&
           deposit?.state === DepositState.LOADING

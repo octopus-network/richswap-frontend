@@ -4,7 +4,7 @@
   },
   "Common": {
     "half": "一半",
-    "max": "最大"
+    "max": "全部"
   },
   "Topbar": {
     "swap": "兑换",
@@ -13,6 +13,7 @@
     "more": "更多",
     "connectWallet": "连接钱包",
     "explorer": "区块浏览器",
+    "twitter": "Twitter",
     "faq": "常见问题",
     "support": "支持",
     "sourceCode": "源代码"
@@ -20,11 +21,11 @@
   "Swap": {
     "swap": "兑换",
     "connectWallet": "连接钱包",
-    "youAreSelling": "你正在卖出",
+    "youAreSelling": "卖出",
     "youAreSwapping": "你正在交易",
-    "youAreBuying": "你正在买入",
+    "youAreBuying": "买入",
     "half": "一半",
-    "max": "最大",
+    "max": "全部",
     "insufficientUtxos": "BTC 余额不足",
     "insufficientBalance": "余额不足",
     "selectCoinA": "选择币种 A",
@@ -46,7 +47,8 @@
     "networkCost": "网络费用"
   },
   "Pools": {
-    "pools": "资金池",
+    "pool": "池子",
+    "pools": "池子",
     "tvl": "总锁仓价值 (TVL)",
     "fee": "手续费",
     "trades": "交易数",
@@ -72,7 +74,7 @@
     "Paused": "已暂停",
     "back": "返回",
     "liquidityProviders": "流动性提供者",
-    "poolInfo": "资金池信息",
+    "poolInfo": "池子信息",
     "address": "地址",
     "percentage": "占比",
     "pooledTokens": "提供的代币",
@@ -99,7 +101,9 @@
     "connectAWallet": "连接钱包",
     "supportedWallets": "支持的钱包",
     "tips": "使用 RichSwap 前需要连接钱包",
-    "detected": "已安装"
+    "detected": "已安装",
+    "walletConnected": "钱包已连接",
+    "connectedWithWallet": "已连接到 {wallet}"
   },
   "AccountSheet": {
     "viewOnExplorer": "在区块浏览器查看",
@@ -126,5 +130,12 @@
     "addLiquidityDescription": "向 {poolName} 池中存入 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
     "withdrawLiquidityTitle": "从 {poolName} 取出流动性",
     "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}"
+  },
+  "Portfolio": {
+    "portfolio": "流动性",
+    "pool": "池子",
+    "balance": "余额",
+    "yield": "收益",
+    "connectWallet": "连接钱包"
   }
 }

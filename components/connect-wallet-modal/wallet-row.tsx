@@ -76,9 +76,9 @@ export function WalletRow({ wallet }: { wallet: string }) {
       setConnectWalletModalOpen(false);
       setConnectingWallet(undefined);
       addPopup(
-        "Wallet Connected",
+        t("walletConnected"),
         PopupStatus.INFO,
-        `Connected with ${WALLETS[wallet].name}`
+        t("connectedWithWallet", { wallet: WALLETS[wallet].name })
       );
     } catch (err) {
       console.log(err);
@@ -91,6 +91,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
     wallet,
     addPopup,
     installed,
+    t
   ]);
 
   return (

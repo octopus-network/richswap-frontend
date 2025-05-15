@@ -121,7 +121,9 @@ export default function Pools() {
               <ArrowLeftRight className="size-4 text-primary" />
             </div>
             <div className="flex flex-col space-y-0.5 ml-4">
-              <span className="text-muted-foreground text-xs">{t("trades")}</span>
+              <span className="text-muted-foreground text-xs">
+                {t("trades")}
+              </span>
               {poolsTrades ? (
                 <span className="font-semibold text-xl">{poolsTrades}</span>
               ) : (
@@ -185,12 +187,12 @@ export default function Pools() {
         </div>
         <div className="mt-6 border rounded-xl overflow-hidden">
           <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl md:grid-cols-12 grid-cols-9 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
-            <div className="col-span-4">Pool</div>
+            <div className="col-span-4">{t("pool")}</div>
             <div className="col-span-3">
-              <span>TVL</span>
+              <span>{t("tvl")}</span>
             </div>
             <div className="col-span-2">
-              <span>Fee</span>
+              <span>{t("fee")}</span>
             </div>
             <div className="col-span-2 hidden md:flex">{t("yieldTvl")}</div>
             {/* <div className="col-span-2 hidden md:flex">Your Share</div> */}
