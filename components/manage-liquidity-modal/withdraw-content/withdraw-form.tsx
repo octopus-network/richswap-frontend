@@ -117,7 +117,9 @@ export function WithdrawForm({
             </div>
           </div>
           <div className="mt-4 flex flex-col gap-2">
-            <span className="text-muted-foreground">{t("withdrawPercentage")}</span>
+            <span className="text-muted-foreground">
+              {t("withdrawPercentage")}
+            </span>
             <div className="flex gap-2">
               <Slider
                 defaultValue={[0]}
@@ -144,11 +146,13 @@ export function WithdrawForm({
                 : null
             }
           >
-            {errorMessage ? errorMessage : "Withdraw"}
+            {t(errorMessage ? errorMessage : "withdraw")}
           </Button>
           <div className="mt-4">
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">{t("youWillReceive")}</span>
+              <span className="text-muted-foreground">
+                {t("youWillReceive")}
+              </span>
               {output ? (
                 <div className="flex flex-col items-end">
                   <span>
