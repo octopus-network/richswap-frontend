@@ -12,7 +12,7 @@ import { CoinRow } from "./coin-row";
 import { Loader2 } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 import { useSearchCoins } from "@/hooks/use-coins";
-
+import { useTranslations } from "next-intl";
 import { useAddUserCoin } from "@/store/user/hooks";
 
 function coinFilter(query: string) {
@@ -59,7 +59,7 @@ export function SelectCoinModal({
   onSelectCoin?: (coin: Coin) => void;
 }) {
   const defaultCoins = useDefaultCoins();
-
+  const t = useTranslations("SelectCoin");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const debouncedQuery = useDebounce(searchQuery, 200);
   const [coinWarningModalOpen, setCoinWarningModalOpen] = useState(false);
@@ -124,12 +124,12 @@ export function SelectCoinModal({
     <BaseModal open={open} setOpen={setOpen} className="max-w-md">
       <div className="px-4 pt-4">
         <div className="fle flex-col">
-          <div className="text-lg font-bold">Select Coin</div>
+          <div className="text-lg font-bold">{t("selectCoin")}</div>
         </div>
         <div className="mt-4 border px-2 py-1 rounded-lg flex items-center hover:border-primary/60 duration-200 transition-colors">
           <Search className="size-5 text-muted-foreground" />
           <Input
-            placeholder="Input coin id or name"
+            placeholder={t("searchPlaceholder")}
             className="border-none"
             onChange={handleInput}
           />

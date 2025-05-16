@@ -2,6 +2,8 @@ import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { WALLETS } from "@/lib/constants";
+import { useTranslations } from "next-intl";
+
 import {
   ProviderType,
   useLaserEyes,
@@ -46,7 +48,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
   );
 
   const [connectingWallet, setConnectingWallet] = useState<string>();
-
+  const t = useTranslations("ConnectWallet");
   const setConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
   const addPopup = useAddPopup();
 
@@ -74,9 +76,9 @@ export function WalletRow({ wallet }: { wallet: string }) {
       setConnectWalletModalOpen(false);
       setConnectingWallet(undefined);
       addPopup(
-        "Wallet Connected",
+        t("walletConnected"),
         PopupStatus.INFO,
-        `Connected with ${WALLETS[wallet].name}`
+        t("connectedWithWallet", { wallet: WALLETS[wallet].name })
       );
     } catch (err) {
       console.log(err);
@@ -89,6 +91,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
     wallet,
     addPopup,
     installed,
+    t
   ]);
 
   return (
@@ -120,7 +123,9 @@ export function WalletRow({ wallet }: { wallet: string }) {
         </span>
       </div>
       {installed && (
-        <span className="text-muted-foreground/80 text-xs">Detected</span>
+        <span className="text-muted-foreground/80 text-xs">
+          {t("detected")}
+        </span>
       )}
     </div>
   );

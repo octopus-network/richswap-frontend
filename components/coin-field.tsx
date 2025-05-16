@@ -16,6 +16,7 @@ import { Wallet } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import Decimal from "decimal.js";
 
+import { useTranslations } from "next-intl";
 import { getCoinSymbol, getCoinName } from "@/lib/utils";
 
 export function beautify(str = ""): string {
@@ -33,6 +34,8 @@ const CoinButton = ({
   onClick: () => void;
 }) => {
   const [isMounted, setIsMounted] = useState(false);
+
+  const t = useTranslations("Common");
 
   useEffect(() => {
     setIsMounted(true);
@@ -69,7 +72,7 @@ const CoinButton = ({
               />
             </div>
             <span className="text-sm flex-1 truncate font-semibold">
-              Select Coin
+              {t("selectCoin")}
             </span>
           </div>
         )}
@@ -113,6 +116,7 @@ export function CoinField({
   const balance = useCoinBalance(coin);
 
   const beautifiedValue = beautify(value);
+  const t = useTranslations("Common");
 
   const onSetHalf = () => {
     onUserInput(
@@ -144,7 +148,12 @@ export function CoinField({
           size === "sm" ? "px-2 py-1" : "px-4 py-2"
         )}
       >
-        <div className={cn("flex justify-between items-center", size === "sm" ? "h-8" : "h-10")}>
+        <div
+          className={cn(
+            "flex justify-between items-center",
+            size === "sm" ? "h-8" : "h-10"
+          )}
+        >
           <span className="text-sm">{label}</span>
           {address && coin && (
             <div className="flex space-x-2 items-center">
@@ -166,7 +175,7 @@ export function CoinField({
                         onClick={onSetHalf}
                         className="text-muted-foreground hover:text-foreground uppercase"
                       >
-                        Half
+                        {t("half")}
                       </Button>
                       <Button
                         size="xs"
@@ -174,7 +183,7 @@ export function CoinField({
                         onClick={onSetMax}
                         className="text-muted-foreground hover:text-foreground uppercase"
                       >
-                        Max
+                        {t("max")}
                       </Button>
                     </>
                   )}

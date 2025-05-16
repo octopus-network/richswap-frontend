@@ -39,6 +39,7 @@ import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
 
+import { useTranslations } from "next-intl";
 import { useAddTransaction } from "@/store/transactions";
 
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -76,6 +77,7 @@ export function SwapReview({
   );
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
+  const t = useTranslations("Swap");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [txid, setTxid] = useState("");
@@ -176,7 +178,7 @@ export function SwapReview({
       !coinB ||
       !coinAAmount ||
       !coinBAmount ||
-      !btcUtxos?.length ||
+      !btcUtxos ||
       step !== 0
     ) {
       return;
@@ -473,7 +475,7 @@ export function SwapReview({
     <div className="flex flex-col gap-4">
       <div className="p-4 border rounded-lg flex flex-col items-center">
         <TriangleAlert className="size-12 text-destructive" />
-        <div className="break-all mt-2 text-sm">{errorMessage}</div>
+        <div className="break-all mt-2 text-sm">{t(errorMessage)}</div>
       </div>
 
       <Button
@@ -482,7 +484,7 @@ export function SwapReview({
         className="text-destructive"
         size="lg"
       >
-        Dismiss
+        {t("dismiss")}
       </Button>
     </div>
   ) : (
@@ -529,7 +531,7 @@ export function SwapReview({
               <>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    {priceImpacts[0].runeName} Price
+                    {priceImpacts[0].runeName} {t("price")}
                   </span>
                   <div className="flex flex-col items-end">
                     <span>
@@ -555,7 +557,7 @@ export function SwapReview({
                 {priceImpacts[1] && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      {priceImpacts[1].runeName} Price
+                      {priceImpacts[1].runeName} {t("price")}
                     </span>
                     <div className="flex flex-col items-end">
                       <span>
@@ -583,14 +585,14 @@ export function SwapReview({
             )}
 
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Fee rate</span>
+              <span className="text-muted-foreground">{t("feeRate")}</span>
               <span>
                 ≈{recommendedFeeRate}{" "}
                 <em className="text-muted-foreground">sats/vb</em>
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Network cost</span>
+              <span className="text-muted-foreground">{t("networkCost")}</span>
               <div className="flex flex-col items-end">
                 <span>
                   {fee > 0 ? Number(fee) : "-"}{" "}
@@ -623,12 +625,12 @@ export function SwapReview({
                 <Loader2 className="size-4 animate-spin" />
               ) : null}
               {!psbt
-                ? "Generating PSBT"
+                ? t("generatingPsbt")
                 : invalidAddressType
-                ? "Unsupported Address Type"
+                ? t("unsupportedAddressType")
                 : initiatorUtxoProof
-                ? "Sign Transaction"
-                : "Fetching Proof"}
+                ? t("signTransaction")
+                : t("fetchingProof")}
             </Button>
             {showCancelButton && (
               <Button
@@ -637,7 +639,7 @@ export function SwapReview({
                 className="w-full"
                 onClick={onBack}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             )}
           </div>
@@ -645,21 +647,21 @@ export function SwapReview({
       ) : (
         <div className="flex flex-col gap-1">
           <Step
-            title="Sign PSBT"
-            description="Please confirm in wallet"
+            title={t("signPsbt")}
+            description={t("pleaseConfirmInWallet")}
             icon={<FileSignature className="size-4" />}
             isActive={step === 1}
           />
           <Separator orientation="vertical" className="h-3 w-[2px] ml-[14px]" />
           <Step
-            title="Invoke exchange"
+            title={t("invokeExchange")}
             countdown={5}
             icon={<Shuffle className="size-4" />}
             isActive={step === 2}
           />
           <Separator orientation="vertical" className="h-3 w-[2px] ml-[14px]" />
           <Step
-            title="Wait for confirmation"
+            title={t("waitForConfirmation")}
             countdown={180}
             icon={<Ellipsis className="size-4" />}
             isActive={step === 3}

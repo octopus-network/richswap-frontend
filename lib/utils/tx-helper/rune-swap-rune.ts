@@ -254,7 +254,7 @@ export async function runeSwapRuneTx({
   const changeBtcAmount = totalBtcAmount - currentFee;
 
   if (changeBtcAmount < 0) {
-    throw new Error("Insufficient UTXO(s)");
+    throw new Error("insufficientUtxos");
   }
 
   if (changeBtcAmount > UTXO_DUST) {

@@ -13,6 +13,7 @@ import { Exchange } from "@/lib/exchange";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { getCoinSymbol } from "@/lib/utils";
 import { usePoolList } from "@/hooks/use-pools";
+import { useTranslations } from "next-intl";
 
 export function CreateForm({
   coinA,
@@ -39,6 +40,8 @@ export function CreateForm({
   const [isCreating, setIsCreating] = useState(false);
   const coinABalance = useCoinBalance(coinA);
   const coinBBalance = useCoinBalance(coinB);
+
+  const t = useTranslations("Pools");
 
   const poolList = usePoolList();
 
@@ -108,7 +111,7 @@ export function CreateForm({
   return (
     <>
       <div className="fle flex-col">
-        <div className="text-lg font-bold">Create Pool</div>
+        <div className="text-lg font-bold">{t("createPool")}</div>
       </div>
       <CoinField
         coin={coinA}
@@ -141,7 +144,7 @@ export function CreateForm({
             className="w-full"
             onClick={() => updateConnectWalletModalOpen(true)}
           >
-            Connect Wallet
+            {t("connectWallet")}
           </Button>
         ) : (
           <Button
@@ -159,16 +162,16 @@ export function CreateForm({
           >
             {isCreating && <Loader2 className="animate-spin" />}
             {!coinB
-              ? "Select Rune"
+              ? t("selectRune")
               : !Number(coinAAmount)
-              ? "Input BTC Amount"
+              ? t("inputBtcAmount")
               : !Number(coinBAmount)
-              ? `Input ${getCoinSymbol(coinB)} Amount`
+              ? t("inputRuneAmount", { rune: getCoinSymbol(coinB) })
               : insufficientCoinABalance
-              ? `Insufficient ${getCoinSymbol(coinA)} Balance`
+              ? t("insufficientBalance", { symbol: getCoinSymbol(coinA) })
               : insufficientCoinBBalance
-              ? `Insufficient ${getCoinSymbol(coinB)} Balance`
-              : "Create"}
+              ? t("insufficientBalance", { symbol: getCoinSymbol(coinB) })
+              : t("create")}
           </Button>
         )}
       </div>

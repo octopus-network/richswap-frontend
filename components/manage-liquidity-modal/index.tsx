@@ -10,6 +10,7 @@ import Link from "next/link";
 import { getCoinSymbol } from "@/lib/utils";
 import { ArrowLeftRight } from "lucide-react";
 import { Exchange } from "@/lib/exchange";
+import { useTranslations } from "next-intl";
 
 export function ManageLiquidityModal({
   open,
@@ -24,6 +25,8 @@ export function ManageLiquidityModal({
 }) {
   const [onReview, setOnReview] = useState(false);
   const [poolData, setPoolData] = useState<PoolData>();
+  const t = useTranslations("Pools");
+
   useEffect(() => {
     Exchange.getPoolData(pool.address).then((res) => {
       if (!res) {
@@ -37,7 +40,7 @@ export function ManageLiquidityModal({
       open={open}
       setOpen={setOpen}
       showCloseButton={!onReview}
-      title="Manage Pool"
+      title={t("managePool")}
     >
       <div className="p-5 pt-0">
         <Tabs defaultValue="deposit">
@@ -47,14 +50,14 @@ export function ManageLiquidityModal({
                 value="deposit"
                 className="h-10 rounded-none text-foreground text-lg font-semibold px-0 border-b-[2px] border-transparent data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:border-primary"
               >
-                Deposit
+                {t("deposit")}
               </TabsTrigger>
               {position && (
                 <TabsTrigger
                   value="withdraw"
                   className="h-10 rounded-none text-foreground text-lg font-semibold px-0 border-b-[2px] border-transparent data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:border-primary"
                 >
-                  Withdraw
+                  {t("withdraw")}
                 </TabsTrigger>
               )}
             </TabsList>
@@ -64,7 +67,7 @@ export function ManageLiquidityModal({
               )}&coinB=${getCoinSymbol(pool.coinB ?? null)}`}
               className="text-primary/80 hover:text-primary ml-3 text-sm inline-flex items-center"
             >
-              <ArrowLeftRight className="mr-1 size-3" /> Swap
+              <ArrowLeftRight className="mr-1 size-3" /> {t("swap")}
             </Link>
           </div>
           <DepositContent
