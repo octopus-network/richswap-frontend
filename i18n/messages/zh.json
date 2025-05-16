@@ -133,7 +133,7 @@
     "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}"
   },
   "Portfolio": {
-    "portfolio": "流动性",
+    "portfolio": "投资组合",
     "pool": "池子",
     "balance": "余额",
     "yield": "收益",
