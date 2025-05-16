@@ -289,7 +289,7 @@ export function SwapPanel() {
               }
             >
               {insufficientBalance
-                ? t("insufficentBallance")
+                ? t("insufficientBalance")
                 : !coinA
                 ? t("selectCoinA")
                 : !coinB
