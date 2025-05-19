@@ -1,10 +1,11 @@
-export const idlFactory = ({ IDL }: { IDL: any }) => {
+export const idlFactory = ({ IDL }): { IDL: any } => {
   const Result = IDL.Variant({
     Ok: IDL.Tuple(IDL.Nat64, IDL.Nat64),
     Err: IDL.Text,
   });
   const ExchangeError = IDL.Variant({
     InvalidSignPsbtArgs: IDL.Text,
+    FundsLimitExceeded: IDL.Null,
     UtxoMismatch: IDL.Null,
     InvalidNumeric: IDL.Null,
     Overflow: IDL.Null,
