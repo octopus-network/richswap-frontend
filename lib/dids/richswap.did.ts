@@ -1,4 +1,4 @@
-export const idlFactory = ({ IDL }): { IDL: any } => {
+export const idlFactory = ({ IDL }: { IDL: any }) => {
   const Result = IDL.Variant({
     Ok: IDL.Tuple(IDL.Nat64, IDL.Nat64),
     Err: IDL.Text,
