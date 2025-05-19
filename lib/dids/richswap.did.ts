@@ -5,6 +5,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   });
   const ExchangeError = IDL.Variant({
     InvalidSignPsbtArgs: IDL.Text,
+    FundsLimitExceeded: IDL.Null,
     UtxoMismatch: IDL.Null,
     InvalidNumeric: IDL.Null,
     Overflow: IDL.Null,
