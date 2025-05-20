@@ -284,7 +284,7 @@ export class Exchange {
     inputAmount: string
   ): Promise<DonateQuote | undefined> {
     try {
-      const { input, out_rune, out_sats, nonce } = await actor
+      const { input, nonce } = await actor
         .pre_donate(pool.address, BigInt(inputAmount))
         .then((data: any) => {
           console.log("pre donate", pool, data);
@@ -299,23 +299,23 @@ export class Exchange {
 
       const { output } = getP2trAressAndScript(pool.key);
 
+      const rune = input.maybe_rune[0];
+
       const utxo: UnspentOutput = {
         txid: input.txid,
         vout: input.vout,
-        satoshis: out_sats.toString(),
+        satoshis: input.sats.toString(),
         address: pool.address,
         scriptPk: output,
         pubkey: "",
         addressType: AddressType.P2TR,
         runes: [
           {
-            id: out_rune.id,
-            amount: out_rune.value.toString(),
+            id: rune.id,
+            amount: rune.value.toString(),
           },
         ],
       };
-
-      const rune = input.maybe_rune[0];
 
       const quote = {
         state: rune.value > BigInt(0) ? DonateState.VALID : DonateState.EMPTY,

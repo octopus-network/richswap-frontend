@@ -151,7 +151,6 @@ export function DonateReview({
 
       try {
         const tx = await donateTx({
-          runeid: coinB.id,
           btcAmount: coinAAmountBigInt,
           btcUtxos,
           poolUtxos,

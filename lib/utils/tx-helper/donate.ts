@@ -3,14 +3,13 @@ import { UnspentOutput, ToSignInput, AddressType } from "@/types";
 import { UTXO_DUST, BITCOIN } from "@/lib/constants";
 import { Transaction } from "@/lib/transaction";
 import { getAddressType, addressTypeToString } from "../address";
-import { RuneId, Runestone, none, Edict } from "runelib";
+
 import { Orchestrator } from "@/lib/orchestrator";
 import { selectBtcUtxos } from "./common";
 import * as bitcoin from "bitcoinjs-lib";
 
 export async function donateTx({
   btcAmount,
-  runeid,
   btcUtxos,
   poolUtxos,
   address,
@@ -19,7 +18,6 @@ export async function donateTx({
   feeRate,
 }: {
   btcAmount: bigint;
-  runeid: string;
   btcUtxos: UnspentOutput[];
   poolUtxos: UnspentOutput[];
   address: string;
@@ -27,8 +25,7 @@ export async function donateTx({
   poolAddress: string;
   feeRate: number;
 }) {
-  let poolRuneAmount = BigInt(0),
-    poolBtcAmount = BigInt(0);
+  let poolBtcAmount = BigInt(0);
 
   const tx = new Transaction();
 
@@ -38,23 +35,9 @@ export async function donateTx({
 
   poolUtxos.forEach((utxo) => {
     // pool has only one utxo now
-    const rune = utxo.runes.find((rune) => rune.id === runeid);
-    poolRuneAmount += BigInt(rune!.amount);
     poolBtcAmount += BigInt(utxo.satoshis);
     tx.addInput(utxo);
   });
-
-  const [runeBlock, runeIdx] = runeid.split(":");
-
-  const edicts = [
-    new Edict(
-      new RuneId(Number(runeBlock), Number(runeIdx)),
-      poolRuneAmount,
-      0
-    ),
-  ];
-
-  const runestone = new Runestone(edicts, none(), none(), none());
 
   const poolSpendUtxos = poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`);
   const poolVouts: number[] = [];
@@ -64,10 +47,6 @@ export async function donateTx({
   // send btc to pool
   tx.addOutput(poolAddress, poolBtcAmount + btcAmount);
 
-  const opReturnScript = runestone.encipher();
-  // OP_RETURN
-  tx.addScriptOutput(opReturnScript, BigInt(0));
-
   let inputTypes = [
     ...poolUtxos.map((utxo) =>
       addressTypeToString(getAddressType(utxo.address))
@@ -76,7 +55,6 @@ export async function donateTx({
 
   const outputTypes = [
     addressTypeToString(getAddressType(poolAddress)),
-    { OpReturn: BigInt(opReturnScript.length) },
     // btc output
     addressTypeToString(getAddressType(paymentAddress)),
   ];
