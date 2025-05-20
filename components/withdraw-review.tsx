@@ -281,9 +281,15 @@ export function WithdrawReview({
       });
 
       addPopup(
-        "Success",
+        t("success"),
         PopupStatus.SUCCESS,
-        `Withdraw liduiqity from ${getCoinSymbol(coinB)} Pool`
+        t("withdrawLiquidityDescription", {
+          coinA: getCoinSymbol(coinA),
+          coinAAmount,
+          coinB: getCoinSymbol(coinB),
+          coinBAmount,
+          poolName: getCoinSymbol(coinB),
+        })
       );
 
       onSuccess();

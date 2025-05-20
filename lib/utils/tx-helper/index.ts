@@ -4,3 +4,4 @@ export * from "./swap-btc";
 export * from "./rune-swap-rune";
 export * from "./deposit";
 export * from "./withdraw";
+export * from "./donate";

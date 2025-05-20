@@ -67,6 +67,8 @@
     "managePool": "Manage Pool",
     "deposit": "Deposit",
     "withdraw": "Withdraw",
+    "donate": "Donate",
+    "donating": "Donating",
     "tooSmallFunds": "Too Small Funds",
     "swap": "Swap",
     "currencyReserves": "Currency Reserves",
@@ -84,6 +86,7 @@
     "youWillReceive": "You will receive",
     "noPosition": "No Position",
     "youAreDepositing": "You're Depositing",
+    "youAreDonating": "You're donating",
     "youAreWithdrawing": "You're withdrawing",
     "withdrawing": "Withrawing",
     "depositing": "Depositing",
@@ -97,7 +100,16 @@
     "singPsbt": "Sign PSBT",
     "invokeExchange": "Invoke Exchange",
     "waitForConfirmation": "Wait For Confirmation",
-    "pleaseConfirmInWallet": "Please Confirm In Wallet"
+    "pleaseConfirmInWallet": "Please Confirm In Wallet",
+    "swapTitle": "Swap {coinA} to {coinB}",
+    "swapDescription": "Convert {amountA} {coinA} to {amountB} {coinB}",
+    "addLiquidityTitle": "Add Liquidity to {poolName}",
+    "addLiquidityDescription": "Deposit {amountA} {coinA} and {amountB} {coinB} to {poolName} pool",
+    "withdrawLiquidityTitle": "Withdraw Liquidity from {poolName}",
+    "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
+    "donateTitle": "Donate to {poolName}",
+    "donateDescription": "Donate {amount} {coin} to {poolName} pool",
+    "success": "Success"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
@@ -121,7 +133,9 @@
     "addLiquidityTitle": "Add Liquidity to {poolName}",
     "addLiquidityDescription": "Deposit {amountA} {coinA} and {amountB} {coinB} to {poolName} pool",
     "withdrawLiquidityTitle": "Withdraw Liquidity from {poolName}",
-    "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool"
+    "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
+    "donateTitle": "Donate to {poolName}",
+    "donateDescription": "Donate {amount} {coin} to {poolName} pool"
   },
   "Transaction": {
     "transactionConfirmed": "Transaction Confirmed",
@@ -131,7 +145,9 @@
     "addLiquidityTitle": "Add Liquidity to {poolName}",
     "addLiquidityDescription": "Deposit {amountA} {coinA} and {amountB} {coinB} to {poolName} pool",
     "withdrawLiquidityTitle": "Withdraw Liquidity from {poolName}",
-    "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool"
+    "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
+    "donateTitle": "Donate to {poolName}",
+    "donateDescription": "Donate {amount} {coin} to {poolName} pool"
   },
   "Portfolio": {
     "portfolio": "Portfolio",

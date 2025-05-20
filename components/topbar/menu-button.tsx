@@ -47,7 +47,7 @@ export function MenuButton() {
           <AlignJustify className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-5/6 xs:w-[320px] p-0 right-0 top-0">
+      <SheetContent className="w-full xs:w-[320px] p-0 right-0 top-0">
         <div className="mt-12 border-t">
           {navItems.map((nav, idx) => (
             <SheetClose asChild key={idx}>

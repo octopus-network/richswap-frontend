@@ -30,7 +30,7 @@ import { useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
-import { depositTx } from "@/lib/utils";
+import { donateTx } from "@/lib/utils";
 import { useLaserEyes } from "@omnisat/lasereyes";
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { parseCoinAmount } from "@/lib/utils";
@@ -40,7 +40,7 @@ import { Ellipsis } from "lucide-react";
 import { BITCOIN, EXCHANGE_ID } from "@/lib/constants";
 import { useAddTransaction } from "@/store/transactions";
 
-export function DepositReview({
+export function DonateReview({
   coinA,
   coinB,
   coinAAmount,
@@ -103,13 +103,6 @@ export function DepositReview({
     [coinAAmount, coinAPrice]
   );
 
-  const coinBPrice = useCoinPrice(coinB?.id);
-  const coinBFiatValue = useMemo(
-    () =>
-      coinBAmount && coinBPrice ? Number(coinBAmount) * coinBPrice : undefined,
-    [coinBAmount, coinBPrice]
-  );
-
   useEffect(() => {
     if (!toSpendUtxos.length || !paymentAddress) {
       setInitiatorUtxoProof(undefined);
@@ -155,46 +148,12 @@ export function DepositReview({
 
     const genPsbt = async () => {
       const coinAAmountBigInt = BigInt(parseCoinAmount(coinAAmount, coinA));
-      const coinBAmountBigInt = BigInt(parseCoinAmount(coinBAmount, coinB));
-
-      const _runeUtxos: UnspentOutput[] = [];
-      const runeAmount = coinBAmountBigInt;
-      const runeid = coinB.id;
-
-      for (let i = 0; i < runeUtxos.length; i++) {
-        const v = runeUtxos[i];
-        if (v.runes.length) {
-          const balance = v.runes.find((r) => r.id == runeid);
-          if (balance && BigInt(balance.amount) == runeAmount) {
-            _runeUtxos.push(v);
-            break;
-          }
-        }
-      }
-
-      if (_runeUtxos.length == 0) {
-        let total = BigInt(0);
-        for (let i = 0; i < runeUtxos.length; i++) {
-          const v = runeUtxos[i];
-          v.runes.forEach((r) => {
-            if (r.id == runeid) {
-              total = total + BigInt(r.amount);
-            }
-          });
-          _runeUtxos.push(v);
-          if (total >= runeAmount) {
-            break;
-          }
-        }
-      }
 
       try {
-        const tx = await depositTx({
+        const tx = await donateTx({
           runeid: coinB.id,
-          runeAmount,
           btcAmount: coinAAmountBigInt,
           btcUtxos,
-          runeUtxos: _runeUtxos,
           poolUtxos,
           poolAddress,
           address,
@@ -252,7 +211,6 @@ export function DepositReview({
       let signedPsbtHex = "";
 
       if (provider === OKX) {
-        console.log("is okx wallet", toSignInputs);
         const psbtHex = psbt.toHex();
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
@@ -281,7 +239,7 @@ export function DepositReview({
           initiator_address: paymentAddress,
           intentions: [
             {
-              action: "add_liquidity",
+              action: "donate",
               exchange_id: EXCHANGE_ID,
               input_coins: inputCoins,
               pool_utxo_spend: poolSpendUtxos,
@@ -303,18 +261,16 @@ export function DepositReview({
         coinAAmount,
         coinBAmount,
         utxos: toSpendUtxos,
-        type: TransactionType.ADD_LIQUIDITY,
+        type: TransactionType.DONATE,
         status: TransactionStatus.BROADCASTED,
       });
 
       addPopup(
         t("success"),
         PopupStatus.SUCCESS,
-        t("addLiquidityDescription", {
-          coinA: getCoinSymbol(coinA),
-          coinB: getCoinSymbol(coinB),
-          coinAAmount,
-          coinBAmount,
+        t("donateDescription", {
+          amount: coinAAmount,
+          poolName: getCoinSymbol(coinB),
         })
       );
 
@@ -370,7 +326,7 @@ export function DepositReview({
         )}
       </div>
       <div className="flex flex-col space-y-3 mt-3">
-        <div className="flex text-muted-foreground">{t("depositing")}</div>
+        <div className="flex text-muted-foreground">{t("donating")}</div>
         <div className="flex justify-between">
           <div className="flex flex-col">
             <span className="font-semibold">
@@ -381,17 +337,6 @@ export function DepositReview({
             </span>
           </div>
           {coinA && <CoinIcon size="lg" coin={coinA} />}
-        </div>
-        <div className="flex justify-between">
-          <div className="flex flex-col">
-            <span className="font-semibold">
-              {formatNumber(coinBAmount)} {coinB && getCoinSymbol(coinB)}
-            </span>
-            <span className="text-muted-foreground">
-              {coinBFiatValue ? `$${formatNumber(coinBFiatValue)}` : "-"}
-            </span>
-          </div>
-          {coinB && <CoinIcon size="lg" coin={coinB} />}
         </div>
       </div>
       <Separator className="my-4" />
