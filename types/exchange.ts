@@ -1,4 +1,4 @@
-import { Coin, CoinBalance, CoinWithBalance } from "./coin";
+import { Coin, CoinWithBalance } from "./coin";
 
 import { UnspentOutput } from "./utxo";
 
@@ -34,11 +34,27 @@ export enum DepositState {
   VALID = "valid",
 }
 
+export enum DonateState {
+  LOADING = "loading",
+  INVALID = "invalid",
+  EMPTY = "empty",
+  VALID = "valid",
+}
+
 export type DepositQuote = {
   state: DepositState;
   inputAmount: string;
   nonce?: string;
   outputAmount?: string;
+  errorMessage?: string;
+  utxos?: UnspentOutput[];
+};
+
+export type DonateQuote = {
+  state: DonateState;
+  coinAAmount: string;
+  coinBAmount?: string;
+  nonce?: string;
   errorMessage?: string;
   utxos?: UnspentOutput[];
 };

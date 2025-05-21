@@ -19,6 +19,7 @@ export enum TransactionType {
   SWAP,
   ADD_LIQUIDITY,
   WITHDRAW_LIQUIDITY,
+  DONATE
 }
 
 export interface TransactionInfo {

@@ -197,6 +197,21 @@ export function getTxTitleAndDescription(transaction: TransactionInfo) {
         poolName: getCoinSymbol(coinB),
       },
     };
+  } else if (type === TransactionType.DONATE) {
+    title = {
+      key: "donateTitle",
+      data: {
+        poolName: getCoinSymbol(coinB),
+      },
+    };
+    description = {
+      key: "donateDescription",
+      data: {
+        coin: getCoinSymbol(coinA),
+        amount: formatNumber(coinAAmount),
+        poolName: getCoinSymbol(coinB),
+      },
+    };
   } else if (type === TransactionType.SWAP) {
     title = {
       key: "swapTitle",

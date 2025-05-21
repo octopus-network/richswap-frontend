@@ -2,6 +2,8 @@ import { actor } from "./actor";
 import {
   Coin,
   DepositState,
+  DonateQuote,
+  DonateState,
   DepositQuote,
   UnspentOutput,
   PoolInfo,
@@ -272,6 +274,62 @@ export class Exchange {
       return {
         state: DepositState.INVALID,
         inputAmount: coinAmount,
+        errorMessage: error instanceof Error ? error.message : "Unknown Error",
+      };
+    }
+  }
+
+  public static async preDonate(
+    pool: PoolInfo,
+    inputAmount: string
+  ): Promise<DonateQuote | undefined> {
+    try {
+      const { input, nonce } = await actor
+        .pre_donate(pool.address, BigInt(inputAmount))
+        .then((data: any) => {
+          console.log("pre donate", pool, data);
+          if (data.Ok) {
+            return data.Ok;
+          } else {
+            throw new Error(
+              data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+            );
+          }
+        });
+
+      const { output } = getP2trAressAndScript(pool.key);
+
+      const rune = input.maybe_rune[0];
+
+      const utxo: UnspentOutput = {
+        txid: input.txid,
+        vout: input.vout,
+        satoshis: input.sats.toString(),
+        address: pool.address,
+        scriptPk: output,
+        pubkey: "",
+        addressType: AddressType.P2TR,
+        runes: [
+          {
+            id: rune.id,
+            amount: rune.value.toString(),
+          },
+        ],
+      };
+
+      const quote = {
+        state: rune.value > BigInt(0) ? DonateState.VALID : DonateState.EMPTY,
+        coinAAmount: inputAmount,
+        coinBAmount: rune.value.toString(),
+        utxos: [utxo],
+        nonce: nonce.toString(),
+      };
+
+      return quote;
+    } catch (error: any) {
+      return {
+        state: DonateState.INVALID,
+        coinAAmount: inputAmount,
         errorMessage: error instanceof Error ? error.message : "Unknown Error",
       };
     }
