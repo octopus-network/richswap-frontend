@@ -67,6 +67,7 @@
     "managePool": "管理资金池",
     "deposit": "存入",
     "withdraw": "取出",
+    "donate": "捐赠",
     "tooSmallFunds": "资金太少",
     "swap": "兑换",
     "currencyReserves": "币种储备",
@@ -84,9 +85,11 @@
     "youWillReceive": "你将收到",
     "noPosition": "未提供流动性",
     "youAreDepositing": "你正在存入",
+    "youAreDonating": "你正在捐赠",
     "youAreWithdrawing": "你正在取出",
     "withdrawing": "取出中",
     "depositing": "存入中",
+    "donating": "捐赠",
     "feeRate": "手续费率",
     "networkCost": "网络费用",
     "dismiss": "关闭",
@@ -97,7 +100,16 @@
     "singPsbt": "签署 PSBT",
     "invokeExchange": "执行兑换",
     "waitForConfirmation": "等待确认中",
-    "pleaseConfirmInWallet": "请在钱包中确认"
+    "pleaseConfirmInWallet": "请在钱包中确认",
+    "swapTitle": "将 {coinA} 兑换为 {coinB}",
+    "swapDescription": "将 {amountA} 个 {coinA} 兑换为 {amountB} 个 {coinB}",
+    "addLiquidityTitle": "添加流动性到 {poolName}",
+    "addLiquidityDescription": "向 {poolName} 池中存入 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
+    "withdrawLiquidityTitle": "从 {poolName} 取出流动性",
+    "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
+    "donateTitle": "捐赠到 {poolName}",
+    "donateDescription": "向 {poolName} 池中捐赠 {amount} 个 {coin}",
+    "success": "成功"
   },
   "ConnectWallet": {
     "connectAWallet": "连接钱包",
@@ -121,7 +133,9 @@
     "addLiquidityTitle": "添加流动性到 {poolName}",
     "addLiquidityDescription": "向 {poolName} 池中存入 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
     "withdrawLiquidityTitle": "从 {poolName} 取出流动性",
-    "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}"
+    "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
+    "donateTitle": "捐赠到 {poolName}",
+    "donateDescription": "向 {poolName} 池中捐赠 {amount} 个 {coin}"
   },
   "Transaction": {
     "transactionConfirmed": "交易已确认",
@@ -131,7 +145,9 @@
     "addLiquidityTitle": "添加流动性到 {poolName}",
     "addLiquidityDescription": "向 {poolName} 池中存入 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
     "withdrawLiquidityTitle": "从 {poolName} 取出流动性",
-    "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}"
+    "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
+    "donateTitle": "捐赠到 {poolName}",
+    "donateDescription": "向 {poolName} 池中捐赠 {amount} 个 {coin}"
   },
   "Portfolio": {
     "portfolio": "投资组合",

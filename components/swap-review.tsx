@@ -442,16 +442,18 @@ export function SwapReview({
       });
 
       addPopup(
-        "Success",
+        t("success"),
         PopupStatus.SUCCESS,
-        `Swap ${coinAAmount} ${getCoinSymbol(
-          coinA
-        )} to ${coinBAmount} ${getCoinSymbol(coinB)}`
+        t("swapDescription", {
+          coinA: getCoinSymbol(coinA),
+          amountA: coinAAmount,
+          coinB: getCoinSymbol(coinB),
+          amountB: coinBAmount,
+        })
       );
 
       onSuccess();
     } catch (error: any) {
-      console.log(error);
       if (error.code !== 4001) {
         setErrorMessage(error.message || "Unknown Error");
         removeSpentUtxos(toSpendUtxos);
