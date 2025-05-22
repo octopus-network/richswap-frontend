@@ -4,7 +4,7 @@ import { useCoinPrice, useCoinPrices } from "./use-prices";
 
 import Decimal from "decimal.js";
 import { formatCoinAmount } from "@/lib/utils";
-import { Exchange } from "@/lib/exchange";
+
 import { BITCOIN } from "@/lib/constants";
 import useSWR from "swr";
 import { PoolInfo, Position } from "@/types";
@@ -74,23 +74,15 @@ export function usePoolsFee() {
     if (!btcPrice) {
       return;
     }
-    const promises = poolList.map(({ address }) =>
-      Exchange.getPoolData(address)
-    );
 
-    Promise.all(promises).then((poolDatas) => {
-      const tmpObj: Record<string, number> = {};
-      poolDatas.forEach((data) => {
-        if (!data) {
-          return;
-        }
-        const fees = new Decimal(formatCoinAmount(data.incomes, BITCOIN)).mul(
-          btcPrice
-        );
-        tmpObj[data.key] = fees.toNumber();
-      });
-      setFees(tmpObj);
+    const tmpObj: Record<string, number> = {};
+    poolList.forEach((pool) => {
+      const fees = new Decimal(formatCoinAmount(pool.lpFee, BITCOIN)).mul(
+        btcPrice
+      );
+      tmpObj[pool.key] = fees.toNumber();
     });
+    setFees(tmpObj);
   }, [poolList, btcPrice]);
 
   return fees;
