@@ -109,7 +109,8 @@
     "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
     "donateTitle": "捐赠到 {poolName}",
     "donateDescription": "向 {poolName} 池中捐赠 {amount} 个 {coin}",
-    "success": "成功"
+    "success": "成功",
+    "signPsbt": "签署 PSBT"
   },
   "ConnectWallet": {
     "connectAWallet": "连接钱包",
@@ -135,7 +136,8 @@
     "withdrawLiquidityTitle": "从 {poolName} 取出流动性",
     "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
     "donateTitle": "捐赠到 {poolName}",
-    "donateDescription": "向 {poolName} 池中捐赠 {amount} 个 {coin}"
+    "donateDescription": "向 {poolName} 池中捐赠 {amount} 个 {coin}",
+     "disconnect": "断开连接"
   },
   "Transaction": {
     "transactionConfirmed": "交易已确认",

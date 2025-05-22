@@ -396,7 +396,7 @@ export function DonateReview({
       ) : (
         <div className="flex flex-col gap-1">
           <Step
-            title={t("SignPsbt")}
+            title={t("signPsbt")}
             description={t("pleaseConfirmInWallet")}
             icon={<FileSignature className="size-4" />}
             isActive={step === 1}
