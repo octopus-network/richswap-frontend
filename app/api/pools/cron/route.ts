@@ -184,7 +184,7 @@ export async function GET() {
         name,
         coinA: { ...coinA, balance: btc_reserved.toString() },
         nonce,
-        lpRevenue: attributesJson.lp_revenue
+        lpFee: attributesJson.lp_revenue
           ? attributesJson.lp_revenue.toString()
           : "0",
         coinB: {
