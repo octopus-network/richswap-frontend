@@ -109,7 +109,8 @@
     "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
     "donateTitle": "Donate to {poolName}",
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
-    "success": "Success"
+    "success": "Success",
+    "signPsbt": "Sign PSBT"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
@@ -135,7 +136,8 @@
     "withdrawLiquidityTitle": "Withdraw Liquidity from {poolName}",
     "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
     "donateTitle": "Donate to {poolName}",
-    "donateDescription": "Donate {amount} {coin} to {poolName} pool"
+    "donateDescription": "Donate {amount} {coin} to {poolName} pool",
+    "disconnect": "Disconnect"
   },
   "Transaction": {
     "transactionConfirmed": "Transaction Confirmed",

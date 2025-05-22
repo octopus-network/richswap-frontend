@@ -77,6 +77,7 @@ export type PoolInfo = {
   nonce: number;
   coinA: CoinWithBalance;
   coinB: CoinWithBalance;
+  lpRevenue: string;
 };
 
 export interface Position {

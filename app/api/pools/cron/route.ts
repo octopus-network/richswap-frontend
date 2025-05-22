@@ -140,11 +140,20 @@ export async function GET() {
     );
 
     for (let i = 0; i < res.length; i++) {
-      const { name, address, btc_reserved, coin_reserveds, key, nonce } =
-        res[i];
+      const {
+        name,
+        address,
+        attributes,
+        btc_reserved,
+        coin_reserveds,
+        key,
+        nonce,
+      } = res[i];
 
       const coinA = BITCOIN;
       const { detail: coinBRes } = coinRes[i];
+
+      const attributesJson = attributes ? JSON.parse(attributes) : {};
 
       let coinB = UNKNOWN_COIN;
       if (coinBRes.length) {
@@ -175,6 +184,9 @@ export async function GET() {
         name,
         coinA: { ...coinA, balance: btc_reserved.toString() },
         nonce,
+        lpRevenue: attributesJson.lp_revenue
+          ? attributesJson.lp_revenue.toString()
+          : "0",
         coinB: {
           ...coinB,
           balance: coin_reserveds[0]?.value.toString() ?? "0",
