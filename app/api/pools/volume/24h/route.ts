@@ -33,7 +33,10 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: volume_tx_by_pool_by_period,
+      data: volume_tx_by_pool_by_period.reduce(
+        (total, curr) => total + curr.volume,
+        0
+      ),
     });
   } catch (error) {
     return NextResponse.json(
