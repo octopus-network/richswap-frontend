@@ -32,6 +32,17 @@ export function usePoolList() {
   return useMemo(() => data ?? [], [data]);
 }
 
+export function usePoolsVolume() {
+  const { data } = useSWR("/api/pools/volume/24h", (url: string) =>
+    axios
+      .get<{
+        data: number;
+      }>(url)
+      .then((res) => res.data.data)
+  );
+  return data;
+}
+
 export function usePoolsTvl() {
   const poolList = usePoolList();
 
