@@ -76,7 +76,12 @@ export function AccountSheetContent() {
                 <Copy className="size-4" />
               )}
             </Button>
-            <Button size="icon" variant="ghost" onClick={disconnect}>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={disconnect}
+              className="hidden sm:inline-flex"
+            >
               <Power className="size-4 text-destructive" />
             </Button>
           </div>
@@ -92,6 +97,14 @@ export function AccountSheetContent() {
               {t("viewOnExplorer")} <ExternalLink className="size-4" />
             </Button>
           </Link>
+          <Button
+            variant="destructive"
+            className="w-full inline-flex sm:hidden mt-2"
+            onClick={disconnect}
+          >
+            <Power className="size-4" />
+            <span className="ml-1">{t("disconnect")}</span>
+          </Button>
         </div>
         <Tabs defaultValue="coins" className="h-[calc(100%_-_182px)] mt-4">
           <TabsList className="bg-transparent p-0 h-auto w-full rounded-none justify-start px-2">

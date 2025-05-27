@@ -46,7 +46,10 @@
     "waitForConfirmation": "Wait For Confirmation",
     "pleaseConfirmInWallet": "Please Confirm In Wallet",
     "feeRate": "Fee rate",
-    "networkCost": "Network cost"
+    "networkCost": "Network cost",
+    "swapTitle": "Swap {coinA} to {coinB}",
+    "swapDescription": "Convert {amountA} {coinA} to {amountB} {coinB}",
+    "success": "Success"
   },
   "Pools": {
     "pool": "Pool",
@@ -109,7 +112,9 @@
     "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
     "donateTitle": "Donate to {poolName}",
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
-    "success": "Success"
+    "success": "Success",
+    "signPsbt": "Sign PSBT",
+    "24hVolume": "24H Volume"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
@@ -135,7 +140,8 @@
     "withdrawLiquidityTitle": "Withdraw Liquidity from {poolName}",
     "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
     "donateTitle": "Donate to {poolName}",
-    "donateDescription": "Donate {amount} {coin} to {poolName} pool"
+    "donateDescription": "Donate {amount} {coin} to {poolName} pool",
+    "disconnect": "Disconnect"
   },
   "Transaction": {
     "transactionConfirmed": "Transaction Confirmed",

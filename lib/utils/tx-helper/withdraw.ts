@@ -52,6 +52,8 @@ export async function withdrawTx({
 
   const needChange = changeRuneAmount > 0;
 
+  const poolNeedChangeBtc = poolBtcAmount - btcAmount > BigInt(0);
+
   const edicts = needChange
     ? [
         new Edict(
@@ -69,7 +71,7 @@ export async function withdrawTx({
         new Edict(
           new RuneId(Number(runeBlock), Number(runeIdx)),
           runeAmount,
-          0
+          poolNeedChangeBtc ? 1 : 0
         ),
       ];
 
@@ -78,7 +80,7 @@ export async function withdrawTx({
   const poolSpendUtxos = poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`);
   const poolVouts: number[] = [];
 
-  if (needChange) {
+  if (needChange || poolNeedChangeBtc) {
     tx.addOutput(poolAddress, poolBtcAmount - btcAmount);
     poolVouts.push(0);
   }
@@ -194,8 +196,7 @@ export async function withdrawTx({
 
   const toSpendUtxos = inputs
     .filter(({ utxo }, index) => {
-      const isUserInput =
-        utxo.address === address || utxo.address === paymentAddress;
+      const isUserInput = utxo.address !== poolAddress;
       const addressType = getAddressType(utxo.address);
       if (isUserInput) {
         toSignInputs.push({
