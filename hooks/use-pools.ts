@@ -88,7 +88,7 @@ export function usePoolsFee() {
 
     const tmpObj: Record<string, number> = {};
     poolList.forEach((pool) => {
-      const fees = new Decimal(formatCoinAmount(pool.lpFee, BITCOIN)).mul(
+      const fees = new Decimal(formatCoinAmount(pool.lpFee ?? "0", BITCOIN)).mul(
         btcPrice
       );
       tmpObj[pool.key] = fees.toNumber();
