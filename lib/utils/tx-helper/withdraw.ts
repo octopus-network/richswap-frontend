@@ -102,7 +102,7 @@ export async function withdrawTx({
   ];
 
   const outputTypes = [
-    ...Array(needChange ? 1 : 0).fill(
+    ...Array(needChange || poolNeedChangeBtc ? 1 : 0).fill(
       addressTypeToString(getAddressType(poolAddress))
     ),
     addressTypeToString(getAddressType(address)),
