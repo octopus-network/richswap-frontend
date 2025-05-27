@@ -12,13 +12,22 @@ export default function SwapPage() {
         <div className="max-w-lg w-full">
           <div className="flex justify-between items-center">
             <span className="text-2xl font-semibold">{t("swap")}</span>
-            <Button
-              size="icon"
-              className="rounded-full size-8 text-muted-foreground opacity-70 hover:opacity-100"
-              variant="secondary"
-            >
-              <RefreshCcw className="size-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* <Button
+                size="icon"
+                className="rounded-full size-8 text-muted-foreground opacity-70 hover:opacity-100"
+                variant="secondary"
+              >
+                <RefreshCcw className="size-4" />
+              </Button> */}
+              <Button
+                size="icon"
+                className="rounded-full size-8 text-muted-foreground opacity-70 hover:opacity-100"
+                variant="secondary"
+              >
+                <RefreshCcw className="size-4" />
+              </Button>
+            </div>
           </div>
           <SwapPanel />
         </div>

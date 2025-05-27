@@ -1,4 +1,5 @@
 import { Coin } from "@/types";
+import { NETWORK } from "./common";
 
 export const BITCOIN: Coin = {
   id: "0:0",
@@ -25,4 +26,5 @@ export const UNKNOWN_COIN: Coin = {
   decimals: 8,
 };
 
-export const COIN_LIST: Coin[] = [BITCOIN];
+export const COIN_LIST: Coin[] =
+  NETWORK === "mainnet" ? [BITCOIN, RICH] : [BITCOIN];

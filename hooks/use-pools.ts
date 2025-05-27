@@ -32,6 +32,17 @@ export function usePoolList() {
   return useMemo(() => data ?? [], [data]);
 }
 
+export function usePoolsVolume() {
+  const { data } = useSWR("/api/pools/volume/24h", (url: string) =>
+    axios
+      .get<{
+        data: number;
+      }>(url)
+      .then((res) => res.data.data)
+  );
+  return data;
+}
+
 export function usePoolsTvl() {
   const poolList = usePoolList();
 
@@ -77,7 +88,7 @@ export function usePoolsFee() {
 
     const tmpObj: Record<string, number> = {};
     poolList.forEach((pool) => {
-      const fees = new Decimal(formatCoinAmount(pool.lpFee, BITCOIN)).mul(
+      const fees = new Decimal(formatCoinAmount(pool.lpFee ?? "0", BITCOIN)).mul(
         btcPrice
       );
       tmpObj[pool.key] = fees.toNumber();

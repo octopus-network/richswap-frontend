@@ -6,6 +6,7 @@ import {
   usePoolsFee,
   usePoolsTrades,
   usePoolsTvl,
+  usePoolsVolume,
 } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -14,8 +15,9 @@ import { PoolRow } from "./pool-row";
 import { formatNumber } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useMemo } from "react";
-import { Waves, Coins, ArrowLeftRight } from "lucide-react";
+import { Waves, Coins, ArrowLeftRight, Database } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Decimal from "decimal.js";
 
 export default function Pools() {
   const poolList = usePoolList();
@@ -24,6 +26,8 @@ export default function Pools() {
   const poolsTrades = usePoolsTrades();
   const poolsFee = usePoolsFee();
   const btcPrice = useCoinPrice(BITCOIN.id);
+
+  const poolsVolumeInSats = usePoolsVolume();
 
   const t = useTranslations("Pools");
 
@@ -63,6 +67,20 @@ export default function Pools() {
     [poolsFeeInBtc]
   );
 
+  const poolsVolumeInBtc = useMemo(
+    () =>
+      poolsVolumeInSats !== undefined
+        ? new Decimal(poolsVolumeInSats).div(Math.pow(10, 8)).toNumber()
+        : undefined,
+    [poolsVolumeInSats]
+  );
+
+  const poolsVolumeFiatValue = useMemo(
+    () =>
+      poolsVolumeInBtc && btcPrice ? poolsVolumeInBtc * btcPrice : undefined,
+    [poolsVolumeInBtc, btcPrice]
+  );
+
   return (
     <div className="md:pt-6 w-full flex flex-col items-center">
       <div className="w-full max-w-5xl">
@@ -70,7 +88,7 @@ export default function Pools() {
           <span className="text-3xl font-semibold">{t("pools")}</span>
           <CreateButton />
         </div>
-        <div className="hidden md:grid mt-6 md:grid-cols-3 gap-4">
+        <div className="hidden md:grid mt-6 md:grid-cols-4 gap-4">
           <div className="py-3 px-4 border bg-secondary/50 rounded-xl items-center flex">
             <div className="size-8 rounded-xl flex items-center justify-center bg-green-400/10">
               <Waves className="size-4 text-green-400" />
@@ -131,6 +149,31 @@ export default function Pools() {
               )}
             </div>
           </div>
+
+          <div className="py-3 px-4 border bg-secondary/50 rounded-xl items-center flex">
+            <div className="size-8 rounded-xl flex items-center justify-center bg-green-400/10">
+              <Database className="size-4 text-yellow-400" />
+            </div>
+            <div className="flex flex-col space-y-0.5 ml-4">
+              <span className="text-muted-foreground text-xs">
+                {t("24hVolume")}
+              </span>
+              {poolsVolumeInBtc ? (
+                <span className="font-semibold text-xl">
+                  {formatNumber(poolsVolumeInBtc)} ₿
+                </span>
+              ) : (
+                <Skeleton className="h-6 w-20" />
+              )}
+              {poolsVolumeFiatValue ? (
+                <span className="text-xs text-muted-foreground">
+                  ${formatNumber(poolsVolumeFiatValue, true)}
+                </span>
+              ) : (
+                <Skeleton className="h-4 w-12" />
+              )}
+            </div>
+          </div>
         </div>
         <div className="mt-6 flex flex-col space-y-2 md:hidden px-4 py-3 border bg-secondary/50 rounded-xl">
           <div className="flex justify-between">
@@ -181,6 +224,26 @@ export default function Pools() {
                 <span className="font-semibold">{poolsTrades}</span>
               ) : (
                 <Skeleton className="h-6 w-20" />
+              )}
+            </div>
+          </div>
+          <Separator />
+          <div className="flex justify-between">
+            <span className="text-muted-foreground text-sm">{t("24hVolume")}</span>
+            <div className="flex flex-col space-y-0.5 items-end">
+              {poolsVolumeInBtc ? (
+                <span className="font-semibold">
+                  {formatNumber(poolsVolumeInBtc)} ₿
+                </span>
+              ) : (
+                <Skeleton className="h-6 w-20" />
+              )}
+              {poolsVolumeFiatValue ? (
+                <span className="text-xs text-muted-foreground">
+                  ${formatNumber(poolsVolumeFiatValue, true)}
+                </span>
+              ) : (
+                <Skeleton className="h-4 w-12" />
               )}
             </div>
           </div>

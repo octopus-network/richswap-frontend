@@ -46,7 +46,10 @@
     "waitForConfirmation": "Wait For Confirmation",
     "pleaseConfirmInWallet": "Please Confirm In Wallet",
     "feeRate": "Fee rate",
-    "networkCost": "Network cost"
+    "networkCost": "Network cost",
+    "swapTitle": "Swap {coinA} to {coinB}",
+    "swapDescription": "Convert {amountA} {coinA} to {amountB} {coinB}",
+    "success": "Success"
   },
   "Pools": {
     "pool": "Pool",
@@ -110,7 +113,8 @@
     "donateTitle": "Donate to {poolName}",
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
     "success": "Success",
-    "signPsbt": "Sign PSBT"
+    "signPsbt": "Sign PSBT",
+    "24hVolume": "24H Volume"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
