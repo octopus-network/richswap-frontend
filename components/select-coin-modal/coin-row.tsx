@@ -5,10 +5,10 @@ import { CoinIcon } from "../coin-icon";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { Skeleton } from "../ui/skeleton";
 import { useCoinPrice } from "@/hooks/use-prices";
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import { getCoinSymbol, getCoinName } from "@/lib/utils";
 
-export function CoinRow({
+export const CoinRow = memo(function CoinRow({
   coin,
   onSelect,
 }: {
@@ -26,6 +26,9 @@ export function CoinRow({
     [coinBalance, coinPrice]
   );
 
+  const coinSymbol = useMemo(() => getCoinSymbol(coin), [coin]);
+  const coinName = useMemo(() => getCoinName(coin), [coin]);
+
   return (
     <div
       className={cn(
@@ -37,10 +40,10 @@ export function CoinRow({
         <CoinIcon coin={coin} className="size-9" />
         <div className="flex-col flex ml-3">
           <div className="flex items-center h-full">
-            <span className="font-semibold text-sm">{getCoinSymbol(coin)}</span>
+            <span className="font-semibold text-sm">{coinSymbol}</span>
           </div>
           <span className="text-muted-foreground text-xs h-full">
-            {getCoinName(coin)}
+            {coinName}
           </span>
         </div>
       </div>
@@ -63,4 +66,4 @@ export function CoinRow({
       </div>
     </div>
   );
-}
+});

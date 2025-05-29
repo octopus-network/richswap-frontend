@@ -1,25 +1,8 @@
 "use client";
 
-import {
-  ChartingLibraryWidgetOptions,
-  ResolutionString,
-} from "@/public/static/charting_library/charting_library";
 import dynamic from "next/dynamic";
 import Script from "next/script";
 import { useState } from "react";
-
-const defaultWidgetProps: Partial<ChartingLibraryWidgetOptions> = {
-  symbol: "BTCUSD",
-  interval: "1D" as ResolutionString,
-  library_path: "/static/charting_library/",
-  locale: "en",
-  charts_storage_url: "https://saveload.tradingview.com",
-  charts_storage_api_version: "1.1",
-  client_id: "tradingview.com",
-  user_id: "public_user_id",
-  fullscreen: false,
-  autosize: true,
-};
 
 const ChartContainer = dynamic(
   () =>
@@ -27,8 +10,15 @@ const ChartContainer = dynamic(
   { ssr: false }
 );
 
-export function KlineChart() {
+export function KlineChart({
+  rune,
+  onChartReady,
+}: {
+  rune: string;
+  onChartReady: VoidFunction;
+}) {
   const [isScriptReady, setIsScriptReady] = useState(false);
+
   return (
     <>
       <Script
@@ -38,7 +28,7 @@ export function KlineChart() {
           setIsScriptReady(true);
         }}
       />
-      {isScriptReady && <ChartContainer {...defaultWidgetProps} />}
+      {isScriptReady && <ChartContainer onReady={onChartReady} symbol={rune} />}
     </>
   );
 }

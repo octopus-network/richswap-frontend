@@ -144,7 +144,8 @@
     "withdrawLiquidityDescription": "Widthdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
     "donateTitle": "Donate to {poolName}",
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
-    "disconnect": "Disconnect"
+    "disconnect": "Disconnect",
+    "payment": "Payment"
   },
   "Transaction": {
     "transactionConfirmed": "Transaction Confirmed",

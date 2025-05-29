@@ -10,7 +10,7 @@ import { useDefaultCoins } from "@/hooks/use-coins";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CoinRow } from "./coin-row";
 import { Loader2 } from "lucide-react";
-import { ScrollArea } from "../ui/scroll-area";
+
 import { useSearchCoins } from "@/hooks/use-coins";
 import { useTranslations } from "next-intl";
 import { useAddUserCoin } from "@/store/user/hooks";
@@ -61,7 +61,7 @@ export function SelectCoinModal({
   const defaultCoins = useDefaultCoins();
   const t = useTranslations("SelectCoin");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const debouncedQuery = useDebounce(searchQuery, 200);
+  const debouncedQuery = useDebounce(searchQuery, 300);
   const [coinWarningModalOpen, setCoinWarningModalOpen] = useState(false);
   const [isModalReady, setIsModalReady] = useState(false);
   const [toWarningCoin, setToWarningCoin] = useState<Coin>();
@@ -136,7 +136,7 @@ export function SelectCoinModal({
         </div>
       </div>
       {isModalReady ? (
-        <ScrollArea className="border-t mt-4 h-[calc(70vh_-_80px)]">
+        <div className="border-t mt-4 h-[calc(70vh_-_80px)] overflow-y-scroll">
           {sortedCoins.map((coin, idx) => {
             return (
               <CoinRow coin={coin} key={idx} onSelect={handleCoinSelect} />
@@ -156,7 +156,7 @@ export function SelectCoinModal({
                   />
                 ))
             : null}
-        </ScrollArea>
+        </div>
       ) : (
         <div className="border-t mt-4 h-[calc(70vh_-_80px)] flex items-center justify-center">
           <Loader2 className="size-5 text-muted-foreground animate-spin" />

@@ -15,12 +15,10 @@ import { useTranslations } from "next-intl";
 import { LocaleSwitcher } from "./locale-switcher";
 
 export function Topbar() {
-  const { address, isConnecting, isInitializing } = useLaserEyes();
+  const { address, isInitializing } = useLaserEyes();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
 
   const t = useTranslations("Topbar");
-
-  console.log(isConnecting, isInitializing)
 
   return (
     <div className="flex justify-between items-cetner sm:px-4 px-3 py-2 border-b">

@@ -25,7 +25,11 @@ import { cn, formatCoinAmount, formatNumber, getCoinSymbol } from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN, COIN_LIST } from "@/lib/constants";
 
-export function SwapPanel() {
+export function SwapPanel({
+  onRuneChange,
+}: {
+  onRuneChange: (rune: Coin | undefined) => void;
+}) {
   const { address } = useLaserEyes();
   const searchParams = useSearchParams();
 
@@ -130,6 +134,16 @@ export function SwapPanel() {
     () => coinBAmount * coinBPrice,
     [coinBPrice, coinBAmount]
   );
+
+  useEffect(() => {
+    onRuneChange(
+      coinA && coinA.id !== BITCOIN.id
+        ? coinA
+        : coinB && coinB.id !== BITCOIN.id
+        ? coinB
+        : undefined
+    );
+  }, [coinA, coinB, onRuneChange]);
 
   const handleSelectCoin = (field: Field, coin: Coin) => {
     onSelectCoin(field, coin);
