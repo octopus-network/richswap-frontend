@@ -23,7 +23,7 @@ import {
 
 import { cn, formatCoinAmount, formatNumber, getCoinSymbol } from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
-import { BITCOIN, COIN_LIST } from "@/lib/constants";
+import { BITCOIN } from "@/lib/constants";
 
 export function SwapPanel({
   onRuneChange,
@@ -98,19 +98,15 @@ export function SwapPanel({
     const searchParams = new URLSearchParams(window.location.search);
 
     const [symbolA, symbolB] = [
-      searchParams.get("coinA") ?? "",
-      searchParams.get("coinB") ?? "",
+      searchParams.get("coinA") ?? "BTC",
+      searchParams.get("coinB") ?? "HOPE•YOU•GET•RICH",
     ];
 
-    let [_coinA, _coinB] = [
+    const [_coinA, _coinB] = [
       Object.values(coins).find((c) => getCoinSymbol(c) === symbolA) ?? null,
       Object.values(coins).find((c) => getCoinSymbol(c) === symbolB) ?? null,
     ];
 
-    if (!_coinA && !_coinB) {
-      _coinA = BITCOIN;
-      _coinB = COIN_LIST[1];
-    }
     onUpdateCoins(_coinA, _coinB);
   }, [onUpdateCoins, coins]);
 

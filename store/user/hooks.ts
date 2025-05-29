@@ -2,7 +2,7 @@ import { Coin } from "@/types";
 import { useSetAtom, useAtomValue } from "jotai";
 import { userStateAtom } from "./reducer";
 
-import { addCoin } from "./actions";
+import { addCoin, toggleKlineChart } from "./actions";
 import { useCallback, useMemo } from "react";
 
 export function useAddUserCoin(): (coin: Coin) => void {
@@ -24,4 +24,17 @@ export function useUserAddedCoins(): Coin[] {
       : [];
     return coinMap;
   }, [userState]);
+}
+
+export function useToggleKlineChartOpen() {
+  const dispatch = useSetAtom(userStateAtom);
+  return useCallback(() => {
+    dispatch(toggleKlineChart());
+  }, [dispatch]);
+}
+
+export function useKlineChartOpen() {
+  const userState = useAtomValue(userStateAtom);
+
+  return useMemo(() => userState.klineChartOpen, [userState]);
 }

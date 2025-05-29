@@ -5,3 +5,5 @@ import { Coin } from "@/types";
 export const addCoin = createAction<{
   coin: Coin;
 }>("user/add-coin");
+
+export const toggleKlineChart = createAction("user/toggle-kline-chart");
