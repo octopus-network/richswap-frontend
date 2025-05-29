@@ -34,7 +34,7 @@ export default function SwapPage() {
           {klineChartOpen && (
             <div
               key="chart"
-              className="flex-1 w-full max-w-lg md:max-w-full overflow-hidden bg-secondary rounded-lg fle flex-col"
+              className="flex-1 w-full max-w-lg md:max-w-full overflow-hidden bg-secondary rounded-xl fle flex-col"
             >
               <div className="px-4 py-3 flex justify-between">
                 <div className="flex items-center gap-2">
