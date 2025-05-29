@@ -13,6 +13,7 @@ export enum TransactionStatus {
   FINALIZED,
   REJECTED,
   FAILED,
+  REPLACED
 }
 
 export enum TransactionType {

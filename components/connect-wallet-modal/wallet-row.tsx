@@ -12,7 +12,7 @@ import {
   PHANTOM,
   XVERSE,
   MAGIC_EDEN,
-} from "@omnisat/lasereyes";
+} from "@omnisat/lasereyes-react";
 import { useCallback, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 import { PopupStatus, useAddPopup } from "@/store/popups";
@@ -27,25 +27,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
     hasPhantom,
     hasXverse,
     hasMagicEden,
-  } = useLaserEyes(
-    ({
-      connect,
-      isConnecting,
-      hasOkx,
-      hasUnisat,
-      hasPhantom,
-      hasXverse,
-      hasMagicEden,
-    }) => ({
-      connect,
-      isConnecting,
-      hasOkx,
-      hasUnisat,
-      hasPhantom,
-      hasXverse,
-      hasMagicEden,
-    })
-  );
+  } = useLaserEyes();
 
   const [connectingWallet, setConnectingWallet] = useState<string>();
   const t = useTranslations("ConnectWallet");
@@ -91,7 +73,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
     wallet,
     addPopup,
     installed,
-    t
+    t,
   ]);
 
   return (

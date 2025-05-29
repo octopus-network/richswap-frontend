@@ -7,7 +7,7 @@ import { useCoinPrices } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 import { Orchestrator } from "@/lib/orchestrator";
 import { usePendingBtcUtxos, usePendingRuneUtxos } from "@/hooks/use-utxos";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { useTransactions } from "@/store/transactions";
 import { limitFunction } from "p-limit";
 import { PoolInfo } from "@/types";
@@ -16,14 +16,8 @@ import { getBtcPrice } from "@/lib/chain-api";
 import { BITCOIN } from "@/lib/constants";
 
 export function GlobalStateUpdater() {
-  const { address, publicKey, paymentAddress, paymentPublicKey } = useLaserEyes(
-    ({ address, publicKey, paymentAddress, paymentPublicKey }) => ({
-      address,
-      publicKey,
-      paymentAddress,
-      paymentPublicKey,
-    })
-  );
+  const { address, publicKey, paymentAddress, paymentPublicKey } =
+    useLaserEyes();
 
   const [, setCoinPrices] = useCoinPrices();
   const [, setPendingBtcUtxos] = usePendingBtcUtxos();

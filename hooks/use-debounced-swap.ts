@@ -104,7 +104,5 @@ export function useDebouncedSwap(
     };
   }, []);
 
-  console.log("Swap quote", swapQuote);
-
   return swapQuote ? swapQuote : undefined;
 }

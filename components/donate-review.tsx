@@ -14,7 +14,7 @@ import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
 import axios from "axios";
 import Decimal from "decimal.js";
-import { OKX } from "@omnisat/lasereyes";
+import { OKX, useLaserEyes } from "@omnisat/lasereyes-react";
 import { getAddressType } from "@/lib/utils";
 import { AddressType } from "@/types";
 import { DoubleIcon } from "@/components/double-icon";
@@ -31,7 +31,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
 import { donateTx } from "@/lib/utils";
-import { useLaserEyes } from "@omnisat/lasereyes";
+
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { parseCoinAmount } from "@/lib/utils";
 import { Orchestrator } from "@/lib/orchestrator";
@@ -63,14 +63,7 @@ export function DonateReview({
   nonce: string;
   showCancelButton?: boolean;
 }) {
-  const { address, paymentAddress, provider, signPsbt } = useLaserEyes(
-    ({ address, paymentAddress, provider, signPsbt }) => ({
-      address,
-      paymentAddress,
-      provider,
-      signPsbt,
-    })
-  );
+  const { address, paymentAddress, provider, signPsbt } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
 

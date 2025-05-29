@@ -3,7 +3,7 @@ import { CoinField } from "@/components/coin-field";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
@@ -21,7 +21,7 @@ import {
 } from "@/store/deposit/hooks";
 
 export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
-  const { address } = useLaserEyes(({ address }) => ({ address }));
+  const { address } = useLaserEyes();
 
   const { onUserInput } = useDepositActionHandlers();
   const depositState = useDepositState();

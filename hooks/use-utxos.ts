@@ -6,7 +6,7 @@ import { spentUtxosAtom } from "@/store/spent-utxos";
 import axios from "axios";
 
 import useSWR from "swr";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { atom, useAtom } from "jotai";
 
 export const pendingBtcUtxosAtom = atom<UnspentOutput[]>([]);
@@ -110,12 +110,7 @@ export function useRuneUtxos(
 }
 
 export function useWalletBtcUtxos() {
-  const { paymentAddress, paymentPublicKey } = useLaserEyes(
-    ({ paymentAddress, paymentPublicKey }) => ({
-      paymentAddress,
-      paymentPublicKey,
-    })
-  );
+  const { paymentAddress, paymentPublicKey } = useLaserEyes();
 
   const paymentUtxos = useBtcUtxos(paymentAddress, paymentPublicKey);
 
@@ -123,10 +118,7 @@ export function useWalletBtcUtxos() {
 }
 
 export function useWalletRuneUtxos(runeid: string | undefined) {
-  const { address, publicKey } = useLaserEyes(({ address, publicKey }) => ({
-    address,
-    publicKey,
-  }));
+  const { address, publicKey } = useLaserEyes();
 
   const utxos = useRuneUtxos(address, runeid, publicKey);
 

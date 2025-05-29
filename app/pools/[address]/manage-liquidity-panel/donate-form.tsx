@@ -2,7 +2,7 @@ import { PoolInfo, Field, DonateState } from "@/types";
 import { CoinField } from "@/components/coin-field";
 
 import { Button } from "@/components/ui/button";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
@@ -20,7 +20,7 @@ import {
 } from "@/store/donate/hooks";
 
 export function DonateForm({ pool }: { pool: PoolInfo | undefined }) {
-  const { address } = useLaserEyes(({ address }) => ({ address }));
+  const { address } = useLaserEyes();
 
   const { onUserInput } = useDonateActionHandlers();
   const depositState = useDonateState();

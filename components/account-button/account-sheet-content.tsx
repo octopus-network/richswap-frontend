@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { ellipseMiddle, formatNumber } from "@/lib/utils";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { BITCOIN, WALLETS, RUNESCAN_URL } from "@/lib/constants";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { useCoinBalance } from "@/hooks/use-balance";
@@ -15,14 +15,7 @@ import { TransactionsContent } from "./transactions-content";
 import { useTranslations } from "next-intl";
 
 export function AccountSheetContent() {
-  const { provider, address, paymentAddress, disconnect } = useLaserEyes(
-    ({ provider, address, paymentAddress, disconnect }) => ({
-      provider,
-      address,
-      paymentAddress,
-      disconnect,
-    })
-  );
+  const { provider, address, paymentAddress, disconnect } = useLaserEyes();
   const { hasCopied, onCopy } = useClipboard(address);
   const { hasCopied: hasPaymentCopied, onCopy: onPaymentCopy } =
     useClipboard(paymentAddress);
