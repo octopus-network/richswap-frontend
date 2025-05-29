@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { gql, GraphQLClient } from "graphql-request";
 
+
+export const dynamic = "force-dynamic";
+
 function resolutionToSeconds(res: string) {
   const map: Record<string, number> = {
     "1": 60,
@@ -100,9 +103,14 @@ export async function GET(req: NextRequest) {
       result[i].open = result[i - 1].close;
     }
 
+    const currPrice = result.length > 0 ? result[result.length - 1].close : 0;
+
     return NextResponse.json({
       success: true,
-      data: result,
+      data: {
+        bars: result,
+        price: currPrice,
+      },
     });
   } catch (error) {
     console.log(error);

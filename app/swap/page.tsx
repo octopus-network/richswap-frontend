@@ -5,45 +5,58 @@ import { Suspense, useEffect, useState } from "react";
 import { SwapPanel } from "./swap-panel";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { KlineChart } from "./kline-chart";
 import { Coin } from "@/types";
 import { CoinIcon } from "@/components/coin-icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useKlineChartOpen, useToggleKlineChartOpen } from "@/store/user/hooks";
 
 export default function SwapPage() {
   const t = useTranslations("Swap");
-  const [showChart, setShowChart] = useState(true);
+  const klineChartOpen = useKlineChartOpen();
+  const toggleKlineChartOpen = useToggleKlineChartOpen();
   const [removeChartMask, setRemoveShowChartMask] = useState(false);
   const [rune, setRune] = useState<Coin>();
+  const [latestPrice, setLatestPrice] = useState<{
+    price: number;
+    change: number;
+  } | null>(null);
 
   useEffect(() => {
     setRemoveShowChartMask(false);
-  }, [rune, showChart]);
+  }, [rune, klineChartOpen]);
 
   return (
     <Suspense>
       <div className="md:pt-12 w-full flex flex-col items-center">
         <div className="w-full flex flex-col md:flex-row justify-center items-center md:items-start max-w-7xl gap-6">
-          {showChart && (
+          {klineChartOpen && (
             <div
               key="chart"
               className="flex-1 w-full max-w-lg md:max-w-full overflow-hidden bg-secondary rounded-lg fle flex-col"
             >
-              <div className="px-4 py-3">
+              <div className="px-4 py-3 flex justify-between">
                 <div className="flex items-center gap-2">
                   {rune ? (
                     <>
-                      <CoinIcon coin={rune} />
+                      <CoinIcon coin={rune} className="size-7" />
                       <span className="font-semibold">{rune.name}</span>
                     </>
                   ) : (
                     <>
-                      <Skeleton className="size-8 rounded-full bg-slate-50/20" />
+                      <Skeleton className="size-7 rounded-full bg-slate-50/20" />
                       <Skeleton className="h-6 w-20 bg-slate-50/20" />
                     </>
                   )}
                 </div>
+                {
+                  latestPrice &&
+                  <div className="flex-col flex items-end">
+                    <span className="text-sm font-semibold">${formatNumber(latestPrice.price)}</span>
+                    <span className="text-green-400 text-xs">+0.00%</span>
+                  </div>
+                }
               </div>
               <div className="h-[260px] md:h-[420px] relative">
                 {!removeChartMask && (
@@ -53,7 +66,10 @@ export default function SwapPage() {
                 )}
                 <KlineChart
                   rune={rune?.name || ""}
-                  onChartReady={() => setRemoveShowChartMask(true)}
+                  onChartReady={(price) => {
+                    setLatestPrice(price);
+                    setRemoveShowChartMask(true);
+                  }}
                 />
               </div>
             </div>
@@ -66,12 +82,12 @@ export default function SwapPage() {
                   size="icon"
                   className={cn(
                     "rounded-full size-8 text-muted-foreground border border-transparent",
-                    showChart
+                    klineChartOpen
                       ? "border-primary text-primary"
                       : "hover:text-primary"
                   )}
                   variant="secondary"
-                  onClick={() => setShowChart((prev) => !prev)}
+                  onClick={() => toggleKlineChartOpen()}
                 >
                   <ChartLine className="size-4" />
                 </Button>

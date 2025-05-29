@@ -26,12 +26,14 @@ export const ChartContainer = ({
   onReady,
 }: {
   symbol: string;
-  onReady: () => void;
+
+  onReady: (price: { price: number; change: number } | null) => void;
 }) => {
   const chartContainerRef =
     useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>;
 
   const dataRangeRef = useRef<{ min: number; max: number } | null>(null);
+  const latestPriceRef = useRef<{ price: number; change: number } | null>(null);
 
   const datafeed: IBasicDataFeed = useMemo(
     () => ({
@@ -72,25 +74,33 @@ export const ChartContainer = ({
           const { data } = await axios
             .get<{
               data: {
-                open: number;
-                high: number;
-                low: number;
-                close: number;
-                volume: number;
-                time: number;
-              }[];
+                bars: {
+                  open: number;
+                  high: number;
+                  low: number;
+                  close: number;
+                  volume: number;
+                  time: number;
+                }[];
+                price: number;
+                change: number;
+              };
             }>(
               `/api/kline?rune=${symbolInfo.name}&resolution=${resolution}&from=${from}&to=${to}`
             )
             .then((res) => res.data);
 
-          const times = data.map((d) => d.time);
+          const times = data.bars.map((d) => d.time);
           const min = Math.min(...times);
           const max = Math.max(...times);
           dataRangeRef.current = { min, max };
 
-          onHistoryCallback(data, {
-            noData: data.length === 0,
+          if (!latestPriceRef.current) {
+            latestPriceRef.current = { price: data.price, change: data.change };
+          }
+
+          onHistoryCallback(data.bars, {
+            noData: data.bars.length === 0,
           });
         } catch (e) {
           if (e instanceof Error) {
@@ -151,8 +161,8 @@ export const ChartContainer = ({
       custom_css_url: "/static/tv-custom.css",
       loading_screen: {
         backgroundColor: "#23282f",
-        foregroundColor: "transparent"
-      }
+        foregroundColor: "transparent",
+      },
     };
 
     const tvWidget = new widget(widgetOptions);
@@ -160,6 +170,7 @@ export const ChartContainer = ({
     tvWidget.onChartReady(() => {
       const chart = tvWidget.activeChart();
       const range = dataRangeRef.current;
+      const latestPrice = latestPriceRef.current;
 
       if (range) {
         chart.setVisibleRange({
@@ -168,15 +179,21 @@ export const ChartContainer = ({
         });
       }
 
-      setTimeout(() => {
-        onReady();
-      }, 1500);
+      console.log("latestPrice", latestPrice);
+
+      if (latestPrice) {
+        setTimeout(() => {
+          onReady(latestPrice);
+        }, 500);
+      }
     });
 
     return () => {
       tvWidget.remove();
     };
-  }, [symbol, onReady, datafeed]);
+
+    // eslint-disable-next-line
+  }, [symbol, datafeed]);
 
   return <div ref={chartContainerRef} className="w-full h-full" />;
 };

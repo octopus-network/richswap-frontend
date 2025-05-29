@@ -15,7 +15,7 @@ export function KlineChart({
   onChartReady,
 }: {
   rune: string;
-  onChartReady: VoidFunction;
+  onChartReady: (price: { price: number; change: number } | null) => void;
 }) {
   const [isScriptReady, setIsScriptReady] = useState(false);
 
