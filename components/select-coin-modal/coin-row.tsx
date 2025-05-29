@@ -1,6 +1,6 @@
 import { Coin } from "@/types";
 import { cn, formatNumber } from "@/lib/utils";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { CoinIcon } from "../coin-icon";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { Skeleton } from "../ui/skeleton";
@@ -15,7 +15,7 @@ export function CoinRow({
   coin: Coin;
   onSelect: (coin: Coin) => void;
 }) {
-  const { address } = useLaserEyes(({ address }) => ({ address }));
+  const { address } = useLaserEyes();
   const coinBalance = useCoinBalance(coin);
 
   const coinPrice = useCoinPrice(coin?.id);

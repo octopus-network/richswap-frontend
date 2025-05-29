@@ -1,5 +1,5 @@
 import * as bitcoin from "bitcoinjs-lib";
-import { NetworkType } from "@omnisat/lasereyes";
+import { NetworkType } from "@omnisat/lasereyes-react";
 
 export function toPsbtNetwork(network: NetworkType) {
   if (network === "mainnet") {

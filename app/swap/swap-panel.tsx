@@ -7,7 +7,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Field, Coin, SwapState } from "@/types";
 import { ReviewModal } from "./review-modal";
 import { useSearchParams } from "next/navigation";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -26,9 +26,7 @@ import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN, COIN_LIST } from "@/lib/constants";
 
 export function SwapPanel() {
-  const { address } = useLaserEyes((x) => ({
-    address: x.address,
-  }));
+  const { address } = useLaserEyes();
   const searchParams = useSearchParams();
 
   const t = useTranslations("Swap");

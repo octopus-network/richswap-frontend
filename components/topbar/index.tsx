@@ -3,31 +3,24 @@
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { Nav } from "./nav";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { AccountButton } from "../account-button";
 import { useSetAtom } from "jotai";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { Skeleton } from "../ui/skeleton";
-import { useEffect, useState } from "react";
+
 import { MenuButton } from "./menu-button";
 import { useTranslations } from "next-intl";
 
 import { LocaleSwitcher } from "./locale-switcher";
 
 export function Topbar() {
-  const { address, isInitializing } = useLaserEyes(
-    ({ address, isInitializing }) => ({ address, isInitializing })
-  );
+  const { address, isConnecting, isInitializing } = useLaserEyes();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
-  const [initialized, setInitialized] = useState(false);
 
   const t = useTranslations("Topbar");
 
-  useEffect(() => {
-    if (!isInitializing) {
-      setInitialized(true);
-    }
-  }, [isInitializing]);
+  console.log(isConnecting, isInitializing)
 
   return (
     <div className="flex justify-between items-cetner sm:px-4 px-3 py-2 border-b">
@@ -48,7 +41,7 @@ export function Topbar() {
         <div className="hidden md:block">
           <LocaleSwitcher />
         </div>
-        {!initialized ? (
+        {isInitializing ? (
           <Skeleton className="h-9 w-24 rounded-lg" />
         ) : !address ? (
           <Button

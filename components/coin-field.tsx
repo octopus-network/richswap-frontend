@@ -10,7 +10,7 @@ import { CoinIcon } from "./coin-icon";
 import { SelectCoinModal } from "./select-coin-modal";
 import { Skeleton } from "./ui/skeleton";
 import { cn, isNumber } from "@/lib/utils";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { Wallet } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
@@ -112,7 +112,7 @@ export function CoinField({
   size?: "sm" | "md";
 }) {
   const [selectCoinModalOpen, setSelectCoinModalOpen] = useState(false);
-  const { address } = useLaserEyes((x) => ({ address: x.address }));
+  const { address } = useLaserEyes();
   const balance = useCoinBalance(coin);
 
   const beautifiedValue = beautify(value);

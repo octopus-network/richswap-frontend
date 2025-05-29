@@ -1,4 +1,4 @@
-import { UNISAT, MAGIC_EDEN, XVERSE, OKX } from "@omnisat/lasereyes";
+import { UNISAT, MAGIC_EDEN, XVERSE, OKX } from "@omnisat/lasereyes-react";
 
 export const WALLETS: Record<
   string,

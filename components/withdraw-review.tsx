@@ -17,7 +17,7 @@ import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
 import { useTranslations } from "next-intl";
 import { BITCOIN } from "@/lib/constants";
-import { OKX } from "@omnisat/lasereyes";
+import { OKX, useLaserEyes } from "@omnisat/lasereyes-react";
 import { Loader2 } from "lucide-react";
 import { AddressType } from "@/types";
 import { getAddressType } from "@/lib/utils";
@@ -30,7 +30,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
 import { useWalletBtcUtxos } from "@/hooks/use-utxos";
-import { useLaserEyes } from "@omnisat/lasereyes";
+
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { parseCoinAmount } from "@/lib/utils";
 
@@ -66,14 +66,7 @@ export function WithdrawReview({
   sqrtK: bigint | undefined;
   showCancelButton?: boolean;
 }) {
-  const { address, paymentAddress, provider, signPsbt } = useLaserEyes(
-    ({ address, paymentAddress, provider, signPsbt }) => ({
-      address,
-      paymentAddress,
-      provider,
-      signPsbt,
-    })
-  );
+  const { address, paymentAddress, provider, signPsbt } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
   const t = useTranslations("Pools");
