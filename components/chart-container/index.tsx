@@ -26,7 +26,6 @@ export const ChartContainer = ({
   onReady,
 }: {
   symbol: string;
-
   onReady: (price: { price: number; change: number } | null) => void;
 }) => {
   const chartContainerRef =
@@ -47,7 +46,7 @@ export const ChartContainer = ({
           ticker: symbol,
           name: symbol,
           description: symbol,
-          pricescale: 100000,
+          pricescale: 1000000,
           minmov: 1,
           exchange: "RichSwap",
           listed_exchange: "",
@@ -116,6 +115,10 @@ export const ChartContainer = ({
   );
 
   useEffect(() => {
+    latestPriceRef.current = null;
+  }, [symbol]);
+
+  useEffect(() => {
     if (!symbol) {
       return;
     }
@@ -142,21 +145,25 @@ export const ChartContainer = ({
         "header_saveload",
       ],
       overrides: {
-        "paneProperties.background": "#23282f",
+        "paneProperties.background": "#1f242a",
         "paneProperties.horzGridProperties.color": "rgba(150, 150, 160, .1)",
         "paneProperties.vertGridProperties.color": "rgba(150, 150, 160, .1)",
-        "scalesProperties.textColor": "#a9abb3",
+        "scalesProperties.textColor": "#bec0c9",
         "paneProperties.legendProperties.showSeriesTitle": false,
         "paneProperties.legendProperties.showVolume": true,
         "paneProperties.legendProperties.showBarChange": false,
         "mainSeriesProperties.statusViewStyle.showExchange": false,
         "mainSeriesProperties.statusViewStyle.showInterval": false,
         "mainSeriesProperties.statusViewStyle.symbolTextSource": "description",
+        "mainSeriesProperties.candleStyle.upColor": "#459782",
+        "mainSeriesProperties.candleStyle.downColor": "#df484c",
+        "mainSeriesProperties.candleStyle.borderUpColor": "#459782",
+        "mainSeriesProperties.candleStyle.borderDownColor": "#df484c",
+        "mainSeriesProperties.candleStyle.wickUpColor": "#459782",
+        "mainSeriesProperties.candleStyle.wickDownColor": "#df484c",
       },
       charts_storage_url: "https://saveload.tradingview.com",
       charts_storage_api_version: "1.1",
-      client_id: "tradingview.com",
-      user_id: "public_user_id",
       autosize: true,
       custom_css_url: "/static/tv-custom.css",
       loading_screen: {
@@ -179,13 +186,9 @@ export const ChartContainer = ({
         });
       }
 
-      console.log("latestPrice", latestPrice);
-
-      if (latestPrice) {
-        setTimeout(() => {
-          onReady(latestPrice);
-        }, 500);
-      }
+      setTimeout(() => {
+        onReady(latestPrice);
+      }, 500);
     });
 
     return () => {

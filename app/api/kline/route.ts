@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { gql, GraphQLClient } from "graphql-request";
 
-
 export const dynamic = "force-dynamic";
 
 function resolutionToSeconds(res: string) {
   const map: Record<string, number> = {
-    "1": 60,
-    "5": 300,
-    "15": 900,
     "60": 3600,
+    "2400": 14400,
     "1D": 86400,
   };
   return map[res] || 60;
@@ -103,13 +100,51 @@ export async function GET(req: NextRequest) {
       result[i].open = result[i - 1].close;
     }
 
-    const currPrice = result.length > 0 ? result[result.length - 1].close : 0;
+    const fullResult: typeof result = [];
+    let lastBar = null;
+
+    for (
+      let t = Math.floor(fromTs / interval) * interval;
+      t <= toTs;
+      t += interval
+    ) {
+      const existing = grouped.get(t);
+      if (existing) {
+        lastBar = existing;
+        fullResult.push(existing);
+      } else if (lastBar) {
+        fullResult.push({
+          time: t * 1000,
+          open: lastBar.close,
+          high: lastBar.close,
+          low: lastBar.close,
+          close: lastBar.close,
+          volume: 0,
+        });
+      }
+    }
+
+    const currPrice =
+      fullResult.length > 0 ? fullResult[fullResult.length - 1].close : 0;
+
+    const twentyFourHoursAgoTs = toTs - 86400;
+
+    const price24hAgoBar = [...fullResult]
+      .reverse()
+      .find((bar) => bar.time <= twentyFourHoursAgoTs * 1000);
+
+    let change = 0;
+    if (price24hAgoBar) {
+      change =
+        ((currPrice - price24hAgoBar.close) / price24hAgoBar.close) * 100;
+    }
 
     return NextResponse.json({
       success: true,
       data: {
-        bars: result,
+        bars: fullResult,
         price: currPrice,
+        change,
       },
     });
   } catch (error) {
