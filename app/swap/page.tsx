@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCcw, ChartLine, Loader2 } from "lucide-react";
+import { RefreshCcw, ChartLine, Loader2, ExternalLink } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { SwapPanel } from "./swap-panel";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Coin } from "@/types";
 import { CoinIcon } from "@/components/coin-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useKlineChartOpen, useToggleKlineChartOpen } from "@/store/user/hooks";
+import Link from "next/link";
+import { RUNESCAN_URL } from "@/lib/constants";
 
 export default function SwapPage() {
   const t = useTranslations("Swap");
@@ -25,7 +27,8 @@ export default function SwapPage() {
 
   useEffect(() => {
     setRemoveShowChartMask(false);
-  }, [rune, klineChartOpen]);
+    setLatestPrice(null);
+  }, [rune]);
 
   return (
     <Suspense>
@@ -34,29 +37,54 @@ export default function SwapPage() {
           {klineChartOpen && (
             <div
               key="chart"
-              className="flex-1 w-full max-w-lg md:max-w-full overflow-hidden bg-secondary rounded-xl fle flex-col"
+              className="flex-1 w-full max-w-lg md:max-w-full overflow-hidden bg-secondary/80 rounded-xl fle flex-col"
             >
-              <div className="px-4 py-3 flex justify-between">
+              <div className="px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   {rune ? (
                     <>
-                      <CoinIcon coin={rune} className="size-7" />
-                      <span className="font-semibold">{rune.name}</span>
+                      <CoinIcon coin={rune} />
+
+                      <div className="flex flex-col">
+                        <span className="font-semibold">{rune.name}</span>
+                        <Link
+                          href={`${RUNESCAN_URL}/runes/${rune.name}`}
+                          target="_blank"
+                        >
+                          <div className="flex items-center text-muted-foreground hover:text-foreground hover:underline cursor-pointer">
+                            <span className="text-xs">{rune.id}</span>
+                            <ExternalLink className="size-3 ml-1" />
+                          </div>
+                        </Link>
+                      </div>
                     </>
                   ) : (
                     <>
-                      <Skeleton className="size-7 rounded-full bg-slate-50/20" />
-                      <Skeleton className="h-6 w-20 bg-slate-50/20" />
+                      <Skeleton className="size-8 rounded-full bg-slate-50/20" />
+                      <Skeleton className="h-7 w-20 bg-slate-50/20" />
                     </>
                   )}
                 </div>
-                {
-                  latestPrice &&
+                {latestPrice && (
                   <div className="flex-col flex items-end">
-                    <span className="text-sm font-semibold">${formatNumber(latestPrice.price)}</span>
-                    <span className="text-green-400 text-xs">+0.00%</span>
+                    <span className="text-sm font-semibold">
+                      ${formatNumber(latestPrice.price)}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-xs",
+                        latestPrice.change >= 0
+                          ? "text-[#459782]"
+                          : "text-[#df484c]"
+                      )}
+                    >
+                      {latestPrice.change > 0
+                        ? `+${latestPrice.change.toFixed(2)}`
+                        : latestPrice.change.toFixed(2)}
+                      %
+                    </span>
                   </div>
-                }
+                )}
               </div>
               <div className="h-[260px] md:h-[420px] relative">
                 {!removeChartMask && (
