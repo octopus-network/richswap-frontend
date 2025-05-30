@@ -74,8 +74,8 @@ export default function SwapPage() {
                       className={cn(
                         "text-xs",
                         latestPrice.change >= 0
-                          ? "text-[#459782]"
-                          : "text-[#df484c]"
+                          ? "text-green-500"
+                          : "text-red-500"
                       )}
                     >
                       {latestPrice.change > 0
