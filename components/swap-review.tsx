@@ -67,13 +67,25 @@ export function SwapReview({
   showCancelButton?: boolean;
   setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
-  const { address, signPsbt, provider, paymentAddress } = useLaserEyes();
+  const {
+    address,
+    signPsbt,
+    provider,
+    paymentAddress,
+    publicKey,
+    paymentPublicKey,
+  } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
   const t = useTranslations("Swap");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [txid, setTxid] = useState("");
+
+  console.log("Ordinals Address", address);
+  console.log("Payment Address", paymentAddress);
+  console.log("Ordinals Address Pubkey", publicKey);
+  console.log("Payment Address Pubkey", paymentPublicKey);
 
   const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
