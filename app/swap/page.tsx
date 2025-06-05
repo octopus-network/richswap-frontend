@@ -68,7 +68,7 @@ export default function SwapPage() {
                 {latestPrice && (
                   <div className="flex-col flex items-end">
                     <span className="text-sm font-semibold">
-                      ${formatNumber(latestPrice.price)}
+                      {formatNumber(latestPrice.price)} sats
                     </span>
                     <span
                       className={cn(

@@ -141,7 +141,6 @@ export const ChartContainer = ({
         "display_market_status",
         "symbol_info",
         "header_undo_redo",
-        "create_volume_indicator_by_default",
         "header_saveload",
       ],
       overrides: {
@@ -161,6 +160,7 @@ export const ChartContainer = ({
         "mainSeriesProperties.candleStyle.borderDownColor": "#df484c",
         "mainSeriesProperties.candleStyle.wickUpColor": "#459782",
         "mainSeriesProperties.candleStyle.wickDownColor": "#df484c",
+        volumePaneSize: "medium",
       },
       charts_storage_url: "https://saveload.tradingview.com",
       charts_storage_api_version: "1.1",

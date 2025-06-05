@@ -100,36 +100,36 @@ export async function GET(req: NextRequest) {
       result[i].open = result[i - 1].close;
     }
 
-    const fullResult: typeof result = [];
-    let lastBar = null;
+    // const fullResult: typeof result = [];
+    // let lastBar = null;
 
-    for (
-      let t = Math.floor(fromTs / interval) * interval;
-      t <= toTs;
-      t += interval
-    ) {
-      const existing = grouped.get(t);
-      if (existing) {
-        lastBar = existing;
-        fullResult.push(existing);
-      } else if (lastBar) {
-        fullResult.push({
-          time: t * 1000,
-          open: lastBar.close,
-          high: lastBar.close,
-          low: lastBar.close,
-          close: lastBar.close,
-          volume: 0,
-        });
-      }
-    }
+    // for (
+    //   let t = Math.floor(fromTs / interval) * interval;
+    //   t <= toTs;
+    //   t += interval
+    // ) {
+    //   const existing = grouped.get(t);
+    //   if (existing) {
+    //     lastBar = existing;
+    //     fullResult.push(existing);
+    //   } else if (lastBar) {
+    //     fullResult.push({
+    //       time: t * 1000,
+    //       open: lastBar.close,
+    //       high: lastBar.close,
+    //       low: lastBar.close,
+    //       close: lastBar.close,
+    //       volume: 0,
+    //     });
+    //   }
+    // }
 
     const currPrice =
-      fullResult.length > 0 ? fullResult[fullResult.length - 1].close : 0;
+      result.length > 0 ? result[result.length - 1].close : 0;
 
     const twentyFourHoursAgoTs = toTs - 86400;
 
-    const price24hAgoBar = [...fullResult]
+    const price24hAgoBar = [...result]
       .reverse()
       .find((bar) => bar.time <= twentyFourHoursAgoTs * 1000);
 
@@ -142,7 +142,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        bars: fullResult,
+        bars: result,
         price: currPrice,
         change,
       },
