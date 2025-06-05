@@ -2,9 +2,16 @@
   --tv-color-platform-background: #17191d;
   --tv-color-pane-background: #17191d;
   --tv-color-toolbar-button-background-hover: #2d3239;
+  --tv-color-toolbar-button-background-expanded: #2d3239;
   --tv-color-toolbar-button-text-hover: #fff;
   --tv-color-toolbar-button-text: #a9abb3;
   --tv-color-toolbar-button-text-active: #f1d86f;
   --tv-color-toolbar-button-text-active-hover: #f1d86f;
   --tv-color-toolbar-divider-background: #17191d;
+  --tv-color-popup-background: #1c212c;
+  --tv-color-popup-element-text: #a9abb3;
+  --tv-color-popup-element-background-hover: #2a2f36;
+  --tv-color-popup-element-divider-background: #292e35;
+  --tv-color-popup-element-text-hover: #a9abb3;
+  --tv-color-popup-element-background-active: #2d3239;
 }
