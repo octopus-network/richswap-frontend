@@ -13,7 +13,7 @@ export interface UserState {
 
 export const initialState: UserState = {
   coins: {},
-  klineChartOpen: false,
+  klineChartOpen: true,
 };
 
 const reducer = createReducer<UserState>(initialState, (builder) =>

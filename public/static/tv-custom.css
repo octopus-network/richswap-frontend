@@ -14,4 +14,22 @@
   --tv-color-popup-element-divider-background: #292e35;
   --tv-color-popup-element-text-hover: #a9abb3;
   --tv-color-popup-element-background-active: #2d3239;
+
+  --tv-color-dialog-header-text: #fff;
+
+  --themed-color-properties-dialog-borders: #292e35;
+  --themed-color-search-border: #292e35;
+  --themed-color-load-chart-dialog-text: #fff;
+  --themed-color-bg-primary: #1c212c;
+  --themed-color-background-hover: #2a2f36;
+  --themed-color-text: #a9abb3;
+  --themed-color-active-tab-text-color: #fff;
+  --themed-color-text-primary: #a9abb3;
+
+  --themed-color-active-tab-text-color: #fff;
+  --themed-color-properties-dialog-tab-bg: #2d3239;
+  --themed-color-close-button-hover-text: #a9abb3;
+  --themed-color-close-button-hover-bg: #2a2f36;
+
+  --themed-color-properties-dialog-defaults-text: #a9abb3;
 }
