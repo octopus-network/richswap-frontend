@@ -67,25 +67,13 @@ export function SwapReview({
   showCancelButton?: boolean;
   setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
-  const {
-    address,
-    signPsbt,
-    provider,
-    paymentAddress,
-    publicKey,
-    paymentPublicKey,
-  } = useLaserEyes();
+  const { address, signPsbt, provider, paymentAddress } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
   const t = useTranslations("Swap");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [txid, setTxid] = useState("");
-
-  console.log("Ordinals Address", address);
-  console.log("Payment Address", paymentAddress);
-  console.log("Ordinals Address Pubkey", publicKey);
-  console.log("Payment Address Pubkey", paymentPublicKey);
 
   const [fee, setFee] = useState(BigInt(0));
   const [toSpendUtxos, setToSpendUtxos] = useState<UnspentOutput[]>([]);
@@ -542,7 +530,7 @@ export function SwapReview({
                   </span>
                   <div className="flex flex-col items-end">
                     <span>
-                      {priceImpacts[0].runePriceInSats.toFixed(2)} sats
+                      {formatNumber(priceImpacts[0].runePriceInSats)} sats
                       <em
                         className={cn(
                           "ml-1",
@@ -568,7 +556,7 @@ export function SwapReview({
                     </span>
                     <div className="flex flex-col items-end">
                       <span>
-                        {priceImpacts[1].runePriceInSats.toFixed(2)} sats
+                        {formatNumber(priceImpacts[1].runePriceInSats)} sats
                         <em
                           className={cn(
                             "ml-1",
