@@ -2,7 +2,7 @@
 
 import { usePortfolios } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { PortfolioRow } from "./portfolio-row";
 import { Button } from "@/components/ui/button";
 import { useSetAtom } from "jotai";
@@ -11,9 +11,7 @@ import { Empty } from "@/components/empty";
 import { useTranslations } from "next-intl";
 
 export default function Portolios() {
-  const { paymentAddress } = useLaserEyes((x) => ({
-    paymentAddress: x.paymentAddress,
-  }));
+  const { paymentAddress } = useLaserEyes();
   const [portfolios] = usePortfolios();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
   const t = useTranslations("Portfolio");

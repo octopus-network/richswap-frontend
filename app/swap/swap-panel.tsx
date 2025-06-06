@@ -7,7 +7,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Field, Coin, SwapState } from "@/types";
 import { ReviewModal } from "./review-modal";
 import { useSearchParams } from "next/navigation";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -23,12 +23,14 @@ import {
 
 import { cn, formatCoinAmount, formatNumber, getCoinSymbol } from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
-import { BITCOIN, COIN_LIST } from "@/lib/constants";
+import { BITCOIN } from "@/lib/constants";
 
-export function SwapPanel() {
-  const { address } = useLaserEyes((x) => ({
-    address: x.address,
-  }));
+export function SwapPanel({
+  onRuneChange,
+}: {
+  onRuneChange: (rune: Coin | undefined) => void;
+}) {
+  const { address } = useLaserEyes();
   const searchParams = useSearchParams();
 
   const t = useTranslations("Swap");
@@ -96,19 +98,15 @@ export function SwapPanel() {
     const searchParams = new URLSearchParams(window.location.search);
 
     const [symbolA, symbolB] = [
-      searchParams.get("coinA") ?? "",
-      searchParams.get("coinB") ?? "",
+      searchParams.get("coinA") ?? "BTC",
+      searchParams.get("coinB") ?? "HOPE•YOU•GET•RICH",
     ];
 
-    let [_coinA, _coinB] = [
+    const [_coinA, _coinB] = [
       Object.values(coins).find((c) => getCoinSymbol(c) === symbolA) ?? null,
       Object.values(coins).find((c) => getCoinSymbol(c) === symbolB) ?? null,
     ];
 
-    if (!_coinA && !_coinB) {
-      _coinA = BITCOIN;
-      _coinB = COIN_LIST[1];
-    }
     onUpdateCoins(_coinA, _coinB);
   }, [onUpdateCoins, coins]);
 
@@ -132,6 +130,16 @@ export function SwapPanel() {
     () => coinBAmount * coinBPrice,
     [coinBPrice, coinBAmount]
   );
+
+  useEffect(() => {
+    onRuneChange(
+      coinA && coinA.id !== BITCOIN.id
+        ? coinA
+        : coinB && coinB.id !== BITCOIN.id
+        ? coinB
+        : undefined
+    );
+  }, [coinA, coinB, onRuneChange]);
 
   const handleSelectCoin = (field: Field, coin: Coin) => {
     onSelectCoin(field, coin);
@@ -323,7 +331,7 @@ export function SwapPanel() {
                 </span>
                 <div className="flex flex-col items-end">
                   <span>
-                    {priceImpacts[0].runePriceInSats.toFixed(2)} sats
+                    {formatNumber(priceImpacts[0].runePriceInSats)} sats
                     <em
                       className={cn(
                         "ml-1",
@@ -349,7 +357,7 @@ export function SwapPanel() {
                   </span>
                   <div className="flex flex-col items-end">
                     <span>
-                      {priceImpacts[1].runePriceInSats.toFixed(2)} sats
+                      {formatNumber(priceImpacts[1].runePriceInSats)} sats
                       <em
                         className={cn(
                           "ml-1",

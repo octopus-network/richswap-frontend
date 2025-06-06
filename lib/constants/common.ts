@@ -1,4 +1,4 @@
-import { NetworkType } from "@omnisat/lasereyes";
+import { NetworkType } from "@omnisat/lasereyes-react";
 
 export const UTXO_DUST = BigInt(546);
 export const ICP_HOST = "https://ic0.app";

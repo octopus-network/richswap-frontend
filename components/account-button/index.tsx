@@ -1,4 +1,4 @@
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "../ui/button";
 import Image from "next/image";
@@ -9,10 +9,7 @@ import { AccountSheetContent } from "./account-sheet-content";
 import { usePendingTransactions } from "@/store/transactions";
 
 export function AccountButton() {
-  const { address, provider } = useLaserEyes(({ address, provider }) => ({
-    address,
-    provider,
-  }));
+  const { address, provider } = useLaserEyes();
 
   const pendingTransactions = usePendingTransactions();
 

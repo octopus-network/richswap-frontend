@@ -21,7 +21,12 @@ export function TransactionUpdater() {
 
   const pendingTransactions = useMemo(
     () =>
-      transactions.filter((t) => t.status === TransactionStatus.BROADCASTED),
+      transactions
+        .filter(
+          (item, index, self) =>
+            index === self.findIndex((t) => t.txid === item.txid)
+        )
+        .filter((t) => t.status === TransactionStatus.BROADCASTED),
     [transactions]
   );
 
@@ -82,6 +87,7 @@ export function TransactionUpdater() {
               });
               return;
             } else if (receipt?.status === "Rejected") {
+              console.log("rejected", receipt);
               if (tx.utxos?.length) {
                 removeSpentUtxos(tx.utxos);
               }
@@ -130,7 +136,7 @@ export function TransactionUpdater() {
     updateTransactionStatus,
     timer,
     removeSpentUtxos,
-    t
+    t,
   ]);
 
   return null;

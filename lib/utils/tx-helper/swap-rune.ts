@@ -33,6 +33,10 @@ export async function swapRuneTx({
   feeRate: number;
   nonce: bigint;
 }) {
+  if (!btcUtxos.length) {
+    throw new Error("insufficientUtxos");
+  }
+  
   let poolRuneAmount = BigInt(0),
     poolBtcAmount = BigInt(0);
 
@@ -172,7 +176,7 @@ export async function swapRuneTx({
   if (changeBtcAmount < 0) {
     throw new Error("insufficientUtxos");
   }
-  
+
   if (changeBtcAmount > UTXO_DUST) {
     tx.addOutput(paymentAddress, changeBtcAmount);
   } else if (changeBtcAmount > BigInt(0)) {

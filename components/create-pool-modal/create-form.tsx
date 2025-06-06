@@ -2,7 +2,7 @@ import { Coin, PoolInfo } from "@/types";
 import { CoinField } from "../coin-field";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "../ui/button";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { useSetAtom } from "jotai";
 import { useCoinBalance } from "@/hooks/use-balance";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
@@ -36,7 +36,7 @@ export function CreateForm({
   onNextStep: (key: string, nonce?: bigint) => void;
   onPoolExsists?: (pool: PoolInfo) => void;
 }) {
-  const { address } = useLaserEyes(({ address }) => ({ address }));
+  const { address } = useLaserEyes();
   const [isCreating, setIsCreating] = useState(false);
   const coinABalance = useCoinBalance(coinA);
   const coinBBalance = useCoinBalance(coinB);

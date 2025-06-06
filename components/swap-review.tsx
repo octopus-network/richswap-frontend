@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Loader2, TriangleAlert } from "lucide-react";
-import { OKX } from "@omnisat/lasereyes";
+import { OKX } from "@omnisat/lasereyes-react";
 import {
   AddressType,
   Coin,
@@ -33,7 +33,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
 import { useWalletBtcUtxos, useWalletRuneUtxos } from "@/hooks/use-utxos";
-import { useLaserEyes } from "@omnisat/lasereyes";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import axios from "axios";
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
@@ -67,14 +67,7 @@ export function SwapReview({
   showCancelButton?: boolean;
   setIsSubmiting: (isSubmiting: boolean) => void;
 }) {
-  const { address, signPsbt, provider, paymentAddress } = useLaserEyes(
-    ({ address, signPsbt, provider, paymentAddress }) => ({
-      address,
-      signPsbt,
-      provider,
-      paymentAddress,
-    })
-  );
+  const { address, signPsbt, provider, paymentAddress } = useLaserEyes();
   const [step, setStep] = useState(0);
   const [psbt, setPsbt] = useState<bitcoin.Psbt>();
   const t = useTranslations("Swap");
@@ -537,7 +530,7 @@ export function SwapReview({
                   </span>
                   <div className="flex flex-col items-end">
                     <span>
-                      {priceImpacts[0].runePriceInSats.toFixed(2)} sats
+                      {formatNumber(priceImpacts[0].runePriceInSats)} sats
                       <em
                         className={cn(
                           "ml-1",
@@ -563,7 +556,7 @@ export function SwapReview({
                     </span>
                     <div className="flex flex-col items-end">
                       <span>
-                        {priceImpacts[1].runePriceInSats.toFixed(2)} sats
+                        {formatNumber(priceImpacts[1].runePriceInSats)} sats
                         <em
                           className={cn(
                             "ml-1",
