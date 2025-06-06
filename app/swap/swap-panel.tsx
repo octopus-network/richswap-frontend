@@ -331,7 +331,7 @@ export function SwapPanel({
                 </span>
                 <div className="flex flex-col items-end">
                   <span>
-                    {priceImpacts[0].runePriceInSats.toFixed(2)} sats
+                    {formatNumber(priceImpacts[0].runePriceInSats)} sats
                     <em
                       className={cn(
                         "ml-1",
@@ -357,7 +357,7 @@ export function SwapPanel({
                   </span>
                   <div className="flex flex-col items-end">
                     <span>
-                      {priceImpacts[1].runePriceInSats.toFixed(2)} sats
+                      {formatNumber(priceImpacts[1].runePriceInSats)} sats
                       <em
                         className={cn(
                           "ml-1",
