@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    await axios
+    const data = await axios
       .post(`${UTXO_PROOF_SERVER}/get_proof`, {
         network: NETWORK === "mainnet" ? "Mainnet" : "Testnet",
         btc_address: address,
@@ -27,32 +27,12 @@ export async function POST(req: NextRequest) {
           height,
         })),
       })
-      .then((res) => res.data)
-      .catch(() => {});
+      .then((res) => res.data);
 
     return NextResponse.json({
       success: true,
-      data: [],
+      data: data.Ok ?? [],
     });
-    // const data = await axios
-    //   .post(`${UTXO_PROOF_SERVER}/get_proof`, {
-    //     network: NETWORK === "mainnet" ? "Mainnet" : "Testnet",
-    //     btc_address: address,
-    //     utxos: utxos.map(({ height, txid, satoshis, vout }: UnspentOutput) => ({
-    //       outpoint: {
-    //         txid: Array.from(reverseBuffer(hexToBytes(txid))),
-    //         vout,
-    //       },
-    //       value: Number(satoshis),
-    //       height,
-    //     })),
-    //   })
-    //   .then((res) => res.data);
-
-    // return NextResponse.json({
-    //   success: true,
-    //   data: data.Ok ?? [],
-    // });
   } catch (error) {
     return NextResponse.json({
       error:

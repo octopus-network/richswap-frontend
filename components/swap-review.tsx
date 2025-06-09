@@ -414,7 +414,7 @@ export function SwapReview({
       setStep(2);
 
       await Orchestrator.invoke({
-        initiator_utxo_proof: [],
+        initiator_utxo_proof: initiatorUtxoProof,
         intention_set: {
           tx_fee_in_sats: fee,
           initiator_address: paymentAddress,
