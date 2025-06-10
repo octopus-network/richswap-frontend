@@ -283,8 +283,8 @@ export async function swapBtcTx({
       {
         action: "swap",
         exchange_id: EXCHANGE_ID,
-        pool_utxo_spend: poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`),
-        pool_utxo_receive: poolVouts.map((vout) => `${txid}:${vout}`),
+        pool_utxo_spent: [],
+        pool_utxo_received: [],
         input_coins: [
           {
             from: address,

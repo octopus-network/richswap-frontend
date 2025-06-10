@@ -322,8 +322,8 @@ export async function runeSwapRuneTx({
       {
         action: "swap",
         exchange_id: EXCHANGE_ID,
-        pool_utxo_spend: pool0Utxos.map((utxo) => `${utxo.txid}:${utxo.vout}`),
-        pool_utxo_receive: pool0Vouts.map((vout) => `${txid}:${vout}`),
+        pool_utxo_spent: pool0Utxos.map((utxo) => `${utxo.txid}:${utxo.vout}`),
+        pool_utxo_received: pool0Vouts.map((vout) => `${txid}:${vout}`),
         input_coins: [
           {
             from: address,
@@ -349,8 +349,8 @@ export async function runeSwapRuneTx({
       {
         action: "swap",
         exchange_id: EXCHANGE_ID,
-        pool_utxo_spend: pool1Utxos.map((utxo) => `${utxo.txid}:${utxo.vout}`),
-        pool_utxo_receive: pool1Vouts.map((vout) => `${txid}:${vout}`),
+        pool_utxo_spent: [],
+        pool_utxo_received: [],
         input_coins: [
           {
             from: pool0Address,

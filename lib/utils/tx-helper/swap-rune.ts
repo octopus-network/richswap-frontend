@@ -36,7 +36,7 @@ export async function swapRuneTx({
   if (!btcUtxos.length) {
     throw new Error("insufficientUtxos");
   }
-  
+
   let poolRuneAmount = BigInt(0),
     poolBtcAmount = BigInt(0);
 
@@ -189,8 +189,6 @@ export async function swapRuneTx({
   //@ts-expect-error: todo
   const unsignedTx = psbt.__CACHE.__TX;
 
-  const poolVouts = needChange ? [0] : [1];
-
   const toSignInputs: ToSignInput[] = [];
 
   const toSpendUtxos = inputs
@@ -242,8 +240,8 @@ export async function swapRuneTx({
       {
         action: "swap",
         exchange_id: EXCHANGE_ID,
-        pool_utxo_spend: poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`),
-        pool_utxo_receive: poolVouts.map((vout) => `${txid}:${vout}`),
+        pool_utxo_spent: [],
+        pool_utxo_received: [],
         input_coins: [
           {
             from: paymentAddress,
