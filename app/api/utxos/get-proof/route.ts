@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       })
       .then((res) => res.data)
       .catch(() => ({
-        OK: [],
+        Ok: [],
       }));
 
     return NextResponse.json({
