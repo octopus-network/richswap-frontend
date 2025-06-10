@@ -39,7 +39,6 @@ export async function donateTx({
     tx.addInput(utxo);
   });
 
-  const poolSpendUtxos = poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`);
   const poolVouts: number[] = [];
 
   poolVouts.push(0);
@@ -176,14 +175,12 @@ export async function donateTx({
 
   const txid = unsignedTxClone.getId();
 
-  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
-
   return {
     psbt,
     toSpendUtxos,
     toSignInputs,
-    poolSpendUtxos,
-    poolReceiveUtxos,
+    poolSpendUtxos: [],
+    poolReceiveUtxos: [],
     txid,
     fee: currentFee + discardedSats,
     inputCoins: [
