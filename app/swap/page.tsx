@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCcw, ChartLine, Loader2, ExternalLink } from "lucide-react";
+import { RefreshCcw, ChartLine, ExternalLink } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { SwapPanel } from "./swap-panel";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ export default function SwapPage() {
   const t = useTranslations("Swap");
   const klineChartOpen = useKlineChartOpen();
   const toggleKlineChartOpen = useToggleKlineChartOpen();
-  const [removeChartMask, setRemoveShowChartMask] = useState(false);
+
   const [rune, setRune] = useState<Coin>();
   const [latestPrice, setLatestPrice] = useState<{
     price: number;
@@ -26,18 +26,17 @@ export default function SwapPage() {
   } | null>(null);
 
   useEffect(() => {
-    setRemoveShowChartMask(false);
     setLatestPrice(null);
   }, [rune]);
 
   return (
     <Suspense>
-      <div className="md:pt-12 w-full flex flex-col items-center">
-        <div className="w-full flex flex-col md:flex-row justify-center items-center md:items-start max-w-7xl gap-6">
+      <div className="lg:pt-12 w-full flex flex-col items-center">
+        <div className="w-full flex flex-col lg:flex-row justify-center items-center lg:items-start max-w-7xl gap-6">
           {klineChartOpen && (
             <div
               key="chart"
-              className="flex-1 w-full max-w-lg md:max-w-full overflow-hidden bg-secondary/80 rounded-xl fle flex-col"
+              className="flex-1 w-full max-w-lg lg:max-w-full overflow-hidden bg-secondary/80 rounded-xl fle flex-col"
             >
               <div className="px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -86,17 +85,16 @@ export default function SwapPage() {
                   </div>
                 )}
               </div>
-              <div className="h-[260px] md:h-[420px] relative">
-                {!removeChartMask && (
+              <div className="h-[260px] lg:h-[420px] relative">
+                {/* {!removeChartMask && (
                   <div className="absolute inset-0 bg-secondary items-center justify-center flex">
                     <Loader2 className="size-6 text-muted-foreground animate-spin" />
                   </div>
-                )}
+                )} */}
                 <KlineChart
                   rune={rune?.name || ""}
                   onChartReady={(price) => {
                     setLatestPrice(price);
-                    setRemoveShowChartMask(true);
                   }}
                 />
               </div>
