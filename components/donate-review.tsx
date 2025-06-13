@@ -151,6 +151,7 @@ export function DonateReview({
           address,
           paymentAddress,
           feeRate: recommendedFeeRate,
+          runeid: coinB.id
         });
 
         setPsbt(tx.psbt);
@@ -262,6 +263,7 @@ export function DonateReview({
         PopupStatus.SUCCESS,
         t("donateDescription", {
           amount: coinAAmount,
+          coin: getCoinSymbol(coinA),
           poolName: getCoinSymbol(coinB),
         })
       );
