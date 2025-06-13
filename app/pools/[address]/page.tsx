@@ -5,7 +5,7 @@ import { CoinIcon } from "@/components/coin-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePoolList } from "@/hooks/use-pools";
 import { useParams } from "next/navigation";
-import { Position } from "@/types";
+import { Position, PoolData } from "@/types";
 import { useMemo, useEffect, useState } from "react";
 import { Exchange } from "@/lib/exchange";
 import { Button } from "@/components/ui/button";
@@ -28,13 +28,19 @@ export default function Pool() {
   const { address } = useParams();
 
   const { paymentAddress } = useLaserEyes();
-
+  const [poolData, setPoolData] = useState<PoolData>();
   const [position, setPosition] = useState<Position | null>();
 
   const [lps, setLps] = useState<any[]>([]);
 
   useEffect(() => {
-    Exchange.getLps(address as string).then(setLps);
+    Promise.all([
+      Exchange.getLps(address as string),
+      Exchange.getPoolData(address as string),
+    ]).then(([lps, poolData]) => {
+      setLps(lps);
+      setPoolData(poolData);
+    });
   }, [address]);
 
   const poolInfo = useMemo(
@@ -189,26 +195,59 @@ export default function Pool() {
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("currencyReserves")}</span>
-                  <div className="flex flex-col items-end">
-                    <span>
-                      {poolInfo
-                        ? formatCoinAmount(
-                            poolInfo.coinA.balance ?? "0",
-                            poolInfo.coinA
-                          )
-                        : "-"}{" "}
-                      {getCoinSymbol(poolInfo?.coinA)}
-                    </span>
-                    <span>
-                      {poolInfo
-                        ? formatCoinAmount(
-                            poolInfo.coinB.balance ?? "0",
-                            poolInfo.coinB
-                          )
-                        : "-"}{" "}
-                      {getCoinSymbol(poolInfo?.coinB)}
-                    </span>
+                  <span className="text-muted-foreground">
+                    {t("currencyReserves")}
+                  </span>
+                  <div className="flex flex-col items-end gap-0.5">
+                    {poolInfo ? (
+                      <span>
+                        {formatCoinAmount(
+                          poolInfo.coinA.balance ?? "0",
+                          poolInfo.coinA
+                        )}{" "}
+                        {getCoinSymbol(poolInfo?.coinA)}
+                      </span>
+                    ) : (
+                      <Skeleton className="h-5 w-16" />
+                    )}
+                    {poolInfo ? (
+                      <span>
+                        {formatCoinAmount(
+                          poolInfo.coinB.balance ?? "0",
+                          poolInfo.coinB
+                        )}{" "}
+                        {getCoinSymbol(poolInfo?.coinB)}
+                      </span>
+                    ) : (
+                      <Skeleton className="h-5 w-24" />
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("donation")}</span>
+                  <div className="flex flex-col items-end gap-0.5">
+                    {poolInfo && poolData ? (
+                      <span>
+                        {formatCoinAmount(
+                          poolData.coinADonation ?? "0",
+                          poolInfo.coinA
+                        )}{" "}
+                        {getCoinSymbol(poolInfo?.coinA)}
+                      </span>
+                    ) : (
+                      <Skeleton className="h-5 w-16" />
+                    )}
+                    {poolInfo && poolData ? (
+                      <span>
+                        {formatCoinAmount(
+                          poolData.coinBDonation ?? "0",
+                          poolInfo.coinB
+                        )}{" "}
+                        {getCoinSymbol(poolInfo?.coinB)}
+                      </span>
+                    ) : (
+                      <Skeleton className="h-5 w-24" />
+                    )}
                   </div>
                 </div>
               </div>
@@ -216,7 +255,9 @@ export default function Pool() {
           </div>
 
           <div className="border bg-secondary/50 px-4 py-3 rounded-xl col-span-4 mt-4">
-            <span className="font-semibold text-lg">{t("liquidityProviders")}</span>
+            <span className="font-semibold text-lg">
+              {t("liquidityProviders")}
+            </span>
             <div className="flex justify-between mt-3 text-muted-foreground text-sm">
               <span>{t("address")}</span>
               <span>{t("percentage")}</span>
