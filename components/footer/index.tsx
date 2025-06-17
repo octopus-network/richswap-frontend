@@ -9,7 +9,6 @@ import { formatNumber } from "@/lib/utils";
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 
 export function Footer() {
-  
   const btcPrice = useCoinPrice(BITCOIN.id);
   const feeRate = useRecommendedFeeRateFromOrchestrator(true);
 
