@@ -67,6 +67,8 @@ export type PoolData = {
   coinBId: string;
   coinAAmount: string;
   coinBAmount: string;
+  coinADonation: string;
+  coinBDonation: string;
   incomes: string;
 };
 

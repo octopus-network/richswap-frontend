@@ -70,7 +70,7 @@ export class Exchange {
             sats: bigint;
             txid: string;
             vout: number;
-            maybe_rune: [{ id: string; value: bigint }];
+            coins: [{ id: string; value: bigint }];
           }
         ];
       }
@@ -94,8 +94,10 @@ export class Exchange {
         coinAId: BITCOIN.id,
         coinBId: coinReserved?.id,
         coinAAmount: btc_reserved.toString(),
-        coinBAmount: utxo?.maybe_rune[0]?.value.toString() ?? "0",
+        coinBAmount: utxo?.coins[0]?.value.toString() ?? "0",
         incomes: attributes.protocol_revenue.toString(),
+        coinADonation: attributes.total_btc_donation.toString(),
+        coinBDonation: attributes.total_rune_donation.toString(),
       };
     }
   }
@@ -234,10 +236,10 @@ export class Exchange {
 
       const utxos: UnspentOutput[] = [];
 
-      inputs.forEach(async ({ txid, vout, sats, maybe_rune }: any) => {
+      inputs.forEach(async ({ txid, vout, sats, coins }: any) => {
         const { output } = getP2trAressAndScript(pool.key);
 
-        const rune = maybe_rune[0];
+        const rune = coins[0];
 
         const tmpObj: UnspentOutput = {
           txid,
@@ -299,7 +301,7 @@ export class Exchange {
 
       const { output } = getP2trAressAndScript(pool.key);
 
-      const rune = input.maybe_rune[0];
+      const rune = input.coins[0];
 
       const utxo: UnspentOutput = {
         txid: input.txid,
@@ -356,7 +358,7 @@ export class Exchange {
         if (data.Ok) {
           return data.Ok as {
             input: {
-              maybe_rune: [
+              coins: [
                 {
                   id: string;
                   value: bigint;
@@ -392,7 +394,7 @@ export class Exchange {
 
     const { output } = getP2trAressAndScript(pool.key);
 
-    const rune = res.input.maybe_rune[0];
+    const rune = res.input.coins[0];
 
     const utxo: UnspentOutput = {
       txid: res.input.txid,
@@ -433,11 +435,6 @@ export class Exchange {
       throw new Error("No Pool");
     }
 
-    console.log(pool.address, {
-      id: inputCoin.id,
-      value: BigInt(inputAmount),
-    });
-
     const { output, input, nonce, price_impact } = await actor
       .pre_swap(pool.address, {
         id: inputCoin.id,
@@ -453,9 +450,11 @@ export class Exchange {
           );
         }
       });
-    const { txid, vout, sats, maybe_rune } = input;
 
-    const rune = maybe_rune[0];
+    console.log("preswqp input", input);
+    const { txid, vout, sats, coins } = input;
+
+    const rune = coins[0];
 
     const { output: outputScript } = getP2trAressAndScript(pool.key);
 

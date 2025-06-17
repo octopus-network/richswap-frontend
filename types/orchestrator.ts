@@ -16,9 +16,9 @@ export type Intention = {
   action: string;
   exchange_id: string;
   action_params: string;
-  pool_utxo_spend: string[];
+  pool_utxo_spent: string[];
   nonce: bigint;
-  pool_utxo_receive: string[];
+  pool_utxo_received: string[];
   pool_address: string;
 };
 

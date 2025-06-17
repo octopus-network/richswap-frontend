@@ -102,7 +102,6 @@ export async function depositTx({
 
   const runestone = new Runestone(edicts, none(), none(), none());
 
-  const poolSpendUtxos = poolUtxos.map((utxo) => `${utxo.txid}:${utxo.vout}`);
   const poolVouts: number[] = [];
 
   if (needChange) {
@@ -260,14 +259,12 @@ export async function depositTx({
 
   const txid = unsignedTxClone.getId();
 
-  const poolReceiveUtxos = poolVouts.map((vout) => `${txid}:${vout}`);
-
   return {
     psbt,
     toSpendUtxos,
     toSignInputs,
-    poolSpendUtxos,
-    poolReceiveUtxos,
+    poolSpendUtxos: [],
+    poolReceiveUtxos: [],
     txid,
     fee: currentFee + discardedSats,
     inputCoins: [
