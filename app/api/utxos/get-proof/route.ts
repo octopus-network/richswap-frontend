@@ -27,7 +27,10 @@ export async function POST(req: NextRequest) {
           height,
         })),
       })
-      .then((res) => res.data);
+      .then((res) => res.data)
+      .catch(() => ({
+        Ok: [],
+      }));
 
     return NextResponse.json({
       success: true,

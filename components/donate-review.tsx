@@ -151,6 +151,7 @@ export function DonateReview({
           address,
           paymentAddress,
           feeRate: recommendedFeeRate,
+          runeid: coinB.id
         });
 
         setPsbt(tx.psbt);
@@ -234,8 +235,8 @@ export function DonateReview({
               action: "donate",
               exchange_id: EXCHANGE_ID,
               input_coins: inputCoins,
-              pool_utxo_spend: poolSpendUtxos,
-              pool_utxo_receive: poolReceiveUtxos,
+              pool_utxo_spent: poolSpendUtxos,
+              pool_utxo_received: poolReceiveUtxos,
               output_coins: outputCoins,
               pool_address: poolAddress,
               action_params: "",
@@ -262,6 +263,7 @@ export function DonateReview({
         PopupStatus.SUCCESS,
         t("donateDescription", {
           amount: coinAAmount,
+          coin: getCoinSymbol(coinA),
           poolName: getCoinSymbol(coinB),
         })
       );

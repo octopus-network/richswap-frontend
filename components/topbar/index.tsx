@@ -11,7 +11,7 @@ import { Skeleton } from "../ui/skeleton";
 
 import { MenuButton } from "./menu-button";
 import { useTranslations } from "next-intl";
-
+import Link from "next/link";
 import { LocaleSwitcher } from "./locale-switcher";
 
 export function Topbar() {
@@ -32,10 +32,10 @@ export function Topbar() {
         />
         <span className="font-bold">RichSwap</span>
       </div>
-      <div className="flex-none hidden md:flex ml-4">
+      <div className="flex-none hidden ml-4">
         <Nav />
       </div>
-      <div className="flex-1 justify-end space-x-4 flex items-center">
+      <div className="flex-1 justify-end space-x-4 items-center hidden">
         <div className="hidden md:block">
           <LocaleSwitcher />
         </div>
@@ -54,6 +54,17 @@ export function Topbar() {
         )}
         <MenuButton />
       </div>
+      <Link
+        href="https://oc.app/community/o5uz6-dqaaa-aaaar-bhnia-cai/channel/1529837122"
+        target="_blank"
+      >
+        <Button
+          variant="outline"
+          className="rounded-full"
+        >
+          Support
+        </Button>
+      </Link>
     </div>
   );
 }
