@@ -10,7 +10,7 @@ import { useMemo, useEffect, useState } from "react";
 import { Exchange } from "@/lib/exchange";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowLeftRight } from "lucide-react";
-import { useLaserEyes } from "@omnisat/lasereyes-react";
+import { useLaserEyes, } from "@omnisat/lasereyes-react";
 import { ExternalLink } from "lucide-react";
 import { usePoolTvl, usePoolFee } from "@/hooks/use-pools";
 import { useCoinPrice } from "@/hooks/use-prices";
