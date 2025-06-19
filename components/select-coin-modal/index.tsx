@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { useSearchCoins } from "@/hooks/use-coins";
 import { useTranslations } from "next-intl";
 import { useAddUserCoin } from "@/store/user/hooks";
+import { usePoolList, usePoolsTvl } from "@/hooks/use-pools";
 
 function coinFilter(query: string) {
   const searchingId = /^\d+:\d+$/.test(query);
@@ -53,10 +54,12 @@ export function SelectCoinModal({
   open,
   setOpen,
   onSelectCoin,
+  toBuy,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
   onSelectCoin?: (coin: Coin) => void;
+  toBuy?: boolean;
 }) {
   const defaultCoins = useDefaultCoins();
   const t = useTranslations("SelectCoin");
@@ -66,6 +69,8 @@ export function SelectCoinModal({
   const [isModalReady, setIsModalReady] = useState(false);
   const [toWarningCoin, setToWarningCoin] = useState<Coin>();
   const searchCoins = useSearchCoins(debouncedQuery);
+  const poolsTvl = usePoolsTvl();
+  const poolList = usePoolList();
 
   const userCoinAdder = useAddUserCoin();
 
@@ -88,12 +93,22 @@ export function SelectCoinModal({
     );
 
     return filteredCoins.sort((a, b) => {
-      const [blockA] = a.id.split(":");
-      const [blockB] = b.id.split(":");
+      if (b.id === "0:0") {
+        return 1;
+      }
+      const poolA = poolList.find((pool) => pool.coinB.id === a.id),
+        poolB = poolList.find((pool) => (pool.coinB.id = b.id));
 
-      return Number(blockA) - Number(blockB);
+      const poolATvl = poolA ? poolsTvl[poolA.address] : 0;
+      const poolBTvl = poolB ? poolsTvl[poolB.address] : 0;
+
+      if (toBuy) {
+        return poolBTvl - poolATvl;
+      }
+
+      return -1;
     });
-  }, [defaultCoins, debouncedQuery]);
+  }, [defaultCoins, debouncedQuery, poolsTvl, poolList, toBuy]);
 
   const handleCoinSelect = (coin: Coin, hasWarning?: boolean) => {
     if (!hasWarning) {

@@ -306,8 +306,8 @@ export function DepositReview({
         t("addLiquidityDescription", {
           coinA: getCoinSymbol(coinA),
           coinB: getCoinSymbol(coinB),
-          coinAAmount,
-          coinBAmount,
+          amountA: coinAAmount,
+          amountB: coinBAmount,
         })
       );
 

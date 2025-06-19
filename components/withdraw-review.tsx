@@ -278,9 +278,9 @@ export function WithdrawReview({
         PopupStatus.SUCCESS,
         t("withdrawLiquidityDescription", {
           coinA: getCoinSymbol(coinA),
-          coinAAmount,
+          amountA: coinAAmount,
           coinB: getCoinSymbol(coinB),
-          coinBAmount,
+          amountB: coinBAmount,
           poolName: getCoinSymbol(coinB),
         })
       );
