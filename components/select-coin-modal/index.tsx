@@ -54,7 +54,6 @@ export function SelectCoinModal({
   open,
   setOpen,
   onSelectCoin,
-  toBuy,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -97,12 +96,12 @@ export function SelectCoinModal({
         return 1;
       }
       const poolA = poolList.find((pool) => pool.coinB.id === a.id),
-        poolB = poolList.find((pool) => (pool.coinB.id === b.id));
+        poolB = poolList.find((pool) => pool.coinB.id === b.id);
 
       const poolATvl = poolA ? poolsTvl[poolA.address] : 0;
       const poolBTvl = poolB ? poolsTvl[poolB.address] : 0;
 
-     return poolBTvl - poolATvl;
+      return poolBTvl - poolATvl;
     });
   }, [defaultCoins, debouncedQuery, poolsTvl, poolList]);
 
