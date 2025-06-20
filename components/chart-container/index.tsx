@@ -34,10 +34,12 @@ export const ChartContainer = ({
   const dataRangeRef = useRef<{ min: number; max: number } | null>(null);
   const latestPriceRef = useRef<{ price: number; change: number } | null>(null);
 
+  const latestTimeRef = useRef<number>(0);
+
   const datafeed: IBasicDataFeed = useMemo(
     () => {
       const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      console.log(localTz);
+
       return {
         onReady: (callback) => {
           setTimeout(() => callback(configurationData));
@@ -72,6 +74,7 @@ export const ChartContainer = ({
           onErrorCallback
         ) => {
           const { from, to } = periodParams;
+
           try {
             const { data } = await axios
               .get<{
@@ -93,15 +96,21 @@ export const ChartContainer = ({
               .then((res) => res.data);
 
             const times = data.bars.map((d) => d.time);
+
             const min = Math.min(...times);
             const max = Math.max(...times);
             dataRangeRef.current = { min, max };
 
-            if (!latestPriceRef.current) {
+            if (
+              times.length &&
+              times[times.length - 1] > latestTimeRef.current
+            ) {
+              console.log(times[times.length - 1], latestTimeRef);
               latestPriceRef.current = {
                 price: data.price,
                 change: data.change,
               };
+              latestTimeRef.current = max;
             }
 
             onHistoryCallback(data.bars, {
@@ -123,6 +132,7 @@ export const ChartContainer = ({
 
   useEffect(() => {
     latestPriceRef.current = null;
+    latestTimeRef.current = 0;
   }, [symbol]);
 
   useEffect(() => {
@@ -192,6 +202,10 @@ export const ChartContainer = ({
           to: range.max,
         });
       }
+
+      chart.onIntervalChanged().subscribe(null, () => {
+        latestTimeRef.current = 0;
+      });
 
       setTimeout(() => {
         onReady(latestPrice);
