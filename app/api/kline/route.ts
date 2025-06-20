@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
     const query = gql`
       query GetKlineByToken($token: String!) {
-        k_line(where: { token: { _eq: $token } }) {
+        k_line_minutes(where: { token: { _eq: $token } }) {
           high
           low
           open
@@ -48,10 +48,10 @@ export async function GET(req: NextRequest) {
       }
     `;
 
-    const { k_line: raw } = (await client.request(query, {
+    const { k_line_minutes: raw } = (await client.request(query, {
       token: rune,
     })) as {
-      k_line: {
+      k_line_minutes: {
         high: string;
         low: string;
         open: string;
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
       }[];
     };
 
-    const items = raw.map((d) => ({
+    const items = (raw ?? []).map((d) => ({
       ...d,
       timestamp: Math.floor(Number(d.timestamp) / 1e9),
     }));
