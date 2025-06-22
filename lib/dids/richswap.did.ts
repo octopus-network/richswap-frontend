@@ -164,17 +164,18 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     Ok: IDL.Vec(BlockInfo),
     Err: IDL.Text,
   });
+  const Result_13 = IDL.Variant({ Ok: PoolInfo, Err: ExchangeError });
   const TxRecordInfo = IDL.Record({
     records: IDL.Vec(IDL.Text),
     txid: IDL.Text,
     confirmed: IDL.Bool,
   });
-  const Result_13 = IDL.Variant({
+  const Result_14 = IDL.Variant({
     Ok: IDL.Vec(TxRecordInfo),
     Err: IDL.Text,
   });
   const RollbackTxArgs = IDL.Record({ txid: IDL.Text });
-  const Result_14 = IDL.Variant({ Ok: IDL.Null, Err: ExchangeError });
+  const Result_15 = IDL.Variant({ Ok: IDL.Null, Err: ExchangeError });
   return IDL.Service({
     blocks_tx_records_count: IDL.Func([], [Result], ["query"]),
     create: IDL.Func([IDL.Text], [Result_1], []),
@@ -211,15 +212,17 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
       ["query"]
     ),
     query_blocks: IDL.Func([], [Result_12], ["query"]),
-    query_tx_records: IDL.Func([], [Result_13], ["query"]),
+    query_pool: IDL.Func([IDL.Text], [Result_13], ["query"]),
+    query_tx_records: IDL.Func([], [Result_14], ["query"]),
     recover: IDL.Func([], [], []),
     rollback_tx: IDL.Func([RollbackTxArgs], [Result_6], []),
     set_donation_amount: IDL.Func(
       [IDL.Text, IDL.Nat64, IDL.Nat],
-      [Result_14],
+      [Result_15],
       []
     ),
     set_fee_collector: IDL.Func([IDL.Text], [], []),
     set_orchestrator: IDL.Func([IDL.Principal], [], []),
+    sync_with_btc: IDL.Func([IDL.Text, IDL.Nat64], [Result_1], []),
   });
 };
