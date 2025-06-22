@@ -76,10 +76,10 @@ export function CreateForm({
     }
     try {
       setIsCreating(true);
-      const poolKey = await Exchange.createPool(coinB.id);
+      const poolAddress = await Exchange.createPool(coinB.id);
 
       setIsCreating(false);
-      onNextStep(poolKey);
+      onNextStep(poolAddress);
     } catch (error: any) {
       if (error?.message === "PoolAlreadyExists") {
         const pool = await Exchange.getPool(coinA, coinB);
@@ -87,7 +87,7 @@ export function CreateForm({
         if (pool) {
           if (BigInt(pool.coinA.balance) === BigInt(0)) {
             setIsCreating(false);
-            onNextStep(pool.key, BigInt(pool.nonce));
+            onNextStep(pool.address, BigInt(pool.nonce));
           } else if (onPoolExsists) {
             onPoolExsists(pool);
           }
