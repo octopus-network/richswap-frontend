@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PoolData, PoolInfo, UnspentOutput } from "@/types";
+import { PoolInfo, UnspentOutput } from "@/types";
 
 import { DepositForm } from "./deposit-form";
 import { DepositReview } from "@/components/deposit-review";
@@ -8,12 +8,10 @@ import { TabsContent } from "@/components/ui/tabs";
 
 export function DepositContent({
   pool,
-  poolData,
   onSuccess,
   setOnReview,
 }: {
   pool: PoolInfo | undefined;
-  poolData: PoolData | undefined;
   setOnReview: (onReview: boolean) => void;
   onSuccess: () => void;
 }) {
@@ -69,7 +67,7 @@ export function DepositContent({
             />
           </>
         ) : (
-          <DepositForm pool={pool} poolData={poolData} onReview={onReview} />
+          <DepositForm pool={pool} onReview={onReview} />
         )}
       </motion.div>
     </TabsContent>

@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     )) as PoolInfo[];
 
     const portfolios = await Promise.all(
-      pools.map((pool) => Exchange.getPosition(pool, address))
+      pools.map((pool) => Exchange.getPosition(pool.address, address))
     ).then((res) => res.filter((position) => !!position));
 
     return NextResponse.json({

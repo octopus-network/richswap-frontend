@@ -81,7 +81,7 @@ export function GlobalStateUpdater() {
     if (paymentAddress && poolList.length) {
       const limitGetPosition = limitFunction(
         async (pool: PoolInfo, address: string) =>
-          Exchange.getPosition(pool, address),
+          Exchange.getPosition(pool.address, address),
         { concurrency: 2 }
       );
       Promise.all(

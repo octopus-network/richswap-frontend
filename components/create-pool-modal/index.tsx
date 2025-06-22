@@ -88,7 +88,7 @@ export function CreatePoolModal({
       </BaseModal>
       {pool && (
         <ManageLiquidityModal
-          pool={pool}
+          poolAddress={pool.address}
           position={null}
           open={showDepositModal}
           setOpen={(open) => {

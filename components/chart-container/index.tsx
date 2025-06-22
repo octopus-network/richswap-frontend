@@ -12,7 +12,7 @@ import { useMemo } from "react";
 import axios from "axios";
 
 const configurationData: DatafeedConfiguration = {
-  supported_resolutions: ["1H", "4H", "1D", "1W"] as ResolutionString[],
+  supported_resolutions: ["15", "1H", "4H", "1D", "1W"] as ResolutionString[],
   symbols_types: [
     {
       name: "crypto",
@@ -34,88 +34,105 @@ export const ChartContainer = ({
   const dataRangeRef = useRef<{ min: number; max: number } | null>(null);
   const latestPriceRef = useRef<{ price: number; change: number } | null>(null);
 
+  const latestTimeRef = useRef<number>(0);
+
   const datafeed: IBasicDataFeed = useMemo(
-    () => ({
-      onReady: (callback) => {
-        setTimeout(() => callback(configurationData));
-      },
-      searchSymbols: () => {},
-      resolveSymbol: async (symbolName, onSymbolResolvedCallback) => {
-        const symbol = `${symbolName}`;
-        const symbolInfo: LibrarySymbolInfo = {
-          ticker: symbol,
-          name: symbol,
-          description: symbol,
-          pricescale: 1000000,
-          minmov: 1,
-          exchange: "RichSwap",
-          listed_exchange: "",
-          session: "24x7",
-          has_intraday: true,
-          has_daily: true,
-          has_weekly_and_monthly: false,
-          timezone: "Etc/UTC",
-          type: "crypto",
-          supported_resolutions: configurationData.supported_resolutions,
-          format: "price",
-        };
-        onSymbolResolvedCallback(symbolInfo);
-      },
-      getBars: async (
-        symbolInfo,
-        resolution,
-        periodParams,
-        onHistoryCallback,
-        onErrorCallback
-      ) => {
-        const { from, to } = periodParams;
-        try {
-          const { data } = await axios
-            .get<{
-              data: {
-                bars: {
-                  open: number;
-                  high: number;
-                  low: number;
-                  close: number;
-                  volume: number;
-                  time: number;
-                }[];
-                price: number;
-                change: number;
+    () => {
+      const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      return {
+        onReady: (callback) => {
+          setTimeout(() => callback(configurationData));
+        },
+        searchSymbols: () => {},
+        resolveSymbol: async (symbolName, onSymbolResolvedCallback) => {
+          const symbol = `${symbolName}`;
+          const symbolInfo: LibrarySymbolInfo = {
+            ticker: symbol,
+            name: symbol,
+            description: symbol,
+            pricescale: 1000000,
+            minmov: 1,
+            exchange: "RichSwap",
+            listed_exchange: "",
+            session: "24x7",
+            has_intraday: true,
+            has_daily: true,
+            has_weekly_and_monthly: false,
+            timezone: localTz as any,
+            type: "crypto",
+            supported_resolutions: configurationData.supported_resolutions,
+            format: "price",
+          };
+          onSymbolResolvedCallback(symbolInfo);
+        },
+        getBars: async (
+          symbolInfo,
+          resolution,
+          periodParams,
+          onHistoryCallback,
+          onErrorCallback
+        ) => {
+          const { from, to } = periodParams;
+
+          try {
+            const { data } = await axios
+              .get<{
+                data: {
+                  bars: {
+                    open: number;
+                    high: number;
+                    low: number;
+                    close: number;
+                    volume: number;
+                    time: number;
+                  }[];
+                  price: number;
+                  change: number;
+                };
+              }>(
+                `/api/kline?rune=${symbolInfo.name}&resolution=${resolution}&from=${from}&to=${to}`
+              )
+              .then((res) => res.data);
+
+            const times = data.bars.map((d) => d.time);
+
+            const min = Math.min(...times);
+            const max = Math.max(...times);
+            dataRangeRef.current = { min, max };
+
+            if (
+              times.length &&
+              times[times.length - 1] > latestTimeRef.current
+            ) {
+              console.log(times[times.length - 1], latestTimeRef);
+              latestPriceRef.current = {
+                price: data.price,
+                change: data.change,
               };
-            }>(
-              `/api/kline?rune=${symbolInfo.name}&resolution=${resolution}&from=${from}&to=${to}`
-            )
-            .then((res) => res.data);
+              latestTimeRef.current = max;
+            }
 
-          const times = data.bars.map((d) => d.time);
-          const min = Math.min(...times);
-          const max = Math.max(...times);
-          dataRangeRef.current = { min, max };
-
-          if (!latestPriceRef.current) {
-            latestPriceRef.current = { price: data.price, change: data.change };
+            onHistoryCallback(data.bars, {
+              noData: data.bars.length === 0,
+            });
+          } catch (e) {
+            if (e instanceof Error) {
+              console.warn("[getBars]: Get error", e);
+              onErrorCallback(e.message);
+            }
           }
-
-          onHistoryCallback(data.bars, {
-            noData: data.bars.length === 0,
-          });
-        } catch (e) {
-          if (e instanceof Error) {
-            console.warn("[getBars]: Get error", e);
-            onErrorCallback(e.message);
-          }
-        }
-      },
-      subscribeBars: async () => {},
-      unsubscribeBars: async () => {},
-    }),
+        },
+        subscribeBars: async () => {},
+        unsubscribeBars: async () => {},
+      };
+    },
     [symbol] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   useEffect(() => {
     latestPriceRef.current = null;
+    latestTimeRef.current = 0;
   }, [symbol]);
 
   useEffect(() => {
@@ -185,6 +202,10 @@ export const ChartContainer = ({
           to: range.max,
         });
       }
+
+      chart.onIntervalChanged().subscribe(null, () => {
+        latestTimeRef.current = 0;
+      });
 
       setTimeout(() => {
         onReady(latestPrice);

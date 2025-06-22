@@ -258,6 +258,7 @@ export function CoinField({
       <SelectCoinModal
         open={selectCoinModalOpen}
         setOpen={setSelectCoinModalOpen}
+        toBuy={disabled}
         onSelectCoin={onSelectCoin}
       />
     </>
