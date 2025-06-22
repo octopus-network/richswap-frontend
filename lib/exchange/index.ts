@@ -8,7 +8,6 @@ import {
   UnspentOutput,
   PoolInfo,
   AddressType,
-  PoolData,
   SwapRoute,
 } from "@/types";
 
@@ -20,26 +19,7 @@ import {
 } from "../utils";
 import Decimal from "decimal.js";
 
-import axios from "axios";
-
 export class Exchange {
-  public static async getPool(inputCoin: Coin, outputCoin: Coin) {
-    if (inputCoin.id !== BITCOIN.id && outputCoin.id !== BITCOIN.id) {
-      return undefined;
-    }
-    const poolList = await axios
-      .get<{
-        data: PoolInfo[];
-      }>("/api/pools")
-      .then((res) => res.data.data);
-
-    const runeId = inputCoin.id === BITCOIN.id ? outputCoin.id : inputCoin.id;
-
-    const pool = poolList.find((p) => p.coinB.id === runeId);
-
-    return pool;
-  }
-
   public static async createPool(coinId: string) {
     const poolAddress = await actor.create(coinId).then((data: any) => {
       if (data.Ok) {
@@ -51,9 +31,73 @@ export class Exchange {
     return poolAddress;
   }
 
-  public static async getPoolData(
+  public static async getPool(
+    inputCoin: Coin,
+    outputCoin: Coin
+  ): Promise<PoolInfo | undefined> {
+    if (inputCoin.id !== BITCOIN.id && outputCoin.id !== BITCOIN.id) {
+      return undefined;
+    }
+    const runeId = inputCoin.id === BITCOIN.id ? outputCoin.id : inputCoin.id;
+
+    const res = (await actor.query_pool(runeId)) as {
+      Ok: {
+        address: string;
+        attributes: string;
+        btc_reserved: bigint;
+        coin_reserved: [{ id: string; value: bigint }];
+        key: string;
+        name: string;
+        nonce: bigint;
+        utxos: [
+          {
+            sats: bigint;
+            txid: string;
+            vout: number;
+            coins: [{ id: string; value: bigint }];
+          }
+        ];
+      };
+    };
+
+    if (!res?.Ok) {
+      return undefined;
+    }
+
+    const data = res.Ok;
+
+    const attributes = JSON.parse(data.attributes);
+
+    const coinReserved = data.coin_reserved[0];
+
+    const utxo = data.utxos[0];
+
+    const btc_reserved = data.btc_reserved;
+
+    const coinB = await fetchCoinById(coinReserved.id);
+
+    return {
+      key: data.key,
+      address: data.address,
+      name: data.name,
+      coinA: {
+        ...BITCOIN,
+        balance: btc_reserved.toString(),
+      },
+      coinB: {
+        ...coinB,
+        balance: utxo?.coins[0]?.value.toString() ?? "0",
+      },
+      lpFee: attributes.lp_revenue ? attributes.lp_revenue.toString() : "0",
+      nonce: Number(data.nonce),
+      coinADonation: attributes.total_btc_donation.toString(),
+      coinBDonation: attributes.total_rune_donation.toString(),
+    };
+  }
+
+  public static async getPoolInfo(
     address: string
-  ): Promise<PoolData | undefined> {
+  ): Promise<PoolInfo | undefined> {
     const res = (await actor.get_pool_info({
       pool_address: address,
     })) as [
@@ -87,25 +131,32 @@ export class Exchange {
 
       const btc_reserved = data.btc_reserved;
 
+      const coinB = await fetchCoinById(coinReserved.id);
+
       return {
         key: data.key,
         address,
         name: data.name,
-        coinAId: BITCOIN.id,
-        coinBId: coinReserved?.id,
-        coinAAmount: btc_reserved.toString(),
-        coinBAmount: utxo?.coins[0]?.value.toString() ?? "0",
-        incomes: attributes.protocol_revenue.toString(),
+        coinA: {
+          ...BITCOIN,
+          balance: btc_reserved.toString(),
+        },
+        coinB: {
+          ...coinB,
+          balance: utxo?.coins[0]?.value.toString() ?? "0",
+        },
+        lpFee: attributes.lp_revenue ? attributes.lp_revenue.toString() : "0",
+        nonce: Number(data.nonce),
         coinADonation: attributes.total_btc_donation.toString(),
         coinBDonation: attributes.total_rune_donation.toString(),
       };
     }
   }
 
-  public static async getPosition(pool: PoolInfo, userAddress: string) {
+  public static async getPosition(poolAddress: string, userAddress: string) {
     try {
-      const [res, poolData] = await Promise.all([
-        actor.get_lp(pool.address, userAddress).then((data: any) => {
+      const [res, pool] = await Promise.all([
+        actor.get_lp(poolAddress, userAddress).then((data: any) => {
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -114,10 +165,10 @@ export class Exchange {
             );
           }
         }),
-        Exchange.getPoolData(pool.address),
+        Exchange.getPoolInfo(poolAddress),
       ]);
 
-      if (!poolData) {
+      if (!pool) {
         return null;
       }
 
@@ -135,14 +186,14 @@ export class Exchange {
 
       const coinAAmount = formatCoinAmount(
         userSharePercentageDecimal
-          .mul(poolData.coinAAmount)
+          .mul(pool.coinA.balance)
           .div(total_share.toString())
           .toFixed(0),
         pool.coinA
       );
       const coinBAmount = formatCoinAmount(
         userSharePercentageDecimal
-          .mul(poolData.coinBAmount)
+          .mul(pool.coinB.balance)
           .div(total_share.toString())
           .toFixed(0),
         pool.coinB
@@ -451,7 +502,6 @@ export class Exchange {
         }
       });
 
-    console.log("preswqp input", input);
     const { txid, vout, sats, coins } = input;
 
     const rune = coins[0];
@@ -474,12 +524,6 @@ export class Exchange {
       ],
     };
 
-    const poolData = await Exchange.getPoolData(pool.address);
-
-    if (!poolData) {
-      throw new Error("Invalid pool");
-    }
-
     const inputCoinIsBitcoin = inputCoin.id === BITCOIN.id;
 
     const swapPrice = new Decimal(inputAmount)
@@ -487,9 +531,9 @@ export class Exchange {
       .toNumber();
 
     const marketPrice = new Decimal(
-      inputCoinIsBitcoin ? poolData.coinAAmount : poolData.coinBAmount
+      inputCoinIsBitcoin ? pool.coinA.balance : pool.coinB.balance
     )
-      .div(inputCoinIsBitcoin ? poolData.coinBAmount : poolData.coinAAmount)
+      .div(inputCoinIsBitcoin ? pool.coinB.balance : pool.coinA.balance)
       .toNumber();
 
     const priceImpact = new Decimal((swapPrice - marketPrice) * 100)
@@ -512,7 +556,7 @@ export class Exchange {
       .toNumber();
 
     const route = {
-      pool: poolData,
+      pool,
       inputAmount,
       outputAmount: output.value.toString(),
       poolUtxos: [utxo],

@@ -3,19 +3,20 @@
 import Link from "next/link";
 import { CoinIcon } from "@/components/coin-icon";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePoolList } from "@/hooks/use-pools";
+
 import { useParams } from "next/navigation";
-import { Position, PoolData } from "@/types";
+import { Position, PoolInfo } from "@/types";
 import { useMemo, useEffect, useState } from "react";
 import { Exchange } from "@/lib/exchange";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowLeftRight } from "lucide-react";
-import { useLaserEyes, } from "@omnisat/lasereyes-react";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { ExternalLink } from "lucide-react";
 import { usePoolTvl, usePoolFee } from "@/hooks/use-pools";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
 import { ellipseMiddle, formatNumber } from "@/lib/utils";
+
 import Circle from "react-circle";
 
 import { useTranslations } from "next-intl";
@@ -23,12 +24,12 @@ import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 import { ManageLiquidityPanel } from "./manage-liquidity-panel";
 
 export default function Pool() {
-  const poolList = usePoolList();
   const t = useTranslations("Pools");
   const { address } = useParams();
 
   const { paymentAddress } = useLaserEyes();
-  const [poolData, setPoolData] = useState<PoolData>();
+
+  const [poolInfo, setPoolInfo] = useState<PoolInfo>();
   const [position, setPosition] = useState<Position | null>();
 
   const [lps, setLps] = useState<any[]>([]);
@@ -36,17 +37,12 @@ export default function Pool() {
   useEffect(() => {
     Promise.all([
       Exchange.getLps(address as string),
-      Exchange.getPoolData(address as string),
-    ]).then(([lps, poolData]) => {
+      Exchange.getPoolInfo(address as string),
+    ]).then(([lps, poolInfo]) => {
       setLps(lps);
-      setPoolData(poolData);
+      setPoolInfo(poolInfo);
     });
   }, [address]);
-
-  const poolInfo = useMemo(
-    () => poolList.find((pool) => pool.address === address),
-    [address, poolList]
-  );
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
@@ -85,7 +81,7 @@ export default function Pool() {
       setPosition(undefined);
       return;
     }
-    Exchange.getPosition(poolInfo, paymentAddress).then(setPosition);
+    Exchange.getPosition(poolInfo.address, paymentAddress).then(setPosition);
   }, [poolInfo, paymentAddress]);
 
   return (
@@ -112,8 +108,8 @@ export default function Pool() {
           {poolInfo && (
             <Link
               href={`/swap?coinA=${getCoinSymbol(
-                poolInfo.coinA ?? null
-              )}&coinB=${getCoinSymbol(poolInfo.coinB ?? null)}`}
+                poolInfo.coinA
+              )}&coinB=${getCoinSymbol(poolInfo.coinB)}`}
               className="text-primary/80 hover:text-primary ml-3 inline-flex items-center"
             >
               <ArrowLeftRight className="mr-1 size-4" /> {t("swap")}
@@ -226,10 +222,10 @@ export default function Pool() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("donation")}</span>
                   <div className="flex flex-col items-end gap-0.5">
-                    {poolInfo && poolData ? (
+                    {poolInfo ? (
                       <span>
                         {formatCoinAmount(
-                          poolData.coinADonation ?? "0",
+                          poolInfo.coinADonation ?? "0",
                           poolInfo.coinA
                         )}{" "}
                         {getCoinSymbol(poolInfo?.coinA)}
@@ -237,10 +233,10 @@ export default function Pool() {
                     ) : (
                       <Skeleton className="h-5 w-16" />
                     )}
-                    {poolInfo && poolData ? (
+                    {poolInfo ? (
                       <span>
                         {formatCoinAmount(
-                          poolData.coinBDonation ?? "0",
+                          poolInfo.coinBDonation ?? "0",
                           poolInfo.coinB
                         )}{" "}
                         {getCoinSymbol(poolInfo?.coinB)}

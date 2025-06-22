@@ -1,10 +1,4 @@
-import {
-  PoolInfo,
-  PoolData,
-  Field,
-  DepositState,
-  UnspentOutput,
-} from "@/types";
+import { PoolInfo, Field, DepositState, UnspentOutput } from "@/types";
 import { CoinField } from "@/components/coin-field";
 import { Plus } from "lucide-react";
 
@@ -32,11 +26,9 @@ import {
 
 export function DepositForm({
   pool,
-  poolData,
   onReview,
 }: {
   pool: PoolInfo | undefined;
-  poolData: PoolData | undefined;
   onReview: (
     coinAAmount: string,
     coinBAmount: string,
@@ -159,13 +151,13 @@ export function DepositForm({
 
   const runePriceInSats = useMemo(
     () =>
-      poolData && pool
+      pool
         ? getRunePriceInSats(
-            formatCoinAmount(poolData.coinAAmount, pool.coinA),
-            formatCoinAmount(poolData.coinBAmount, pool.coinB)
+            formatCoinAmount(pool.coinA.balance, pool.coinA),
+            formatCoinAmount(pool.coinB.balance, pool.coinB)
           )
         : undefined,
-    [poolData, pool]
+    [pool]
   );
 
   const btcPrice = useCoinPrice(pool?.coinA.id);
@@ -258,13 +250,13 @@ export function DepositForm({
           <div className="flex flex-col items-end text-muted-foreground">
             <span>
               {pool
-                ? formatCoinAmount(poolData?.coinAAmount ?? "0", pool.coinA)
+                ? formatCoinAmount(pool?.coinA.balance ?? "0", pool.coinA)
                 : "-"}{" "}
               {getCoinSymbol(pool?.coinA)}
             </span>
             <span>
               {pool
-                ? formatCoinAmount(poolData?.coinBAmount ?? "0", pool.coinB)
+                ? formatCoinAmount(pool?.coinB.balance ?? "0", pool.coinB)
                 : "-"}{" "}
               {getCoinSymbol(pool?.coinB)}
             </span>

@@ -12,7 +12,7 @@ import { useCoinPrice } from "@/hooks/use-prices";
 import { Exchange } from "@/lib/exchange";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { getCoinSymbol } from "@/lib/utils";
-import { usePoolList } from "@/hooks/use-pools";
+
 import { useTranslations } from "next-intl";
 
 export function CreateForm({
@@ -42,8 +42,6 @@ export function CreateForm({
   const coinBBalance = useCoinBalance(coinB);
 
   const t = useTranslations("Pools");
-
-  const poolList = usePoolList();
 
   const addPopup = useAddPopup();
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
@@ -90,11 +88,8 @@ export function CreateForm({
           if (BigInt(pool.coinA.balance) === BigInt(0)) {
             setIsCreating(false);
             onNextStep(pool.key, BigInt(pool.nonce));
-          } else {
-            const poolInfo = poolList.find((pool) => pool.key === pool.key);
-            if (poolInfo && onPoolExsists) {
-              onPoolExsists(poolInfo);
-            }
+          } else if (onPoolExsists) {
+            onPoolExsists(pool);
           }
 
           return;

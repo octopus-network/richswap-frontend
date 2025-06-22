@@ -11,7 +11,7 @@ export enum SwapState {
 }
 
 export type SwapRoute = {
-  pool: PoolData;
+  pool: PoolInfo;
   nonce: string;
   poolUtxos: UnspentOutput[];
   inputAmount: string;
@@ -59,19 +59,6 @@ export type DonateQuote = {
   utxos?: UnspentOutput[];
 };
 
-export type PoolData = {
-  key: string;
-  address: string;
-  name: string;
-  coinAId: string;
-  coinBId: string;
-  coinAAmount: string;
-  coinBAmount: string;
-  coinADonation: string;
-  coinBDonation: string;
-  incomes: string;
-};
-
 export type PoolInfo = {
   key: string;
   address: string;
@@ -79,6 +66,8 @@ export type PoolInfo = {
   nonce: number;
   coinA: CoinWithBalance;
   coinB: CoinWithBalance;
+  coinADonation: string;
+  coinBDonation: string;
   lpFee: string;
 };
 
