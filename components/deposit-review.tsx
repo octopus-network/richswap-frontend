@@ -245,14 +245,12 @@ export function DepositReview({
       let signedPsbtHex = "";
 
       if (provider === OKX) {
-        console.log("is okx wallet", toSignInputs);
         const psbtHex = psbt.toHex();
 
         signedPsbtHex = await window.okxwallet.bitcoin.signPsbt(psbtHex, {
           toSignInputs,
           autoFinalized: false,
         });
-        console.log(signedPsbtHex);
       } else {
         const psbtBase64 = psbt.toBase64();
         const res = await signPsbt(psbtBase64);
