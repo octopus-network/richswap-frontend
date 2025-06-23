@@ -1,7 +1,7 @@
 import { BaseModal } from "../base-modal";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Coin, PoolInfo } from "@/types";
+import { Coin, PoolInfo, UnspentOutput } from "@/types";
 import { BITCOIN } from "@/lib/constants";
 import { CreateForm } from "./create-form";
 import { DepositReview } from "../deposit-review";
@@ -22,6 +22,7 @@ export function CreatePoolModal({
   const [pool, setPool] = useState<PoolInfo>();
   const [showReview, setShowReview] = useState(false);
   const [nonce, setNonce] = useState(BigInt(0));
+  const [poolUtxos, setPoolUtxos] = useState<UnspentOutput[]>([]);
   const [showDepositModal, setShowDepositModal] = useState(false);
 
   useEffect(() => {
@@ -31,10 +32,15 @@ export function CreatePoolModal({
     }
   }, [open]);
 
-  const onNextStep = (address: string, nonce = BigInt(0)) => {
+  const onNextStep = (
+    address: string,
+    nonce = BigInt(0),
+    utxos: UnspentOutput[] = []
+  ) => {
     setPoolAddress(address);
     setShowReview(true);
     setNonce(nonce);
+    setPoolUtxos(utxos);
   };
 
   const onPoolExists = (pool: PoolInfo) => {
@@ -63,7 +69,7 @@ export function CreatePoolModal({
                 coinA={coinA}
                 coinB={coinB}
                 poolAddress={poolAddress}
-                poolUtxos={[]}
+                poolUtxos={poolUtxos}
                 coinAAmount={coinAAmount}
                 coinBAmount={coinBAmount}
                 onBack={onBack}
