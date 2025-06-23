@@ -1,4 +1,4 @@
-import { Coin, PoolInfo } from "@/types";
+import { Coin, PoolInfo, UnspentOutput } from "@/types";
 import { CoinField } from "../coin-field";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "../ui/button";
@@ -33,7 +33,11 @@ export function CreateForm({
   coinBAmount: string;
   setCoinAAmount: (value: string) => void;
   setCoinBAmount: (value: string) => void;
-  onNextStep: (key: string, nonce?: bigint) => void;
+  onNextStep: (
+    address: string,
+    nonce?: bigint,
+    utxos?: UnspentOutput[]
+  ) => void;
   onPoolExsists?: (pool: PoolInfo) => void;
 }) {
   const { address } = useLaserEyes();
@@ -87,7 +91,7 @@ export function CreateForm({
         if (pool) {
           if (BigInt(pool.coinA.balance) === BigInt(0)) {
             setIsCreating(false);
-            onNextStep(pool.address, BigInt(pool.nonce));
+            onNextStep(pool.address, BigInt(pool.nonce), pool.utxos);
           } else if (onPoolExsists) {
             onPoolExsists(pool);
           }

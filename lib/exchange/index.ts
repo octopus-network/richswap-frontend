@@ -76,6 +76,8 @@ export class Exchange {
 
     const coinB = await fetchCoinById(coinReserved.id);
 
+    const { output } = getP2trAressAndScript(data.key);
+
     return {
       key: data.key,
       address: data.address,
@@ -92,6 +94,23 @@ export class Exchange {
       nonce: Number(data.nonce),
       coinADonation: attributes.total_btc_donation.toString(),
       coinBDonation: attributes.total_rune_donation.toString(),
+      utxos: [
+        {
+          txid: utxo.txid,
+          vout: utxo.vout,
+          satoshis: utxo.sats.toString(),
+          address: data.address,
+          scriptPk: output,
+          pubkey: "",
+          addressType: AddressType.P2TR,
+          runes: [
+            {
+              id: utxo.coins[0].id,
+              amount: utxo.coins[0].value.toString(),
+            },
+          ],
+        },
+      ],
     };
   }
 
