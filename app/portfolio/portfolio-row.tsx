@@ -88,7 +88,7 @@ export function PortfolioRow({ position }: { position: Position }) {
               e.stopPropagation();
               e.preventDefault();
               window.open(
-                `${RUNESCAN_URL}/runes/${position.pool.coinB.number}`,
+                `${RUNESCAN_URL}/runes/${position.pool.coinB.name}`,
                 "_blank"
               );
             }}

@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
 
-import { OpenApi } from "@/lib/open-api";
 import { UNKNOWN_COIN, BITCOIN, EXCHANGE_ID } from "@/lib/constants";
 import { PoolInfo } from "@/types";
 import { put } from "@vercel/blob";
-import { limitFunction } from "p-limit";
 
 import { gql, GraphQLClient } from "graphql-request";
 
 export const dynamic = "force-dynamic";
 
-const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
-const UNISAT_API = process.env.UNISAT_API!;
-
 const REE_INDEXER_URL = process.env.NEXT_PUBLIC_REE_INDEXER_URL!;
-// const RUNES_INDEXER_URL = process.env.NEXT_PUBLIC_RUNES_INDEXER_URL!;
+const RUNES_INDEXER_URL = process.env.NEXT_PUBLIC_RUNES_INDEXER_URL!;
 
 const query = gql`
   {
@@ -48,17 +43,17 @@ const query = gql`
   }
 `;
 
-// const runesQuery = gql`
-//   query GetRunes($ids: [String!]) {
-//     runes(where: { rune_id: { _in: $ids }, reorg: { _eq: false } }) {
-//       rune_id
-//       symbol
-//       spaced_rune
-//       divisibility
-//       etching
-//     }
-//   }
-// `;
+const runesQuery = gql`
+  query GetRunes($ids: [String!]) {
+    runes(where: { rune_id: { _in: $ids }, reorg: { _eq: false } }) {
+      rune_id
+      symbol
+      spaced_rune
+      divisibility
+      etching
+    }
+  }
+`;
 
 export async function GET() {
   try {
@@ -70,13 +65,13 @@ export async function GET() {
         }),
     });
 
-    // const runesClient = new GraphQLClient(RUNES_INDEXER_URL, {
-    //   fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
-    //     fetch(url as string, {
-    //       ...options,
-    //       cache: "no-store",
-    //     }),
-    // });
+    const runesClient = new GraphQLClient(RUNES_INDEXER_URL, {
+      fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
+        fetch(url as string, {
+          ...options,
+          cache: "no-store",
+        }),
+    });
 
     const { exchange_view } = (await client.request(query)) as {
       exchange_view: {
@@ -97,8 +92,6 @@ export async function GET() {
       (ex) => ex.exchange_id === EXCHANGE_ID
     );
 
-    console.log("exchange data", exchangeData);
-
     const res =
       exchangeData?.pool_infos.sort(
         (a, b) => b.btc_reserved - a.btc_reserved
@@ -106,40 +99,21 @@ export async function GET() {
 
     const pools: PoolInfo[] = [];
 
-    const openApi = new OpenApi({
-      baseUrl: UNISAT_API,
-      apiKey: UNISAT_API_KEY,
-    });
+    const coinIds = res
+      .filter(({ coin_reserveds }) => !!coin_reserveds.length)
+      .map(({ coin_reserveds }) => coin_reserveds[0].id);
 
-    const limitGetRunesInfoList = limitFunction(
-      async (coinId: string) => openApi.getRunesInfoList(coinId),
-      { concurrency: 1 }
-    );
-
-    // const coinIds = res
-    //   .filter(({ coin_reserveds }) => !!coin_reserveds.length)
-    //   .map(({ coin_reserveds }) => coin_reserveds[0].id);
-
-    // const coinRes = await runesClient.request(runesQuery, {
-    //   ids: coinIds,
-    // });
-
-    // console.log(
-    //   RUNES_INDEXER_URL,
-    //   coinIds,
-    //   coinRes,
-    //   JSON.stringify({
-    //     ids: coinIds,
-    //   })
-    // );
-
-    const coinRes = await Promise.all(
-      res.map(({ coin_reserveds }) =>
-        coin_reserveds.length
-          ? limitGetRunesInfoList(coin_reserveds[0].id)
-          : { detail: [] }
-      )
-    );
+    const { runes: coinRes } = (await runesClient.request(runesQuery, {
+      ids: coinIds,
+    })) as {
+      runes: {
+        rune_id: string;
+        symbol: string;
+        spaced_rune: string;
+        divisibility: number;
+        etching: string;
+      }[];
+    };
 
     for (let i = 0; i < res.length; i++) {
       const {
@@ -152,31 +126,25 @@ export async function GET() {
         nonce,
       } = res[i];
 
+      const coinId = coinIds[i];
+
       const coinA = BITCOIN;
-      const { detail: coinBRes } = coinRes[i];
+      const coinBRes = coinRes.find((rune) => rune.rune_id === coinId);
 
       const attributesJson = attributes ? JSON.parse(attributes) : {};
 
       let coinB = UNKNOWN_COIN;
-      if (coinBRes.length) {
-        const {
-          spacedRune,
-          rune,
-          symbol,
-          divisibility,
-          etching,
-          runeid,
-          number,
-        } = coinBRes[0];
+      if (coinBRes) {
+        const { spaced_rune, symbol, divisibility, etching, rune_id } =
+          coinBRes;
 
         coinB = {
-          id: runeid,
-          name: spacedRune,
-          runeId: rune,
+          id: rune_id,
+          name: spaced_rune,
+          runeId: spaced_rune.replaceAll("•", ""),
           runeSymbol: symbol,
           decimals: divisibility,
           etching,
-          number,
         };
       }
 
@@ -194,7 +162,7 @@ export async function GET() {
           balance: coin_reserveds[0]?.value.toString() ?? "0",
         },
         coinADonation: attributesJson.total_btc_donation.toString(),
-        coinBDonation: attributesJson.total_rune_donation.toString()
+        coinBDonation: attributesJson.total_rune_donation.toString(),
       });
     }
 
