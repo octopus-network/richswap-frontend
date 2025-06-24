@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { OpenApi } from "@/lib/open-api";
+import { gql, GraphQLClient } from "graphql-request";
 
-const UNISAT_API = process.env.UNISAT_API!;
-const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
+export const dynamic = "force-dynamic";
+
+const RUNES_INDEXER_URL = process.env.NEXT_PUBLIC_RUNES_INDEXER_URL!;
+
+const runesQuery = gql`
+  query GetRunes($regex: String!) {
+    runes(where: { spaced_rune: { _iregex: $regex } }, limit: 50) {
+      rune_id
+      spaced_rune
+      symbol
+      id
+      number
+      etching
+      divisibility
+    }
+  }
+`;
 
 export async function GET(req: NextRequest) {
   const keyword = req.nextUrl.searchParams.get("keyword");
@@ -12,33 +27,47 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const openApi = new OpenApi({
-      baseUrl: UNISAT_API,
-      apiKey: UNISAT_API_KEY,
+    const runesClient = new GraphQLClient(RUNES_INDEXER_URL, {
+      fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
+        fetch(url as string, {
+          ...options,
+          cache: "no-store",
+        }),
     });
 
-    const { detail } = await openApi.getRunesInfoList(keyword);
+    const pattern = keyword
+      .split("")
+      .filter((t) => {
+        if (t === "•" || t === " ") {
+          return false;
+        }
+        return true;
+      })
+      .join("•?");
+
+    const { runes } = (await runesClient.request(runesQuery, {
+      regex: `(?i)${pattern}`,
+    })) as {
+      runes: {
+        rune_id: string;
+        symbol: string;
+        spaced_rune: string;
+        divisibility: number;
+        etching: string;
+      }[];
+    };
 
     return NextResponse.json({
       success: true,
-      data: detail?.length
-        ? detail.map(
-            ({
-              runeid,
-              spacedRune,
-              rune,
-              symbol,
-              divisibility,
-              etching,
-              number,
-            }) => ({
-              id: runeid,
-              name: spacedRune,
-              runeId: rune,
+      data: runes?.length
+        ? runes.map(
+            ({ rune_id, spaced_rune, symbol, divisibility, etching }) => ({
+              id: rune_id,
+              name: spaced_rune,
+              runeId: spaced_rune.replaceAll("•", ""),
               runeSymbol: symbol,
               decimals: divisibility,
               etching,
-              number,
             })
           )
         : [],
