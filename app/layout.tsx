@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 
 import "./globals.css";
 
+import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "@/components/providers";
 import { Topbar } from "@/components/topbar";
 import { Footer } from "@/components/footer";
@@ -43,6 +44,7 @@ export default async function RootLayout({
             <GlobalStateUpdater />
           </Providers>
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );
