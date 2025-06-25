@@ -7,8 +7,16 @@ export const dynamic = "force-dynamic";
 const RUNES_INDEXER_URL = process.env.NEXT_PUBLIC_RUNES_INDEXER_URL!;
 
 const runesQuery = gql`
-  query GetRunes($regex: String!) {
-    runes(where: { spaced_rune: { _iregex: $regex } }, limit: 50) {
+  query GetRunes($keyword: String!, $regex: String!) {
+    runes(
+      where: {
+        _or: [
+          { spaced_rune: { _iregex: $regex } }
+          { rune_id: { _eq: $keyword } }
+        ] 
+      }, 
+      limit: 50
+    ) {
       rune_id
       spaced_rune
       symbol
@@ -46,6 +54,7 @@ export async function GET(req: NextRequest) {
       .join("•?");
 
     const { runes } = (await runesClient.request(runesQuery, {
+      keyword,
       regex: `(?i)${pattern}`,
     })) as {
       runes: {
