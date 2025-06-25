@@ -78,6 +78,8 @@ export class Exchange {
 
     const { output } = getP2trAressAndScript(data.key);
 
+    const rune = utxo.coins[0];
+
     return {
       key: data.key,
       address: data.address,
@@ -88,7 +90,7 @@ export class Exchange {
       },
       coinB: {
         ...coinB,
-        balance: utxo?.coins[0]?.value.toString() ?? "0",
+        balance: rune?.value.toString() ?? "0",
       },
       lpFee: attributes.lp_revenue ? attributes.lp_revenue.toString() : "0",
       nonce: Number(data.nonce),
@@ -103,12 +105,14 @@ export class Exchange {
           scriptPk: output,
           pubkey: "",
           addressType: AddressType.P2TR,
-          runes: [
-            {
-              id: utxo.coins[0].id,
-              amount: utxo.coins[0].value.toString(),
-            },
-          ],
+          runes: rune
+            ? [
+                {
+                  id: rune.id,
+                  amount: rune.value.toString(),
+                },
+              ]
+            : [],
         },
       ],
     };
