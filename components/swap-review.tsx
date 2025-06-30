@@ -277,7 +277,7 @@ export function SwapReview({
           setFee(tx.fee);
           setIntentions(tx.intentions);
         } catch (err: any) {
-          // setErrorMessage(err?.message || "Unknown Error");
+          setErrorMessage(err?.message || "Unknown Error");
           console.log(err);
         }
       }
