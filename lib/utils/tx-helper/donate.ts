@@ -44,7 +44,10 @@ export async function donateTx({
   poolUtxos.forEach((utxo) => {
     // pool has only one utxo now
     const rune = utxo.runes.find((rune) => rune.id === runeid);
-    poolRuneAmount += BigInt(rune!.amount);
+    if (rune) {
+      poolRuneAmount += BigInt(rune.amount);
+    }
+
     poolBtcAmount += BigInt(utxo.satoshis);
     tx.addInput(utxo);
   });
