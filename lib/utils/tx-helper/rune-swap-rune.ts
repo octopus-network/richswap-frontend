@@ -40,7 +40,7 @@ export async function runeSwapRuneTx({
   const pool1Address = route1.pool.address;
 
   const _psbt = new bitcoin.Psbt({
-    network: bitcoin.networks.testnet,
+    network: bitcoin.networks.bitcoin,
   });
 
   const runeAAmount = BigInt(route0.inputAmount);
@@ -322,8 +322,8 @@ export async function runeSwapRuneTx({
       {
         action: "swap",
         exchange_id: EXCHANGE_ID,
-        pool_utxo_spent: pool0Utxos.map((utxo) => `${utxo.txid}:${utxo.vout}`),
-        pool_utxo_received: pool0Vouts.map((vout) => `${txid}:${vout}`),
+        pool_utxo_spent: [],
+        pool_utxo_received: [],
         input_coins: [
           {
             from: address,

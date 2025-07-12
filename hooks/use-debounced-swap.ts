@@ -59,29 +59,23 @@ export function useDebouncedSwap(
             routes: [route],
           });
         } else {
+          const route1 = await Exchange.getSwapRoute(
+            inputCoin,
+            BITCOIN,
+            inputAmount
+          );
+
+          const route2 = await Exchange.getSwapRoute(
+            BITCOIN,
+            outputCoin,
+            route1.outputAmount
+          );
+
           setSwapQuote({
-            state: SwapState.INVALID,
-            errorMessage: "Not Supported",
+            state: SwapState.VALID,
+            routes: [route1, route2],
           });
         }
-        // } else {
-        //   const route1 = await Exchange.getSwapRoute(
-        //     inputCoin,
-        //     BITCOIN,
-        //     inputAmount
-        //   );
-
-        //   const route2 = await Exchange.getSwapRoute(
-        //     BITCOIN,
-        //     outputCoin,
-        //     route1.outputAmount
-        //   );
-
-        //   setSwapQuote({
-        //     state: SwapState.VALID,
-        //     routes: [route1, route2],
-        //   });
-        // }
       } catch (err: any) {
         console.log("swap error", err);
         setSwapQuote({
