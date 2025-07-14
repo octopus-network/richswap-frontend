@@ -1,6 +1,6 @@
 import { UnspentOutput, ToSignInput, SwapQuote, Coin, TxInput } from "@/types";
 
-import { BITCOIN, UTXO_DUST, EXCHANGE_ID } from "@/lib/constants";
+import { BITCOIN, UTXO_DUST, EXCHANGE_ID, NETWORK } from "@/lib/constants";
 
 import { RuneId, Runestone, none, Edict } from "runelib";
 import { getAddressType, addressTypeToString } from "@/lib/utils/address";
@@ -11,6 +11,7 @@ import * as bitcoin from "bitcoinjs-lib";
 
 import { utxoToInput } from "./common";
 import { selectBtcUtxos } from "./common";
+import { toPsbtNetwork } from "../network";
 
 export async function runeSwapRuneTx({
   runeA,
@@ -40,7 +41,7 @@ export async function runeSwapRuneTx({
   const pool1Address = route1.pool.address;
 
   const _psbt = new bitcoin.Psbt({
-    network: bitcoin.networks.bitcoin,
+    network: toPsbtNetwork(NETWORK),
   });
 
   const runeAAmount = BigInt(route0.inputAmount);
