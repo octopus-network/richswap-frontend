@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "../coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -13,7 +14,16 @@ export function Footer() {
   const feeRate = useRecommendedFeeRateFromOrchestrator(true);
 
   return (
-    <div className="hidden md:flex bg-background text-sm text-muted-foreground justify-end items-cetner fixed bottom-0 left-0 w-full border-t">
+    <div className="hidden items-center md:flex bg-background text-sm text-muted-foreground justify-between items-cetner fixed bottom-0 left-0 w-full border-t">
+      <div className="flex px-4">
+        <Image
+          src="/static/icons/powered-by-ree.png"
+          width={482}
+          height={110}
+          className="w-32"
+          alt="Powered by REE"
+        />
+      </div>
       <div className="flex items-center">
         <div className="px-4 py-2 border-r flex items-center gap-1">
           {btcPrice ? (
