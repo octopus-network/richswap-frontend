@@ -92,6 +92,9 @@ export function SelectCoinModal({
     );
 
     return filteredCoins.sort((a, b) => {
+      if (a.id === "0:0") {
+        return -1;
+      }
       if (b.id === "0:0") {
         return 1;
       }

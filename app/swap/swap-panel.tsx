@@ -133,7 +133,9 @@ export function SwapPanel({
 
   useEffect(() => {
     onRuneChange(
-      coinA && coinA.id !== BITCOIN.id
+      coinA && coinB && coinA.id !== BITCOIN.id && coinB.id !== BITCOIN.id
+        ? coinB
+        : coinA && coinA.id !== BITCOIN.id
         ? coinA
         : coinB && coinB.id !== BITCOIN.id
         ? coinB
