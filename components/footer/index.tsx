@@ -6,6 +6,8 @@ import { CoinIcon } from "../coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { Skeleton } from "../ui/skeleton";
 import { formatNumber } from "@/lib/utils";
+import Link from "next/link";
+import { RUNESCAN_URL } from "@/lib/constants";
 
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 
@@ -15,7 +17,7 @@ export function Footer() {
 
   return (
     <div className="hidden items-center md:flex bg-background text-sm text-muted-foreground justify-between items-cetner fixed bottom-0 left-0 w-full border-t">
-      <div className="flex px-4">
+      <Link href={RUNESCAN_URL} target="_blank">
         <Image
           src="/static/icons/powered-by-ree.png"
           width={482}
@@ -23,7 +25,7 @@ export function Footer() {
           className="w-32"
           alt="Powered by REE"
         />
-      </div>
+      </Link>
       <div className="flex items-center">
         <div className="px-4 py-2 border-r flex items-center gap-1">
           {btcPrice ? (
