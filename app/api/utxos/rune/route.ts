@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { addressToScriptPk, bytesToHex, getAddressType } from "@/lib/utils";
 
 import { Maestro } from "@/lib/maestro";
+import Decimal from "decimal.js";
 
 const MAESTRO_API_URL = process.env.MAESTRO_API_URL!;
 const MAESTRO_API_KEY = process.env.MAESTRO_API_KEY!;
@@ -22,6 +23,12 @@ export async function GET(req: NextRequest) {
 
     let cursor = null;
     const data = [];
+
+    const runeInfo = await maestro.runeInfo(runeid);
+
+    if (!runeInfo) {
+      throw new Error("Invalid rune info");
+    }
 
     do {
       const res = await maestro.runeUtxosByAddress(address, runeid, cursor);
@@ -44,7 +51,9 @@ export async function GET(req: NextRequest) {
       addressType,
       runes: utxo.runes.map((rune) => ({
         id: rune.rune_id,
-        amount: rune.amount.toString(),
+        amount: new Decimal(rune.amount)
+          .mul(Math.pow(10, runeInfo.data.divisibility))
+          .toString(),
       })),
     }));
 

@@ -73,6 +73,21 @@ export type RawRuneUtxo = {
   }[];
 };
 
+export type RawRuneInfo = {
+  divisibility: number;
+  etching_cenotaph: boolean;
+  etching_height: number;
+  etching_tx: string;
+  id: string;
+  max_supply: string;
+  mints: number;
+  name: string;
+  premine: string;
+  spaced_name: string;
+  symbol: string;
+  unique_holders: number;
+};
+
 export type RawInscription = {
   inscription_id: string;
   satoshis: string;

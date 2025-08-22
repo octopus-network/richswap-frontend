@@ -1,5 +1,10 @@
 import axios, { AxiosInstance } from "axios";
-import type { RawBtcUtxo, RawRuneUtxo, RawInscription } from "@/types/utxo";
+import type {
+  RawBtcUtxo,
+  RawRuneUtxo,
+  RawInscription,
+  RawRuneInfo,
+} from "@/types/utxo";
 
 export class Maestro {
   private axios: AxiosInstance;
@@ -93,6 +98,21 @@ export class Maestro {
           cursor ? `&cursor=${cursor}` : ""
         }`
       )
+      .then((res) => res.data);
+
+    return response;
+  }
+
+  async runeInfo(rune: string) {
+    const response = await this.axios
+      .get<{
+        next_cursor: string | null;
+        last_updated: {
+          block_hash: string;
+          block_height: bigint;
+        };
+        data: RawRuneInfo;
+      }>(`/assets/runes/${rune}`)
       .then((res) => res.data);
 
     return response;
