@@ -42,3 +42,43 @@ export interface TxOutput {
   script?: Uint8Array;
   value: bigint;
 }
+
+export type RawBtcUtxo = {
+  txid: string;
+  vout: number;
+  script_pubkey: string;
+  satoshis: string;
+  confirmations: bigint;
+  height: bigint;
+  runes: {
+    rune_id: string;
+    amount: string;
+  }[];
+  inscriptions: {
+    offset: bigint;
+    inscription_id: string;
+  }[];
+  address: string;
+};
+
+export type RawRuneUtxo = {
+  txid: string;
+  vout: number;
+  satoshis: string;
+  confirmations: bigint;
+  height: bigint;
+  runes: {
+    rune_id: string;
+    amount: string;
+  }[];
+};
+
+export type RawInscription = {
+  inscription_id: string;
+  satoshis: string;
+  utxo_sat_offset: bigint;
+  utxo_txid: string;
+  utxo_vout: number;
+  utxo_block_height: number;
+  utxo_confirmations: string;
+};
