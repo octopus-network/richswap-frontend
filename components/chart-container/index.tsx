@@ -19,21 +19,22 @@ const configurationData: DatafeedConfiguration = {
       value: "crypto",
     },
   ],
+  supports_marks: false,
+  supports_timescale_marks: false,
+  supports_time: true,
 };
 
 export const ChartContainer = ({
   symbol,
-  onReady,
+  onLoadingChange,
 }: {
   symbol: string;
-  onReady: (price: { price: number; change: number } | null) => void;
+  onLoadingChange?: (loading: boolean) => void;
 }) => {
   const chartContainerRef =
     useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>;
 
   const dataRangeRef = useRef<{ min: number; max: number } | null>(null);
-  const latestPriceRef = useRef<{ price: number; change: number } | null>(null);
-
   const latestTimeRef = useRef<number>(0);
 
   const datafeed: IBasicDataFeed = useMemo(
@@ -63,6 +64,9 @@ export const ChartContainer = ({
             type: "crypto",
             supported_resolutions: configurationData.supported_resolutions,
             format: "price",
+            volume_precision: 2,
+            intraday_multipliers: ["15"],
+            daily_multipliers: ["1"],
           };
           onSymbolResolvedCallback(symbolInfo);
         },
@@ -73,9 +77,18 @@ export const ChartContainer = ({
           onHistoryCallback,
           onErrorCallback
         ) => {
-          const { from, to } = periodParams;
+          const { from, to, firstDataRequest } = periodParams;
 
           try {
+            let apiUrl;
+            if (firstDataRequest) {
+              const now = Math.floor(Date.now() / 1000);
+              const sixMonthsAgo = now - 180 * 24 * 60 * 60;
+              apiUrl = `/api/kline?rune=${symbolInfo.name}&resolution=${resolution}&from=${sixMonthsAgo}&to=${now}`;
+            } else {
+              apiUrl = `/api/kline?rune=${symbolInfo.name}&resolution=${resolution}&from=${from}&to=${to}`;
+            }
+
             const { data } = await axios
               .get<{
                 data: {
@@ -90,32 +103,41 @@ export const ChartContainer = ({
                   price: number;
                   change: number;
                 };
-              }>(
-                `/api/kline?rune=${symbolInfo.name}&resolution=${resolution}&from=${from}&to=${to}`
-              )
+              }>(apiUrl)
               .then((res) => res.data);
 
-            const times = data.bars.map((d) => d.time);
+            if (data.bars.length > 0) {
+              const times = data.bars.map((d) => d.time);
+              const min = Math.min(...times);
+              const max = Math.max(...times);
 
-            const min = Math.min(...times);
-            const max = Math.max(...times);
-            dataRangeRef.current = { min, max };
+              if (dataRangeRef.current) {
+                dataRangeRef.current = {
+                  min: Math.min(dataRangeRef.current.min, min),
+                  max: Math.max(dataRangeRef.current.max, max),
+                };
+              } else {
+                dataRangeRef.current = { min, max };
+              }
 
-            if (
-              times.length &&
-              times[times.length - 1] > latestTimeRef.current
-            ) {
-              console.log(times[times.length - 1], latestTimeRef);
-              latestPriceRef.current = {
-                price: data.price,
-                change: data.change,
-              };
-              latestTimeRef.current = max;
+              if (times[times.length - 1] > latestTimeRef.current) {
+                latestTimeRef.current = max;
+              }
             }
 
-            onHistoryCallback(data.bars, {
+            const meta: any = {
               noData: data.bars.length === 0,
-            });
+            };
+
+            if (firstDataRequest && data.bars.length > 0) {
+              const earliestTime = Math.min(
+                ...data.bars.map((bar) => bar.time)
+              );
+
+              meta.nextTime = earliestTime;
+            }
+
+            onHistoryCallback(data.bars, meta);
           } catch (e) {
             if (e instanceof Error) {
               console.warn("[getBars]: Get error", e);
@@ -131,7 +153,6 @@ export const ChartContainer = ({
   );
 
   useEffect(() => {
-    latestPriceRef.current = null;
     latestTimeRef.current = 0;
   }, [symbol]);
 
@@ -141,12 +162,33 @@ export const ChartContainer = ({
     }
     const widgetOptions: ChartingLibraryWidgetOptions = {
       symbol,
-      // BEWARE: no trailing slash is expected in feed URL
       datafeed,
       interval: "1H" as ResolutionString,
       container: chartContainerRef.current,
       library_path: "/static/charting_library/",
       locale: "en",
+      time_frames: [
+        {
+          text: "1M",
+          resolution: "15" as ResolutionString,
+          description: "1 Month",
+        },
+        {
+          text: "3M",
+          resolution: "15" as ResolutionString,
+          description: "3 Months",
+        },
+        {
+          text: "6M",
+          resolution: "1H" as ResolutionString,
+          description: "6 Months",
+        },
+        {
+          text: "1Y",
+          resolution: "1D" as ResolutionString,
+          description: "1 Year",
+        },
+      ],
       disabled_features: [
         "use_localstorage_for_settings",
         "control_bar",
@@ -191,25 +233,32 @@ export const ChartContainer = ({
 
     const tvWidget = new widget(widgetOptions);
 
+    if (onLoadingChange) {
+      onLoadingChange(true);
+    }
+
     tvWidget.onChartReady(() => {
       const chart = tvWidget.activeChart();
-      const range = dataRangeRef.current;
-      const latestPrice = latestPriceRef.current;
-
-      if (range) {
-        chart.setVisibleRange({
-          from: range.min,
-          to: range.max,
-        });
-      }
 
       chart.onIntervalChanged().subscribe(null, () => {
         latestTimeRef.current = 0;
       });
 
+      chart.onDataLoaded().subscribe(null, () => {
+        if (onLoadingChange) {
+          onLoadingChange(false);
+        }
+      });
+
       setTimeout(() => {
-        onReady(latestPrice);
-      }, 500);
+        const now = Math.floor(Date.now() / 1000);
+        const threeMonthsAgo = now - 90 * 24 * 60 * 60;
+
+        chart.setVisibleRange({
+          from: threeMonthsAgo,
+          to: now,
+        });
+      }, 1000);
     });
 
     return () => {

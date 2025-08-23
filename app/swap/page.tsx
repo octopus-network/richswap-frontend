@@ -1,7 +1,7 @@
 "use client";
 
 import { RefreshCcw, ChartLine, ExternalLink } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { SwapPanel } from "./swap-panel";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
@@ -11,8 +11,10 @@ import { Coin } from "@/types";
 import { CoinIcon } from "@/components/coin-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useKlineChartOpen, useToggleKlineChartOpen } from "@/store/user/hooks";
+import { useRunePrice } from "@/hooks/use-rune-price";
 import Link from "next/link";
 import { RUNESCAN_URL } from "@/lib/constants";
+import { Loader2 } from "lucide-react";
 
 export default function SwapPage() {
   const t = useTranslations("Swap");
@@ -20,14 +22,18 @@ export default function SwapPage() {
   const toggleKlineChartOpen = useToggleKlineChartOpen();
 
   const [rune, setRune] = useState<Coin>();
-  const [latestPrice, setLatestPrice] = useState<{
-    price: number;
-    change: number;
-  } | null>(null);
+  const [chartLoading, setChartLoading] = useState(true);
+
+  const { priceData } = useRunePrice(rune?.name || null, {
+    refreshInterval: 30000,
+    enabled: klineChartOpen && !!rune?.name,
+  });
 
   useEffect(() => {
-    setLatestPrice(null);
-  }, [rune]);
+    if (rune?.name) {
+      setChartLoading(true);
+    }
+  }, [rune?.name]);
 
   return (
     <Suspense>
@@ -39,7 +45,7 @@ export default function SwapPage() {
               className="flex-1 w-full max-w-lg lg:max-w-full overflow-hidden bg-secondary/80 rounded-xl fle flex-col"
             >
               <div className="px-4 py-3 flex justify-between items-center">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 h-10">
                   {rune ? (
                     <>
                       <CoinIcon coin={rune} />
@@ -64,38 +70,43 @@ export default function SwapPage() {
                     </>
                   )}
                 </div>
-                {latestPrice && (
+                {priceData && priceData.hasData ? (
                   <div className="flex-col flex items-end">
                     <span className="text-sm font-semibold">
-                      {formatNumber(latestPrice.price)} sats
+                      {formatNumber(priceData.price)} sats
                     </span>
-                    <span
-                      className={cn(
-                        "text-xs",
-                        latestPrice.change >= 0
-                          ? "text-green-500"
-                          : "text-red-500"
-                      )}
-                    >
-                      {latestPrice.change > 0
-                        ? `+${latestPrice.change.toFixed(2)}`
-                        : latestPrice.change.toFixed(2)}
-                      %
-                    </span>
+                    <div className="flex flex-col items-end">
+                      <span
+                        className={cn(
+                          "text-xs",
+                          priceData.change >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        )}
+                      >
+                        {priceData.change > 0
+                          ? `+${priceData.change.toFixed(2)}`
+                          : priceData.change.toFixed(2)}
+                        %
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex-col flex items-end">
+                    <Skeleton className="h-4 w-16 mb-1 bg-slate-50/20" />
+                    <Skeleton className="h-3 w-12 bg-slate-50/20" />
                   </div>
                 )}
               </div>
               <div className="h-[260px] lg:h-[420px] relative">
-                {/* {!removeChartMask && (
+                {chartLoading && (
                   <div className="absolute inset-0 bg-secondary items-center justify-center flex">
                     <Loader2 className="size-6 text-muted-foreground animate-spin" />
                   </div>
-                )} */}
+                )}
                 <KlineChart
                   rune={rune?.name || ""}
-                  onChartReady={(price) => {
-                    setLatestPrice(price);
-                  }}
+                  onLoadingChange={setChartLoading}
                 />
               </div>
             </div>
@@ -122,7 +133,7 @@ export default function SwapPage() {
                   className="rounded-full size-8 text-muted-foreground hover:text-foreground"
                   variant="secondary"
                 >
-                  <RefreshCcw className="size-4" />
+                  <RefreshCcw className={cn("size-4")} />
                 </Button>
               </div>
             </div>
