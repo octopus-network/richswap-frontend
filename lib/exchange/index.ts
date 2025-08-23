@@ -590,6 +590,16 @@ export class Exchange {
       )
       .toNumber();
 
+    if (inputCoinIsBitcoin) {
+      if (Number(formatCoinAmount(inputAmount, BITCOIN)) < 0.0001) {
+        throw new Error("Too small funds");
+      }
+    } else {
+      if (Number(formatCoinAmount(output.value.toString(), BITCOIN)) < 0.0001) {
+        throw new Error("Too small funds");
+      }
+    }
+
     const route = {
       pool,
       inputAmount,
