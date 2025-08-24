@@ -252,10 +252,10 @@ export const ChartContainer = ({
 
       setTimeout(() => {
         const now = Math.floor(Date.now() / 1000);
-        const threeMonthsAgo = now - 90 * 24 * 60 * 60;
+        const twoWeeksAgo = now - 14 * 24 * 60 * 60;
 
         chart.setVisibleRange({
-          from: threeMonthsAgo,
+          from: twoWeeksAgo,
           to: now,
         });
       }, 1000);
