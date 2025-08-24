@@ -249,16 +249,6 @@ export const ChartContainer = ({
           onLoadingChange(false);
         }
       });
-
-      setTimeout(() => {
-        const now = Math.floor(Date.now() / 1000);
-        const twoWeeksAgo = now - 14 * 24 * 60 * 60;
-
-        chart.setVisibleRange({
-          from: twoWeeksAgo,
-          to: now,
-        });
-      }, 1000);
     });
 
     return () => {
