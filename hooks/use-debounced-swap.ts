@@ -38,7 +38,7 @@ export function useDebouncedSwap(
     if (Number(formatCoinAmount(inputAmount, inputCoin)) < 0.00001) {
       return setSwapQuote(() => ({
         state: SwapState.INVALID,
-        errorMessage: "Too small amount",
+        errorMessage: "Too small funds",
       }));
     }
 
