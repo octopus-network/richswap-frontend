@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAddressType } from "@/lib/utils";
+import { addressToScriptPk, bytesToHex, getAddressType } from "@/lib/utils";
 
-import { OpenApi } from "@/lib/open-api";
+import { Maestro } from "@/lib/maestro";
+import Decimal from "decimal.js";
 
-const UNISAT_API = process.env.UNISAT_API!;
-const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
+const MAESTRO_API_URL = process.env.MAESTRO_API_URL!;
+const MAESTRO_API_KEY = process.env.MAESTRO_API_KEY!;
 
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get("address");
@@ -15,31 +16,46 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const openapi = new OpenApi({
-      baseUrl: UNISAT_API,
-      apiKey: UNISAT_API_KEY,
+    const maestro = new Maestro({
+      baseUrl: MAESTRO_API_URL,
+      apiKey: MAESTRO_API_KEY,
     });
+
+    let cursor = null;
+    const data = [];
+
+    const runeInfo = await maestro.runeInfo(runeid);
+
+    if (!runeInfo) {
+      throw new Error("Invalid rune info");
+    }
+
+    do {
+      const res = await maestro.runeUtxosByAddress(address, runeid, cursor);
+      data.push(...res.data);
+      cursor = res.next_cursor;
+    } while (cursor !== null);
 
     const addressType = getAddressType(address);
 
-    const utxos = await openapi
-      .getAddressRunesUtxo(address, runeid)
-      .then((res) => {
-        return res.utxo.map((utxo) => ({
-          pubkey,
-          txid: utxo.txid,
-          vout: utxo.vout,
-          satoshis: utxo.satoshi.toString(),
-          scriptPk: utxo.scriptPk,
-          address,
-          height: utxo.height,
-          addressType,
-          runes: utxo.runes.map((rune) => ({
-            id: rune.runeid,
-            amount: rune.amount.toString(),
-          })),
-        }));
-      });
+    const scriptPk = addressToScriptPk(address);
+
+    const utxos = data.map((utxo) => ({
+      pubkey,
+      txid: utxo.txid,
+      vout: utxo.vout,
+      satoshis: utxo.satoshis.toString(),
+      scriptPk: bytesToHex(scriptPk),
+      address,
+      height: utxo.height,
+      addressType,
+      runes: utxo.runes.map((rune) => ({
+        id: rune.rune_id,
+        amount: new Decimal(rune.amount)
+          .mul(Math.pow(10, runeInfo.data.divisibility))
+          .toString(),
+      })),
+    }));
 
     return NextResponse.json({
       success: true,

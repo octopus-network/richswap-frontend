@@ -12,10 +12,10 @@ const ChartContainer = dynamic(
 
 export function KlineChart({
   rune,
-  onChartReady,
+  onLoadingChange,
 }: {
   rune: string;
-  onChartReady: (price: { price: number; change: number } | null) => void;
+  onLoadingChange?: (loading: boolean) => void;
 }) {
   const [isScriptReady, setIsScriptReady] = useState(false);
 
@@ -28,7 +28,7 @@ export function KlineChart({
           setIsScriptReady(true);
         }}
       />
-      {isScriptReady && <ChartContainer onReady={onChartReady} symbol={rune} />}
+      {isScriptReady && <ChartContainer symbol={rune} onLoadingChange={onLoadingChange} />}
     </>
   );
 }

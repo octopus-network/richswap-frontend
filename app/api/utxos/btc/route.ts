@@ -1,54 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAddressType } from "@/lib/utils";
 
-import { OpenApi } from "@/lib/open-api";
+import { Maestro } from "@/lib/maestro";
 
-const UNISAT_API = process.env.UNISAT_API!;
-const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
+const MAESTRO_API_URL = process.env.MAESTRO_API_URL!;
+const MAESTRO_API_KEY = process.env.MAESTRO_API_KEY!;
 
 export async function GET(req: NextRequest) {
-  const address = req.nextUrl.searchParams.get("address");
-  const pubkey = req.nextUrl.searchParams.get("pubkey") ?? "";
   try {
+    const address = req.nextUrl.searchParams.get("address");
+    const pubkey = req.nextUrl.searchParams.get("pubkey") ?? "";
     if (!address) {
       throw new Error("Missing parameter(s)");
     }
 
-    const openApi = new OpenApi({
-      baseUrl: UNISAT_API,
-      apiKey: UNISAT_API_KEY,
+    const maestro = new Maestro({
+      baseUrl: MAESTRO_API_URL,
+      apiKey: MAESTRO_API_KEY,
     });
+
+    let cursor = null;
+    const data = [];
+
+    do {
+      const res = await maestro.utxosByAddress(address, cursor);
+      data.push(...res.data);
+      cursor = res.next_cursor;
+    } while (cursor !== null);
 
     const addressType = getAddressType(address);
 
-    const { blocks } = await openApi.getBlockchainInfo();
-
-    const utxos = await openApi.getAddressUtxoData(address).then((res) => {
-    
-      return res.utxo
-        .filter(
-          ({ height, inscriptions, satoshi, txid }) =>
-            txid && height <= blocks && !inscriptions.length && satoshi !== 546
-        )
-        .map((utxo) => ({
-          pubkey,
-          addressType,
-          txid: utxo.txid,
-          vout: utxo.vout,
-          satoshis: utxo.satoshi.toString(),
-          scriptPk: utxo.scriptPk,
-          address,
-          height: utxo.height,
-          runes: [],
-        }));
-    });
+    const utxos = data.map((utxo) => ({
+      pubkey,
+      addressType,
+      txid: utxo.txid,
+      vout: utxo.vout,
+      satoshis: utxo.satoshis.toString(),
+      scriptPk: utxo.script_pubkey,
+      address,
+      height: utxo.height,
+      runes: [],
+    }));
 
     return NextResponse.json({
       success: true,
       data: utxos,
     });
   } catch (error) {
-    console.log(error);
     return NextResponse.json({
       error:
         error instanceof Error

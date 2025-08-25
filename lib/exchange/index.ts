@@ -20,6 +20,18 @@ import {
 import Decimal from "decimal.js";
 
 export class Exchange {
+  static coins: Coin[] = [];
+
+  static async getCoinById(id: string) {
+    const coin = this.coins.find((c) => c.id === id);
+    if (!coin) {
+      const _coin = await fetchCoinById(id);
+      this.coins.push(_coin);
+      return _coin;
+    }
+    return coin;
+  }
+
   public static async createPool(coinId: string) {
     const poolAddress = await actor.create(coinId).then((data: any) => {
       if (data.Ok) {
@@ -74,7 +86,7 @@ export class Exchange {
 
     const btc_reserved = data.btc_reserved;
 
-    const coinB = await fetchCoinById(coinReserved.id);
+    const coinB = await this.getCoinById(coinReserved.id);
 
     const { output } = getP2trAressAndScript(data.key);
 
@@ -154,7 +166,7 @@ export class Exchange {
 
       const btc_reserved = data.btc_reserved;
 
-      const coinB = await fetchCoinById(coinReserved.id);
+      const coinB = await this.getCoinById(coinReserved.id);
 
       return {
         key: data.key,
@@ -464,7 +476,7 @@ export class Exchange {
     const coinA = BITCOIN;
     const [_coinA, _coinB] = res.user_outputs;
 
-    const coinB = await fetchCoinById(_coinB.id);
+    const coinB = await this.getCoinById(_coinB.id);
 
     const { output } = getP2trAressAndScript(pool.key);
 
@@ -577,6 +589,16 @@ export class Exchange {
         )
       )
       .toNumber();
+
+    if (inputCoinIsBitcoin) {
+      if (Number(formatCoinAmount(inputAmount, BITCOIN)) < 0.0001) {
+        throw new Error("Too small funds");
+      }
+    } else {
+      if (Number(formatCoinAmount(output.value.toString(), BITCOIN)) < 0.0001) {
+        throw new Error("Too small funds");
+      }
+    }
 
     const route = {
       pool,

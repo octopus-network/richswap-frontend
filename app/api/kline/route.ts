@@ -3,14 +3,15 @@ import { gql, GraphQLClient } from "graphql-request";
 
 export const dynamic = "force-dynamic";
 
-function resolutionToSeconds(res: string) {
+function resolutionToMinutes(res: string) {
   const map: Record<string, number> = {
-    "15": 900,
-    "60": 3600,
-    "240": 14400,
-    "1D": 86400,
+    "1": 1,
+    "15": 15,
+    "60": 60,
+    "240": 240,
+    "1D": 1440,
   };
-  return map[res] || 900;
+  return map[res] || 15;
 }
 
 export async function GET(req: NextRequest) {
@@ -36,8 +37,14 @@ export async function GET(req: NextRequest) {
     );
 
     const query = gql`
-      query GetKlineByToken($token: String!) {
-        k_line_minutes(where: { token: { _eq: $token } }) {
+      query GetKlineByToken($token: String!, $fromTs: bigint!, $toTs: bigint!) {
+        k_line_minutes(
+          where: {
+            token: { _eq: $token }
+            timestamp: { _gte: $fromTs, _lte: $toTs }
+          }
+          order_by: { timestamp: asc }
+        ) {
           high
           low
           open
@@ -48,8 +55,13 @@ export async function GET(req: NextRequest) {
       }
     `;
 
+    const fromTs = Number(from) * 1e9;
+    const toTs = Number(to) * 1e9;
+
     const { k_line_minutes: raw } = (await client.request(query, {
       token: rune,
+      fromTs: fromTs.toString(),
+      toTs: toTs.toString(),
     })) as {
       k_line_minutes: {
         high: string;
@@ -66,8 +78,7 @@ export async function GET(req: NextRequest) {
       timestamp: Math.floor(Number(d.timestamp) / 1e9),
     }));
 
-    const fromTs = Number(from);
-    const toTs = Number(to);
+    const toTsSeconds = Number(to);
 
     let result: {
       time: number;
@@ -78,27 +89,52 @@ export async function GET(req: NextRequest) {
       volume: number;
     }[] = [];
 
-    if (resolution === "15") {
-      result = items
-        .filter((item) => item.timestamp >= fromTs && item.timestamp <= toTs)
-        .map((d) => ({
-          time: d.timestamp * 1000,
-          open: Number(d.open),
-          high: Number(d.high),
-          low: Number(d.low),
-          close: Number(d.close),
-          volume: Number(d.volume),
-        }))
-        .sort((a, b) => a.time - b.time);
-    } else {
-      const interval = resolutionToSeconds(resolution);
-      const grouped = new Map<number, any>();
+    const intervalMinutes = resolutionToMinutes(resolution);
 
+    if (intervalMinutes === 1) {
+      result = items.map((d) => ({
+        time: d.timestamp * 1000,
+        open: Number(d.open),
+        high: Number(d.high),
+        low: Number(d.low),
+        close: Number(d.close),
+        volume: Number(d.volume),
+      }));
+    } else {
+      const intervalSeconds = intervalMinutes * 60;
+
+      const grouped = new Map<
+        number,
+        {
+          time: number;
+          open: number;
+          high: number;
+          low: number;
+          close: number;
+          volume: number;
+          firstTimestamp: number;
+          lastTimestamp: number;
+          dataPoints: Array<{
+            timestamp: number;
+            open: string;
+            high: string;
+            low: string;
+            close: string;
+            volume: number;
+          }>;
+        }
+      >();
+
+      let bucketCount = 0;
       for (const item of items) {
         const { timestamp, open, high, low, close, volume } = item;
-        if (timestamp < fromTs || timestamp > toTs) continue;
 
-        const bucket = Math.floor(timestamp / interval) * interval;
+        const bucket =
+          Math.floor(timestamp / intervalSeconds) * intervalSeconds;
+
+        if (bucketCount < 5) {
+          bucketCount++;
+        }
 
         if (!grouped.has(bucket)) {
           grouped.set(bucket, {
@@ -108,35 +144,58 @@ export async function GET(req: NextRequest) {
             low: Number(low),
             close: Number(close),
             volume: Number(volume),
+            firstTimestamp: timestamp,
+            lastTimestamp: timestamp,
+            dataPoints: [{ timestamp, open, high, low, close, volume }],
           });
         } else {
-          const g = grouped.get(bucket);
-          g.high = Math.max(g.high, Number(high));
-          g.low = Math.min(g.low, Number(low));
-          g.close = Number(close);
-          g.volume += Number(volume);
+          const g = grouped.get(bucket)!;
+
+          g.dataPoints.push({ timestamp, open, high, low, close, volume });
+
+          g.dataPoints.sort((a, b) => a.timestamp - b.timestamp);
+
+          const firstPoint = g.dataPoints[0];
+          const lastPoint = g.dataPoints[g.dataPoints.length - 1];
+
+          g.open = Number(firstPoint.open);
+          g.close = Number(lastPoint.close);
+          g.high = Math.max(...g.dataPoints.map((p) => Number(p.high)));
+          g.low = Math.min(...g.dataPoints.map((p) => Number(p.low)));
+          g.volume = g.dataPoints.reduce((sum, p) => sum + Number(p.volume), 0);
+          g.firstTimestamp = firstPoint.timestamp;
+          g.lastTimestamp = lastPoint.timestamp;
         }
       }
 
-      result = Array.from(grouped.values()).sort((a, b) => a.time - b.time);
-
-      for (let i = 1; i < result.length; i++) {
-        result[i].open = result[i - 1].close;
-      }
+      result = Array.from(grouped.values())
+        .map((item) => ({
+          time: item.time,
+          open: item.open,
+          high: item.high,
+          low: item.low,
+          close: item.close,
+          volume: item.volume,
+        }))
+        .sort((a, b) => a.time - b.time);
     }
 
     const currPrice = result.length > 0 ? result[result.length - 1].close : 0;
 
-    const twentyFourHoursAgoTs = toTs - 86400;
-
-    const price24hAgoBar = [...result]
-      .reverse()
-      .find((bar) => bar.time <= twentyFourHoursAgoTs * 1000);
-
     let change = 0;
-    if (price24hAgoBar) {
-      change =
-        ((currPrice - price24hAgoBar.close) / price24hAgoBar.close) * 100;
+    if (result.length > 0) {
+      const twentyFourHoursAgoTs = toTsSeconds - 86400;
+
+      const price24hAgoBar = result.find(
+        (bar) => bar.time >= twentyFourHoursAgoTs * 1000
+      );
+
+      if (price24hAgoBar && price24hAgoBar.close > 0) {
+        change =
+          ((currPrice - price24hAgoBar.close) / price24hAgoBar.close) * 100;
+      } else if (result.length > 0 && result[0].close > 0) {
+        change = ((currPrice - result[0].close) / result[0].close) * 100;
+      }
     }
 
     return NextResponse.json({
