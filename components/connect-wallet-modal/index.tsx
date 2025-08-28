@@ -9,11 +9,22 @@ import { WalletRow } from "./wallet-row";
 import { useTranslations } from "next-intl";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { WALLETS } from "@/lib/constants/wallet";
+import { useEffect } from "react";
+import { useRee } from "@omnity/ree-client-ts-sdk";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 
 export function ConnectWalletModal() {
   const [connectWalletModalOpen, setConnectWalletModalOpen] = useAtom(
     connectWalletModalOpenAtom
   );
+
+  const { address, paymentAddress } = useLaserEyes();
+
+  const { updateWallet } = useRee();
+
+  useEffect(() => {
+    updateWallet({ address, paymentAddress });
+  }, [address, paymentAddress, updateWallet]);
 
   const t = useTranslations("ConnectWallet");
 

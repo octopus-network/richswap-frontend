@@ -5,16 +5,16 @@ import { CoinIcon } from "@/components/coin-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useParams } from "next/navigation";
-import { Position, PoolInfo } from "@/types";
+import { Position, PoolInfo, UnspentOutput, DonateQuote } from "@/types";
 import { useMemo, useEffect, useState } from "react";
 import { Exchange } from "@/lib/exchange";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowLeftRight } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Loader2 } from "lucide-react";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { ExternalLink } from "lucide-react";
 import { usePoolTvl, usePoolFee } from "@/hooks/use-pools";
 import { useCoinPrice } from "@/hooks/use-prices";
-import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
+import { BITCOIN, RUNESCAN_URL, RICH_POOL } from "@/lib/constants";
 import { ellipseMiddle, formatNumber } from "@/lib/utils";
 
 import Circle from "react-circle";
@@ -22,15 +22,33 @@ import Circle from "react-circle";
 import { useTranslations } from "next-intl";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 import { ManageLiquidityPanel } from "./manage-liquidity-panel";
+import Decimal from "decimal.js";
+import { useRee } from "@omnity/ree-client-ts-sdk";
+import { DonateState } from "@/types";
+import { PopupStatus, useAddPopup } from "@/store/popups";
 
 export default function Pool() {
   const t = useTranslations("Pools");
   const { address } = useParams();
 
-  const { paymentAddress } = useLaserEyes();
+  const { createTransaction } = useRee();
+
+  const { paymentAddress, signPsbt } = useLaserEyes();
+
+  const addPopup = useAddPopup();
 
   const [poolInfo, setPoolInfo] = useState<PoolInfo>();
+  const [richPoolInfo, setRichPoolInfo] = useState<PoolInfo>();
   const [position, setPosition] = useState<Position | null>();
+  const [protocolFeeOffer, setProtocolFeeOffer] = useState<{
+    utxo: UnspentOutput;
+    nonce: string;
+    outputAmount: string;
+  }>();
+
+  const [claimAndDonating, setClaimAndDonating] = useState(false);
+
+  const [donateQuote, setDonateQuote] = useState<DonateQuote>();
 
   const [lps, setLps] = useState<any[]>([]);
 
@@ -38,11 +56,25 @@ export default function Pool() {
     Promise.all([
       Exchange.getLps(address as string),
       Exchange.getPoolInfo(address as string),
-    ]).then(([lps, poolInfo]) => {
-      setLps(lps);
-      setPoolInfo(poolInfo);
+      Exchange.preExtractFee(address as string).catch(() => undefined),
+      Exchange.getPoolInfo(RICH_POOL),
+    ]).then(([_lps, _poolInfo, _protocolFee, _richPoolInfo]) => {
+      setLps(_lps);
+      setPoolInfo(_poolInfo);
+      setProtocolFeeOffer(_protocolFee);
+      setRichPoolInfo(_richPoolInfo);
     });
   }, [address]);
+
+  useEffect(() => {
+    if (!protocolFeeOffer || !richPoolInfo) {
+      setDonateQuote(undefined);
+      return;
+    }
+    Exchange.preDonate(richPoolInfo, protocolFeeOffer.outputAmount).then(
+      setDonateQuote
+    );
+  }, [protocolFeeOffer, richPoolInfo]);
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
@@ -76,6 +108,17 @@ export default function Pool() {
     [poolFeeInBtc]
   );
 
+  const protocolFeeValue = useMemo(
+    () =>
+      protocolFeeOffer?.outputAmount !== undefined
+        ? new Decimal(protocolFeeOffer.outputAmount)
+            .mul(btcPrice)
+            .div(Math.pow(10, 8))
+            .toNumber()
+        : undefined,
+    [protocolFeeOffer, btcPrice]
+  );
+
   useEffect(() => {
     if (!paymentAddress || !poolInfo) {
       setPosition(undefined);
@@ -83,6 +126,68 @@ export default function Pool() {
     }
     Exchange.getPosition(poolInfo.address, paymentAddress).then(setPosition);
   }, [poolInfo, paymentAddress]);
+
+  const claimAndDonate = async () => {
+    if (
+      !poolInfo ||
+      donateQuote?.state !== DonateState.VALID ||
+      !protocolFeeOffer
+    ) {
+      return;
+    }
+
+    setClaimAndDonating(true);
+
+    try {
+      const tx = await createTransaction({
+        involvedPoolAddresses: [poolInfo.address, RICH_POOL],
+      });
+
+      tx.addIntention({
+        action: "extract_protocol_fee",
+        poolAddress: poolInfo.address,
+        inputCoins: [],
+        outputCoins: [
+          {
+            id: BITCOIN.id,
+            value: BigInt(protocolFeeOffer.outputAmount ?? "0"),
+          },
+        ],
+        nonce: BigInt(protocolFeeOffer.nonce ?? "0"),
+      });
+
+      tx.addIntention({
+        action: "donate",
+        poolAddress: RICH_POOL,
+        inputCoins: [
+          {
+            id: BITCOIN.id,
+            value: BigInt(protocolFeeOffer.outputAmount ?? "0"),
+          },
+        ],
+        outputCoins: [],
+        nonce: BigInt(donateQuote.nonce ?? "0"),
+      });
+
+      const psbt = await tx.build();
+
+      const psbtBase64 = psbt.toBase64();
+      const res = await signPsbt(psbtBase64);
+      const signedPsbtHex = res?.signedPsbtHex ?? "";
+
+      if (!signedPsbtHex) {
+        throw new Error("Signed Failed");
+      }
+
+      await tx.send(signedPsbtHex);
+
+      addPopup(t("success"), PopupStatus.SUCCESS, t("claimAndDonateSuccess"));
+    } catch (err: any) {
+      addPopup(t("failed"), PopupStatus.ERROR, err.message ?? "Unknown Error");
+    } finally {
+      setClaimAndDonating(false);
+    }
+  };
 
   return (
     <div className="md:pt-6 w-full flex flex-col items-center">
@@ -246,6 +351,41 @@ export default function Pool() {
                     )}
                   </div>
                 </div>
+                {protocolFeeOffer && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {t("protocolFee")}
+                    </span>
+                    <div className="flex flex-col items-end gap-0.5">
+                      <span>
+                        {formatNumber(
+                          protocolFeeOffer.outputAmount ?? "0",
+                          true
+                        )}{" "}
+                        sats
+                      </span>
+                      {protocolFeeValue !== undefined ? (
+                        <span className="text-muted-foreground truncate">
+                          ${formatNumber(protocolFeeValue, true)}
+                        </span>
+                      ) : (
+                        <Skeleton className="h-5 w-12" />
+                      )}
+                      <Button
+                        className=""
+                        variant="outline"
+                        size="xs"
+                        onClick={claimAndDonate}
+                        disabled={!donateQuote || claimAndDonating}
+                      >
+                        {claimAndDonating && (
+                          <Loader2 className="size-4 animate-spin" />
+                        )}
+                        {t("claimAndDonate")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

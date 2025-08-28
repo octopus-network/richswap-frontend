@@ -115,7 +115,11 @@
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
     "success": "Success",
     "signPsbt": "Sign PSBT",
-    "24hVolume": "24H Volume"
+    "24hVolume": "24H Volume",
+    "protocolFee": "Protocol Fee",
+    "claimAndDonate": "Claim & Donate",
+    "failed": "Failed",
+    "claimAndDonateSuccess": "Claim and donate success"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
@@ -146,6 +150,7 @@
     "donateTitle": "Donate to {poolName}",
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
     "disconnect": "Disconnect",
+    "extractFee": "Extract Fee",
     "payment": "Payment"
   },
   "Transaction": {

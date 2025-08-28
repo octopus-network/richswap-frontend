@@ -84,7 +84,7 @@ export function AccountSheetContent() {
             {formatNumber(btcBalacne)} BTC
           </span>
         </div>
-        <div className="px-4">
+        <div className="px-4 space-y-2">
           <Link href={`${RUNESCAN_URL}/address/${address}`} target="_blank">
             <Button variant="secondary" className="w-full">
               {t("viewOnExplorer")} <ExternalLink className="size-4" />
@@ -92,7 +92,7 @@ export function AccountSheetContent() {
           </Link>
           <Button
             variant="destructive"
-            className="w-full inline-flex sm:hidden mt-2"
+            className="w-full inline-flex sm:hidden"
             onClick={disconnect}
           >
             <Power className="size-4" />
