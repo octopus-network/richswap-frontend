@@ -183,6 +183,7 @@ export default function Pool() {
 
       addPopup(t("success"), PopupStatus.SUCCESS, t("claimAndDonateSuccess"));
     } catch (err: any) {
+      console.log(err);
       addPopup(t("failed"), PopupStatus.ERROR, err.message ?? "Unknown Error");
     } finally {
       setClaimAndDonating(false);

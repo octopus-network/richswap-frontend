@@ -671,10 +671,10 @@
     nanostores "^0.11.3"
     vite-plugin-ssr "^0.4.142"
 
-"@omnity/ree-client-ts-sdk@^0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@omnity/ree-client-ts-sdk/-/ree-client-ts-sdk-0.2.6.tgz#43d4a6bd349a450b9d487e6473ec106872b1e411"
-  integrity sha512-TC+Butti+iq5sdwWbIp+88RbsHnngTwIMTglqHrMf7aKsKidK2I/DSqtDEG+pWuf6con9GGcDvbFK5Jj9AKz/Q==
+"@omnity/ree-client-ts-sdk@^0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@omnity/ree-client-ts-sdk/-/ree-client-ts-sdk-0.2.7.tgz#a1b05c4a39cdd5eeef6b78edaff881c651c80e43"
+  integrity sha512-eWrVawhZyb5trO6A1XwMe9/ESQCx7kRbCnsakxqfO7DdEsUGforaGjmQjW7weOKznl8RTPCykw5laULcY8GfKA==
   dependencies:
     "@bitcoinerlab/secp256k1" "^1.2.0"
     "@dfinity/agent" "^3.2.0"
