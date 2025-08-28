@@ -671,8 +671,10 @@
     nanostores "^0.11.3"
     vite-plugin-ssr "^0.4.142"
 
-"@omnity/ree-client-ts-sdk@file:../ree-sdk":
-  version "0.1.3"
+"@omnity/ree-client-ts-sdk@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@omnity/ree-client-ts-sdk/-/ree-client-ts-sdk-0.2.1.tgz#609229d733e96d4e6205e6d1f2ef8a56ded27e3a"
+  integrity sha512-BqcRO5+5ETOGiMLQbGYHhbMOkGSInxsO1GxhX0jZ7MMNs0g9ni4lX04l64nq4PneoaHw0I7TfbMfdMq9Xrkx8Q==
   dependencies:
     "@bitcoinerlab/secp256k1" "^1.2.0"
     "@dfinity/agent" "^3.2.0"
