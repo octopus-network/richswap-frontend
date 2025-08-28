@@ -115,7 +115,11 @@
     "donateDescription": "向 {poolName} 池中捐赠 {amount} 个 {coin}",
     "success": "成功",
     "signPsbt": "签署 PSBT",
-    "24hVolume": "24小时交易量"
+    "24hVolume": "24小时交易量",
+    "protocolFee": "协议收入",
+    "claimAndDonate": "领取 & 捐赠",
+    "failed": "失败",
+    "claimAndDonateSuccess": "提取和捐赠成功"
   },
   "ConnectWallet": {
     "connectAWallet": "连接钱包",
@@ -146,6 +150,7 @@
     "donateTitle": "捐赠到 {poolName}",
     "donateDescription": "向 {poolName} 池中捐赠 {amount} 个 {coin}",
     "disconnect": "断开连接",
+    "extractFee": "提取手续费",
     "payment": "支付地址"
   },
   "Transaction": {

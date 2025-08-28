@@ -259,6 +259,7 @@ export function CoinField({
         open={selectCoinModalOpen}
         setOpen={setSelectCoinModalOpen}
         toBuy={disabled}
+        onlySwappableCoins
         onSelectCoin={onSelectCoin}
       />
     </>

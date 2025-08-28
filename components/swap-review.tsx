@@ -420,6 +420,10 @@ export function SwapReview({
           intentions,
         },
         psbt_hex: signedPsbtHex,
+        client_info: JSON.stringify({
+          client_type: "RichSwap_Front_End",
+          wallet_type: provider,
+        }),
       });
 
       addTransaction({

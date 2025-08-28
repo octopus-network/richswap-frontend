@@ -15,6 +15,7 @@ import { useSearchCoins } from "@/hooks/use-coins";
 import { useTranslations } from "next-intl";
 import { useAddUserCoin } from "@/store/user/hooks";
 import { usePoolList, usePoolsTvl } from "@/hooks/use-pools";
+import { BITCOIN } from "@/lib/constants";
 
 function coinFilter(query: string) {
   const searchingId = /^\d+:\d+$/.test(query);
@@ -54,10 +55,12 @@ export function SelectCoinModal({
   open,
   setOpen,
   onSelectCoin,
+  onlySwappableCoins = false,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
   onSelectCoin?: (coin: Coin) => void;
+  onlySwappableCoins?: boolean;
   toBuy?: boolean;
 }) {
   const defaultCoins = useDefaultCoins();
@@ -87,9 +90,17 @@ export function SelectCoinModal({
   }, [open]);
 
   const sortedCoins: Coin[] = useMemo(() => {
-    const filteredCoins = Object.values(defaultCoins).filter(
-      coinFilter(debouncedQuery)
-    );
+    const filteredCoins = Object.values(defaultCoins)
+      .filter((coin) => {
+        if (onlySwappableCoins) {
+          return (
+            coin.id === BITCOIN.id ||
+            poolList.some((pool) => pool.coinB.id === coin.id)
+          );
+        }
+        return true;
+      })
+      .filter(coinFilter(debouncedQuery));
 
     return filteredCoins.sort((a, b) => {
       if (a.id === "0:0") {
@@ -106,7 +117,7 @@ export function SelectCoinModal({
 
       return poolBTvl - poolATvl;
     });
-  }, [defaultCoins, debouncedQuery, poolsTvl, poolList]);
+  }, [defaultCoins, debouncedQuery, poolsTvl, poolList, onlySwappableCoins]);
 
   const handleCoinSelect = (coin: Coin, hasWarning?: boolean) => {
     if (!hasWarning) {

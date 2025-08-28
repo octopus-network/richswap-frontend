@@ -4,6 +4,13 @@ export const UTXO_DUST = BigInt(546);
 export const ICP_HOST = "https://ic0.app";
 export const EXCHANGE_ID = "RICH_SWAP";
 
+export const EXCHANGE_CANISTER_ID =
+  process.env.NEXT_PUBLIC_EXCHANGE_CANISTER_ID ?? "";
+
+export const MAESTRO_API_KEY = process.env.NEXT_PUBLIC_MAESTRO_API_KEY ?? "";
+
+export const RICH_POOL = process.env.NEXT_PUBLIC_RICH_POOL ?? "";
+
 export const NETWORK = (process.env.NEXT_PUBLIC_NETWORK ??
   "mainnet") as NetworkType;
 
