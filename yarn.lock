@@ -20,7 +20,7 @@
     "@noble/hashes" "^1.1.5"
     "@noble/secp256k1" "^1.7.1"
 
-"@bitcoinerlab/secp256k1@^1.0.2", "@bitcoinerlab/secp256k1@^1.0.5", "@bitcoinerlab/secp256k1@^1.1.1":
+"@bitcoinerlab/secp256k1@^1.0.2", "@bitcoinerlab/secp256k1@^1.0.5", "@bitcoinerlab/secp256k1@^1.1.1", "@bitcoinerlab/secp256k1@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@bitcoinerlab/secp256k1/-/secp256k1-1.2.0.tgz#429d043ef4218b9c71915b50172e9aa4a2a8fea4"
   integrity sha512-jeujZSzb3JOZfmJYI0ph1PVpCRV5oaexCgy+RvCXV8XlY+XFB/2n3WOcvBsKLsOw78KYgnQrQWb2HrKE4be88Q==
@@ -132,10 +132,28 @@
     buffer "^6.0.3"
     simple-cbor "^0.4.1"
 
+"@dfinity/agent@^3.2.0":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@dfinity/agent/-/agent-3.2.3.tgz#db03f5e50899589a9752b00e97790b42e6a1a108"
+  integrity sha512-OvGwILEjOR8bPi4TdwtJzZOBV5mrpHpg58zJKTPwwz7gcnAh3aB4vQt6U0QQ7+lduNcLySipV4CCuu7Ax/GLlw==
+  dependencies:
+    "@dfinity/cbor" "^0.2.2"
+    "@noble/curves" "^1.9.2"
+
 "@dfinity/candid@^2.2.0":
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/@dfinity/candid/-/candid-2.4.1.tgz#c85e1d734227624dcc9829a1b679b418d9b5a081"
   integrity sha512-kOaIKfhR2PYN8vD4M0Pc4s/7wb1nKjlTJUw+5E9jh26T03fITIZmaafIuwlX+wmdxwIT9Xoy7PlsxOEpzv203A==
+
+"@dfinity/candid@^3.2.0":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@dfinity/candid/-/candid-3.2.3.tgz#74e76c70b08eda7158e35857f4bacb899db6151b"
+  integrity sha512-7GJlZyvYFfzltx6qEsuscucx9wFzSBH5k20pdUzZMK8xHu2JE4z/gHMzgj0ddwX8D0FsLTK1fKXqSpXbT7nUMA==
+
+"@dfinity/cbor@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@dfinity/cbor/-/cbor-0.2.2.tgz#4f31f4f0c1aeb0c8179edd99625180a76a5b43e0"
+  integrity sha512-GPJpH73kDEKbUBdUjY80lz7cq9l0vm1h/7ppejPV6O0ZTqCLrYspssYvqjRmK4aNnJ/SKXsP0rg9LYX7zpegaA==
 
 "@dfinity/principal@^2.2.0":
   version "2.4.1"
@@ -143,6 +161,13 @@
   integrity sha512-Cz6XQVOwq0TXDBClPbcidDd4SqK1lfr1/Kn34ruDD13xVQ4iaP1iCntzS9O97+vGpY/6jwDtKd32Gn5YJ9BQNw==
   dependencies:
     "@noble/hashes" "^1.3.1"
+
+"@dfinity/principal@^3.2.2":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@dfinity/principal/-/principal-3.2.3.tgz#3ed83430e33f59a6472cd2b197343d37f1757dde"
+  integrity sha512-8wf7aFz1Ip3wumHOC7ampLl6S4x6+AIjSi4NZHofGOPog5a4ARWsBc6cAM2Akca6fVMFH0e6mGHov2lugoC9Dg==
+  dependencies:
+    "@noble/hashes" "^1.8.0"
 
 "@emnapi/core@^1.4.3":
   version "1.5.0"
@@ -546,7 +571,7 @@
   dependencies:
     "@noble/hashes" "1.3.2"
 
-"@noble/curves@^1.1.0", "@noble/curves@^1.4.0", "@noble/curves@^1.7.0", "@noble/curves@~1.9.0":
+"@noble/curves@^1.1.0", "@noble/curves@^1.4.0", "@noble/curves@^1.7.0", "@noble/curves@^1.9.2", "@noble/curves@~1.9.0":
   version "1.9.7"
   resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.9.7.tgz#79d04b4758a43e4bca2cbdc62e7771352fa6b951"
   integrity sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==
@@ -570,7 +595,7 @@
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.6.0.tgz#d4bfb516ad6e7b5111c216a5cc7075f4cf19e6c5"
   integrity sha512-YUULf0Uk4/mAA89w+k3+yUYh6NrEvxZa5T6SY3wlMvE2chHkxFUUIDI8/XW1QSC357iA5pSnqt7XEhvFOqmDyQ==
 
-"@noble/hashes@1.8.0", "@noble/hashes@^1.1.2", "@noble/hashes@^1.1.5", "@noble/hashes@^1.2.0", "@noble/hashes@^1.3.0", "@noble/hashes@^1.3.1", "@noble/hashes@~1.8.0":
+"@noble/hashes@1.8.0", "@noble/hashes@^1.1.2", "@noble/hashes@^1.1.5", "@noble/hashes@^1.2.0", "@noble/hashes@^1.3.0", "@noble/hashes@^1.3.1", "@noble/hashes@^1.8.0", "@noble/hashes@~1.8.0":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.8.0.tgz#cee43d801fcef9644b11b8194857695acd5f815a"
   integrity sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==
@@ -645,6 +670,21 @@
     bootstrap "^5.3.3"
     nanostores "^0.11.3"
     vite-plugin-ssr "^0.4.142"
+
+"@omnity/ree-client-ts-sdk@^0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@omnity/ree-client-ts-sdk/-/ree-client-ts-sdk-0.2.7.tgz#a1b05c4a39cdd5eeef6b78edaff881c651c80e43"
+  integrity sha512-eWrVawhZyb5trO6A1XwMe9/ESQCx7kRbCnsakxqfO7DdEsUGforaGjmQjW7weOKznl8RTPCykw5laULcY8GfKA==
+  dependencies:
+    "@bitcoinerlab/secp256k1" "^1.2.0"
+    "@dfinity/agent" "^3.2.0"
+    "@dfinity/candid" "^3.2.0"
+    "@dfinity/principal" "^3.2.2"
+    axios "^1.11.0"
+    decimal.js "^10.6.0"
+    graphql "^16.11.0"
+    graphql-request "^7.2.0"
+    runelib "^1.0.7"
 
 "@orangecrypto/orange-connect@^1.2.2":
   version "1.2.4"
@@ -1819,7 +1859,7 @@ axios@1.8.4:
     form-data "^4.0.0"
     proxy-from-env "^1.1.0"
 
-axios@^1.10.0, axios@^1.7.7, axios@^1.7.9:
+axios@^1.10.0, axios@^1.11.0, axios@^1.7.7, axios@^1.7.9:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.11.0.tgz#c2ec219e35e414c025b2095e8b8280278478fdb6"
   integrity sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==
@@ -2669,7 +2709,7 @@ debug@^4.3.1, debug@^4.3.2, debug@^4.3.4, debug@^4.4.0:
   dependencies:
     ms "^2.1.3"
 
-decimal.js@^10.4.3:
+decimal.js@^10.4.3, decimal.js@^10.6.0:
   version "10.6.0"
   resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-10.6.0.tgz#e649a43e3ab953a72192ff5983865e509f37ed9a"
   integrity sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==
@@ -3668,14 +3708,14 @@ graphemer@^1.4.0:
   resolved "https://registry.yarnpkg.com/graphemer/-/graphemer-1.4.0.tgz#fb2f1d55e0e3a1849aeffc90c4fa0dd53a0e66c6"
   integrity sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==
 
-graphql-request@^7.1.2:
+graphql-request@^7.1.2, graphql-request@^7.2.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/graphql-request/-/graphql-request-7.2.0.tgz#af4aa25f27a087dd4fc93a4ff54a0f59c4487269"
   integrity sha512-0GR7eQHBFYz372u9lxS16cOtEekFlZYB2qOyq8wDvzRmdRSJ0mgUVX1tzNcIzk3G+4NY+mGtSz411wZdeDF/+A==
   dependencies:
     "@graphql-typed-document-node/core" "^3.2.0"
 
-graphql@^16.10.0:
+graphql@^16.10.0, graphql@^16.11.0:
   version "16.11.0"
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.11.0.tgz#96d17f66370678027fdf59b2d4c20b4efaa8a633"
   integrity sha512-mS1lbMsxgQj6hge1XZ6p7GPhbrtFwUFYi3wRzXAC/FmYnyXMTvvI3td3rjmQ2u8ewXueaSvRPWaEcgVVOT9Jnw==
