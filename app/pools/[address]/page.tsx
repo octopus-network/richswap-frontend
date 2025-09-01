@@ -143,6 +143,9 @@ export default function Pool() {
         involvedPoolAddresses: [poolInfo.address, RICH_POOL],
       });
 
+      console.log("protocolFeeOffer", protocolFeeOffer);
+      console.log("donateQuote", donateQuote);
+
       tx.addIntention({
         action: "extract_protocol_fee",
         poolAddress: poolInfo.address,
@@ -169,6 +172,8 @@ export default function Pool() {
         nonce: BigInt(donateQuote.nonce ?? "0"),
       });
 
+      console.log("await tx build");
+
       const psbt = await tx.build();
 
       const psbtBase64 = psbt.toBase64();
@@ -183,6 +188,7 @@ export default function Pool() {
 
       addPopup(t("success"), PopupStatus.SUCCESS, t("claimAndDonateSuccess"));
     } catch (err: any) {
+      console.log(err);
       addPopup(t("failed"), PopupStatus.ERROR, err.message ?? "Unknown Error");
     } finally {
       setClaimAndDonating(false);
