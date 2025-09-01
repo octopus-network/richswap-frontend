@@ -143,6 +143,9 @@ export default function Pool() {
         involvedPoolAddresses: [poolInfo.address, RICH_POOL],
       });
 
+      console.log("protocolFeeOffer", protocolFeeOffer);
+      console.log("donateQuote", donateQuote);
+
       tx.addIntention({
         action: "extract_protocol_fee",
         poolAddress: poolInfo.address,
@@ -168,6 +171,8 @@ export default function Pool() {
         outputCoins: [],
         nonce: BigInt(donateQuote.nonce ?? "0"),
       });
+
+      console.log("await tx build");
 
       const psbt = await tx.build();
 

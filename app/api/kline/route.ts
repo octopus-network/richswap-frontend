@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { gql, GraphQLClient } from "graphql-request";
-
+import { ENVIRONMENT } from "@/lib/constants";
 export const dynamic = "force-dynamic";
 
 function resolutionToMinutes(res: string) {
@@ -38,7 +38,11 @@ export async function GET(req: NextRequest) {
 
     const query = gql`
       query GetKlineByToken($token: String!, $fromTs: bigint!, $toTs: bigint!) {
-        k_line_minutes(
+        ${
+          ENVIRONMENT === "staging"
+            ? "k_line_minutes_staging"
+            : "k_line_minutes"
+        }(
           where: {
             token: { _eq: $token }
             timestamp: { _gte: $fromTs, _lte: $toTs }

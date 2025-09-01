@@ -14,6 +14,8 @@ export const RICH_POOL = process.env.NEXT_PUBLIC_RICH_POOL ?? "";
 export const NETWORK = (process.env.NEXT_PUBLIC_NETWORK ??
   "mainnet") as NetworkType;
 
+export const ENVIRONMENT = process.env.NEXT_PUBLIC_ENVIRONMENT ?? "testnet";
+
 export const MEMPOOL_URL =
   process.env.NEXT_PUBLIC_MEMPOOL_URL ?? "https://mempool.space";
 
