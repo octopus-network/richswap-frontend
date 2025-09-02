@@ -145,6 +145,7 @@ export default function Pool() {
       tx.addIntention({
         action: "extract_protocol_fee",
         poolAddress: poolInfo.address,
+        poolUtxos: [protocolFeeOffer.utxo],
         inputCoins: [],
         outputCoins: [
           {
@@ -161,6 +162,7 @@ export default function Pool() {
       tx.addIntention({
         action: "donate",
         poolAddress: RICH_POOL,
+        poolUtxos: donateQuote.utxos,
         inputCoins: [
           {
             from: poolInfo.address,
