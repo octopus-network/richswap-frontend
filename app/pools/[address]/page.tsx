@@ -25,6 +25,7 @@ import { ManageLiquidityPanel } from "./manage-liquidity-panel";
 import Decimal from "decimal.js";
 import { useRee } from "@omnity/ree-client-ts-sdk";
 import { DonateState } from "@/types";
+
 import { PopupStatus, useAddPopup } from "@/store/popups";
 
 export default function Pool() {
@@ -139,12 +140,7 @@ export default function Pool() {
     setClaimAndDonating(true);
 
     try {
-      const tx = await createTransaction({
-        involvedPoolAddresses: [poolInfo.address, RICH_POOL],
-      });
-
-      console.log("protocolFeeOffer", protocolFeeOffer);
-      console.log("donateQuote", donateQuote);
+      const tx = await createTransaction();
 
       tx.addIntention({
         action: "extract_protocol_fee",
@@ -152,8 +148,11 @@ export default function Pool() {
         inputCoins: [],
         outputCoins: [
           {
-            id: BITCOIN.id,
-            value: BigInt(protocolFeeOffer.outputAmount ?? "0"),
+            to: RICH_POOL,
+            coin: {
+              id: BITCOIN.id,
+              value: BigInt(protocolFeeOffer.outputAmount ?? "0"),
+            },
           },
         ],
         nonce: BigInt(protocolFeeOffer.nonce ?? "0"),
@@ -164,15 +163,16 @@ export default function Pool() {
         poolAddress: RICH_POOL,
         inputCoins: [
           {
-            id: BITCOIN.id,
-            value: BigInt(protocolFeeOffer.outputAmount ?? "0"),
+            from: poolInfo.address,
+            coin: {
+              id: BITCOIN.id,
+              value: BigInt(donateQuote.coinAAmount),
+            },
           },
         ],
         outputCoins: [],
         nonce: BigInt(donateQuote.nonce ?? "0"),
       });
-
-      console.log("await tx build");
 
       const psbt = await tx.build();
 
