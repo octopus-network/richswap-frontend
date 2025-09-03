@@ -40,7 +40,7 @@
     "generatingPsbt": "生成 PSBT 中",
     "unsupportedAddressType": "不支持的地址类型",
     "signTransaction": "签署交易",
-    "fetchingProof": "获取证明中",
+    "fetchingProof": "获取 UTXO 证明中",
     "signPsbt": "签署 PSBT",
     "invokeExchange": "执行兑换",
     "waitForConfirmation": "等待确认中",
@@ -49,7 +49,11 @@
     "networkCost": "网络费用",
     "swapTitle": "将 {coinA} 兑换为 {coinB}",
     "swapDescription": "将 {amountA} 个 {coinA} 兑换为 {amountB} 个 {coinB}",
-    "success": "成功"
+    "success": "成功",
+    "cancel": "取消",
+    "failed": "失败",
+    "retry": "重试",
+    "FETCH_UTXO_PROOF_FAILED": "获取 UTXO 证明失败"
   },
   "Pools": {
     "pool": "池子",
@@ -118,8 +122,11 @@
     "24hVolume": "24小时交易量",
     "protocolFee": "协议收入",
     "claimAndDonate": "领取 & 捐赠",
+    "fetchingProof": "获取 UTXO 证明中",
+    "claimAndDonateSuccess": "提取和捐赠成功",
     "failed": "失败",
-    "claimAndDonateSuccess": "提取和捐赠成功"
+    "retry": "重试",
+    "FETCH_UTXO_PROOF_FAILED": "获取 UTXO 证明失败"
   },
   "ConnectWallet": {
     "connectAWallet": "连接钱包",

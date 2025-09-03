@@ -70,7 +70,7 @@ export function useRuneUtxos(
   const [pendingUtxos] = usePendingRuneUtxos();
   const spentUtxos = useAtomValue(spentUtxosAtom);
   const { data: apiUtxos } = useSWR(
-    address && runeid
+    address && runeid && runeid !== "0:0"
       ? `/api/utxos/rune?address=${address}&runeid=${runeid}${
           pubkey ? `&pubkey=${pubkey}` : ""
         }`

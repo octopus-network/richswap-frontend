@@ -17,7 +17,7 @@ import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
 import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "@/components/coin-icon";
-import { getAddressType, cn } from "@/lib/utils";
+import { getAddressType, cn, getUtxoProof } from "@/lib/utils";
 import {
   formatNumber,
   getCoinSymbol,
@@ -28,13 +28,13 @@ import {
   runeSwapRuneTx,
 } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
 import { useWalletBtcUtxos, useWalletRuneUtxos } from "@/hooks/use-utxos";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
-import axios from "axios";
+
 import { Orchestrator } from "@/lib/orchestrator";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { Ellipsis } from "lucide-react";
@@ -136,7 +136,7 @@ export function SwapReview({
     return _priceImpacts;
   }, [swapQuote, btcPrice]);
 
-  useEffect(() => {
+  const fetchUtxoProof = useCallback(() => {
     if (!toSpendUtxos.length || !paymentAddress) {
       setInitiatorUtxoProof(undefined);
       return;
@@ -146,23 +146,18 @@ export function SwapReview({
       (utxo) => utxo.address === paymentAddress
     );
 
-    axios
-      .post(`/api/utxos/get-proof`, {
-        address: paymentAddress,
-        utxos,
-      })
-      .then((res) => res.data)
-      .then((data) => {
-        if (data.data) {
-          setInitiatorUtxoProof(data.data);
-        } else {
-          setErrorMessage("Fetch proof failed");
-        }
-      })
-      .catch(() => {
-        setErrorMessage("Fetch proof failed");
-      });
+    getUtxoProof(utxos).then((proof) => {
+      if (proof) {
+        setInitiatorUtxoProof(proof);
+      } else {
+        setErrorMessage("FETCH_UTXO_PROOF_FAILED");
+      }
+    });
   }, [toSpendUtxos, paymentAddress]);
+
+  useEffect(() => {
+    fetchUtxoProof();
+  }, [fetchUtxoProof]);
 
   useEffect(() => {
     if (
@@ -476,14 +471,31 @@ export function SwapReview({
         <div className="break-all mt-2 text-sm">{t(errorMessage)}</div>
       </div>
 
-      <Button
-        onClick={onBack}
-        variant="secondary"
-        className="text-destructive"
-        size="lg"
-      >
-        {t("dismiss")}
-      </Button>
+      {errorMessage === "FETCH_UTXO_PROOF_FAILED" ? (
+        <>
+          <Button
+            onClick={() => {
+              setErrorMessage("");
+              fetchUtxoProof();
+            }}
+            size="lg"
+          >
+            {t("retry")}
+          </Button>
+          <Button onClick={onBack} variant="secondary" size="lg">
+            {t("cancel")}
+          </Button>
+        </>
+      ) : (
+        <Button
+          onClick={onBack}
+          variant="secondary"
+          className="text-destructive"
+          size="lg"
+        >
+          {t("dismiss")}
+        </Button>
+      )}
     </div>
   ) : (
     <>
