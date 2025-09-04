@@ -189,6 +189,8 @@ export default function Pool() {
       await tx.send(signedPsbtHex);
 
       addPopup(t("success"), PopupStatus.SUCCESS, t("claimAndDonateSuccess"));
+
+      window.location.reload();
     } catch (err: any) {
       console.log(err);
       addPopup(t("failed"), PopupStatus.ERROR, err.message ?? "Unknown Error");
