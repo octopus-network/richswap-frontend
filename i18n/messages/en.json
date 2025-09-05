@@ -125,7 +125,8 @@
     "failed": "Failed",
     "claimAndDonateSuccess": "Claim and donate success",
     "retry": "Retry",
-    "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed"
+    "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
+    "claimTips": "Claimable: > {amount} sats"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",

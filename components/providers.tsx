@@ -2,7 +2,7 @@
 
 import { PropsWithChildren } from "react";
 import { LaserEyesProvider } from "@omnisat/lasereyes-react";
-
+import { TooltipProvider } from "./ui/tooltip";
 import {
   NETWORK,
   EXCHANGE_ID,
@@ -28,7 +28,7 @@ export function Providers({ children }: PropsWithChildren) {
           exchangeCanisterId: EXCHANGE_CANISTER_ID,
         }}
       >
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
       </ReeProvider>
     </LaserEyesProvider>
   );

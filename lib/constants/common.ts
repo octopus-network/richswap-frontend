@@ -25,3 +25,6 @@ export const RUNESCAN_URL =
 export const REE_INDEXER_URL =
   process.env.NEXT_PUBLIC_REE_INDEXER_URL ??
   "https://ree-hasura-testnet.omnity.network/v1/graphql";
+
+export const CLAIMABLE_PROTOCOL_FEE_THRESHOLD =
+  NETWORK === "mainnet" ? 10_000 : 546;

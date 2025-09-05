@@ -110,6 +110,7 @@ export class Exchange {
       nonce: Number(data.nonce),
       coinADonation: attributes.total_btc_donation.toString(),
       coinBDonation: attributes.total_rune_donation.toString(),
+      protocolRevenue: attributes.protocol_revenue.toString(),
       utxos: [
         {
           txid: utxo.txid,
@@ -186,6 +187,7 @@ export class Exchange {
         nonce: Number(data.nonce),
         coinADonation: attributes.total_btc_donation.toString(),
         coinBDonation: attributes.total_rune_donation.toString(),
+        protocolRevenue: attributes.protocol_revenue.toString(),
       };
     }
   }

@@ -126,7 +126,8 @@
     "claimAndDonateSuccess": "提取和捐赠成功",
     "failed": "失败",
     "retry": "重试",
-    "FETCH_UTXO_PROOF_FAILED": "获取 UTXO 证明失败"
+    "FETCH_UTXO_PROOF_FAILED": "获取 UTXO 证明失败",
+    "claimTips": "可领取：> {amount} sats"
   },
   "ConnectWallet": {
     "connectAWallet": "连接钱包",

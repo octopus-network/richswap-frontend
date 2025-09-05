@@ -17,8 +17,15 @@ import { useCoinPrice } from "@/hooks/use-prices";
 import { BITCOIN, RUNESCAN_URL, RICH_POOL } from "@/lib/constants";
 import { ellipseMiddle, formatNumber } from "@/lib/utils";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 import Circle from "react-circle";
 
+import { CLAIMABLE_PROTOCOL_FEE_THRESHOLD } from "@/lib/constants";
 import { useTranslations } from "next-intl";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 import { ManageLiquidityPanel } from "./manage-liquidity-panel";
@@ -109,15 +116,17 @@ export default function Pool() {
     [poolFeeInBtc]
   );
 
+  console.log("pool info", poolInfo);
+
   const protocolFeeValue = useMemo(
     () =>
-      protocolFeeOffer?.outputAmount !== undefined
-        ? new Decimal(protocolFeeOffer.outputAmount)
+      poolInfo?.protocolRevenue !== undefined && btcPrice
+        ? new Decimal(poolInfo.protocolRevenue)
             .mul(btcPrice)
             .div(Math.pow(10, 8))
             .toNumber()
         : undefined,
-    [protocolFeeOffer, btcPrice]
+    [poolInfo, btcPrice]
   );
 
   useEffect(() => {
@@ -361,17 +370,14 @@ export default function Pool() {
                     )}
                   </div>
                 </div>
-                {protocolFeeOffer && (
+                {poolInfo && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
                       {t("protocolFee")}
                     </span>
                     <div className="flex flex-col items-end gap-0.5">
                       <span>
-                        {formatNumber(
-                          protocolFeeOffer.outputAmount ?? "0",
-                          true
-                        )}{" "}
+                        {formatNumber(poolInfo.protocolRevenue ?? "0", true)}{" "}
                         sats
                       </span>
                       {protocolFeeValue !== undefined ? (
@@ -381,18 +387,41 @@ export default function Pool() {
                       ) : (
                         <Skeleton className="h-5 w-12" />
                       )}
-                      <Button
-                        className=""
-                        variant="outline"
-                        size="xs"
-                        onClick={claimAndDonate}
-                        disabled={!donateQuote || claimAndDonating}
-                      >
-                        {claimAndDonating && (
-                          <Loader2 className="size-4 animate-spin" />
-                        )}
-                        {t("claimAndDonate")}
-                      </Button>
+                      {Number(poolInfo.protocolRevenue ?? "0") <
+                      CLAIMABLE_PROTOCOL_FEE_THRESHOLD ? (
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Button
+                              className=""
+                              variant="outline"
+                              size="xs"
+                              disabled
+                            >
+                              {t("claimAndDonate")}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {t("claimTips", {
+                                amount: CLAIMABLE_PROTOCOL_FEE_THRESHOLD,
+                              })}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Button
+                          className=""
+                          variant="outline"
+                          size="xs"
+                          onClick={claimAndDonate}
+                          disabled={!donateQuote || claimAndDonating}
+                        >
+                          {claimAndDonating && (
+                            <Loader2 className="size-4 animate-spin" />
+                          )}
+                          {t("claimAndDonate")}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}
