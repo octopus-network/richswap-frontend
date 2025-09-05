@@ -230,7 +230,9 @@ export default function Pool() {
                   </Button>
                 </Link>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-semibold">{poolInfo.name}</span>
+                  <span className="text-xl font-semibold truncate max-w-[220px]">
+                    {poolInfo.name}
+                  </span>
                 </div>
               </>
             ) : (
