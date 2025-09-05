@@ -116,6 +116,8 @@
     "withdrawLiquidityDescription": "Withdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
     "donateTitle": "Donate to {poolName}",
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
+    "claimAndDonateTitle": "Claim & Donate to {poolName}",
+    "claimAndDonateDescription": "Claim {amount} sats and donate to {poolName} pool",
     "success": "Success",
     "signPsbt": "Sign PSBT",
     "24hVolume": "24H Volume",

@@ -246,8 +246,21 @@ export function getTxTitleAndDescription(transaction: TransactionInfo) {
         poolName: getCoinSymbol(coinB),
       },
     };
+  } else if (type === TransactionType.CLAIM_PROTOCOL_FEE_AND_DONATE) {
+    title = {
+      key: "claimAndDonateTitle",
+      data: {
+        poolName: getCoinSymbol(coinB),
+      },
+    };
+    description = {
+      key: "claimAndDonateDescription",
+      data: {
+        amount: formatNumber(coinAAmount, true),
+        poolName: getCoinSymbol(coinB),
+      },
+    };
   }
-
   return {
     title,
     description,

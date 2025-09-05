@@ -31,9 +31,10 @@ import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 import { ManageLiquidityPanel } from "./manage-liquidity-panel";
 import Decimal from "decimal.js";
 import { useRee } from "@omnity/ree-client-ts-sdk";
-import { DonateState } from "@/types";
 
+import { TransactionStatus, TransactionType, DonateState } from "@/types";
 import { PopupStatus, useAddPopup } from "@/store/popups";
+import { useAddTransaction } from "@/store/transactions";
 
 export default function Pool() {
   const t = useTranslations("Pools");
@@ -44,6 +45,7 @@ export default function Pool() {
   const { paymentAddress, signPsbt } = useLaserEyes();
 
   const addPopup = useAddPopup();
+  const addTransaction = useAddTransaction();
 
   const [poolInfo, setPoolInfo] = useState<PoolInfo>();
   const [richPoolInfo, setRichPoolInfo] = useState<PoolInfo>();
@@ -116,8 +118,6 @@ export default function Pool() {
     [poolFeeInBtc]
   );
 
-  console.log("pool info", poolInfo);
-
   const protocolFeeValue = useMemo(
     () =>
       poolInfo?.protocolRevenue !== undefined && btcPrice
@@ -185,7 +185,7 @@ export default function Pool() {
         nonce: BigInt(donateQuote.nonce ?? "0"),
       });
 
-      const psbt = await tx.build();
+      const { psbt, txid } = await tx.build();
 
       const psbtBase64 = psbt.toBase64();
       const res = await signPsbt(psbtBase64);
@@ -196,6 +196,14 @@ export default function Pool() {
       }
 
       await tx.send(signedPsbtHex);
+
+      addTransaction({
+        txid,
+        coinA: BITCOIN,
+        coinAAmount: donateQuote.coinAAmount,
+        type: TransactionType.CLAIM_PROTOCOL_FEE_AND_DONATE,
+        status: TransactionStatus.BROADCASTED,
+      });
 
       addPopup(t("success"), PopupStatus.SUCCESS, t("claimAndDonateSuccess"));
 

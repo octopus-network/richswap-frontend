@@ -20,7 +20,8 @@ export enum TransactionType {
   SWAP,
   ADD_LIQUIDITY,
   WITHDRAW_LIQUIDITY,
-  DONATE
+  DONATE,
+  CLAIM_PROTOCOL_FEE_AND_DONATE,
 }
 
 export interface TransactionInfo {
@@ -28,9 +29,9 @@ export interface TransactionInfo {
   type: TransactionType;
   status: TransactionStatus;
   coinA: Coin;
-  coinB: Coin;
+  coinB?: Coin;
   coinAAmount: string;
-  coinBAmount: string;
+  coinBAmount?: string;
   timestamp: number;
   nonce?: string;
   message?: string;
