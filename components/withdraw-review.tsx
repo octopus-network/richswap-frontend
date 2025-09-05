@@ -12,7 +12,6 @@ import {
 
 import { formatNumber, withdrawTx, getUtxoProof } from "@/lib/utils";
 import { useCoinPrice } from "@/hooks/use-prices";
-import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
 
 import { useTranslations } from "next-intl";
 import { BITCOIN } from "@/lib/constants";
@@ -81,8 +80,6 @@ export function WithdrawReview({
   const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
   const [initiatorUtxoProof, setInitiatorUtxoProof] = useState<number[]>();
 
-  const addSpentUtxos = useAddSpentUtxos();
-  const removeSpentUtxos = useRemoveSpentUtxos();
   const recommendedFeeRate = useRecommendedFeeRateFromOrchestrator();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
@@ -230,8 +227,6 @@ export function WithdrawReview({
         throw new Error("Signed Failed");
       }
 
-      addSpentUtxos(toSpendUtxos);
-
       setStep(2);
 
       await Orchestrator.invoke({
@@ -283,7 +278,6 @@ export function WithdrawReview({
     } catch (error: any) {
       if (error.code !== 4001) {
         setErrorMessage(error.message || "Unknown Error");
-        removeSpentUtxos(toSpendUtxos);
       } else {
         setStep(0);
       }

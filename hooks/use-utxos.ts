@@ -1,13 +1,12 @@
 import { UnspentOutput } from "@/types";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { useAtomValue } from "jotai";
-import { spentUtxosAtom } from "@/store/spent-utxos";
 import axios from "axios";
 
 import useSWR from "swr";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { atom, useAtom } from "jotai";
+import { Orchestrator } from "@/lib/orchestrator";
 
 export const pendingBtcUtxosAtom = atom<UnspentOutput[]>([]);
 export const pendingRuneUtxosAtom = atom<UnspentOutput[]>([]);
@@ -22,7 +21,8 @@ export function usePendingRuneUtxos() {
 
 export function useBtcUtxos(address: string | undefined, pubkey?: string) {
   const [pendingUtxos] = usePendingBtcUtxos();
-  const spentUtxos = useAtomValue(spentUtxosAtom);
+
+  const [filteredUtxos, setFilteredUtxos] = useState<UnspentOutput[]>();
 
   const { data: apiUtxos } = useSWR(
     address
@@ -38,28 +38,22 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
     { refreshInterval: 3 * 60 * 1000 }
   );
 
-  return useMemo(
-    () =>
-      apiUtxos
-        ? apiUtxos
-            .concat(
-              pendingUtxos.filter(
-                (p) =>
-                  !p.runes.length &&
-                  apiUtxos.findIndex(
-                    (c) => c.txid === p.txid && c.vout === p.vout
-                  ) < 0
-              )
-            )
-            .filter(
-              (c) =>
-                spentUtxos.findIndex(
-                  (s) => s.txid === c.txid && s.vout === c.vout
-                ) < 0
-            )
-        : undefined,
-    [apiUtxos, pendingUtxos, spentUtxos]
-  );
+  useEffect(() => {
+    if (!address || !apiUtxos) {
+      return undefined;
+    }
+    const allUtxos = apiUtxos.concat(
+      pendingUtxos.filter(
+        (p) =>
+          p.runes.length &&
+          apiUtxos.findIndex((c) => c.txid === p.txid && c.vout === p.vout) < 0
+      )
+    );
+
+    Orchestrator.filterSpentUtxos(address, allUtxos).then(setFilteredUtxos);
+  }, [apiUtxos, pendingUtxos, address]);
+
+  return filteredUtxos;
 }
 
 export function useRuneUtxos(
@@ -68,7 +62,8 @@ export function useRuneUtxos(
   pubkey?: string
 ) {
   const [pendingUtxos] = usePendingRuneUtxos();
-  const spentUtxos = useAtomValue(spentUtxosAtom);
+  const [filteredUtxos, setFilteredUtxos] = useState<UnspentOutput[]>();
+
   const { data: apiUtxos } = useSWR(
     address && runeid && runeid !== "0:0"
       ? `/api/utxos/rune?address=${address}&runeid=${runeid}${
@@ -85,28 +80,22 @@ export function useRuneUtxos(
     { refreshInterval: 3 * 60 * 1000 }
   );
 
-  return useMemo(
-    () =>
-      apiUtxos
-        ? apiUtxos
-            .concat(
-              pendingUtxos.filter(
-                (p) =>
-                  p.runes.length &&
-                  apiUtxos.findIndex(
-                    (c) => c.txid === p.txid && c.vout === p.vout
-                  ) < 0
-              )
-            )
-            .filter(
-              (c) =>
-                spentUtxos.findIndex(
-                  (s) => s.txid === c.txid && s.vout === c.vout
-                ) < 0
-            )
-        : undefined,
-    [apiUtxos, pendingUtxos, spentUtxos]
-  );
+  useEffect(() => {
+    if (!address || !apiUtxos) {
+      return undefined;
+    }
+    const allUtxos = apiUtxos.concat(
+      pendingUtxos.filter(
+        (p) =>
+          p.runes.length &&
+          apiUtxos.findIndex((c) => c.txid === p.txid && c.vout === p.vout) < 0
+      )
+    );
+
+    Orchestrator.filterSpentUtxos(address, allUtxos).then(setFilteredUtxos);
+  }, [apiUtxos, pendingUtxos, address]);
+
+  return filteredUtxos;
 }
 
 export function useWalletBtcUtxos() {

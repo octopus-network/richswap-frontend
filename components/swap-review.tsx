@@ -14,7 +14,7 @@ import {
 } from "@/types";
 
 import { useRecommendedFeeRateFromOrchestrator } from "@/hooks/use-fee-rate";
-import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
+
 import { BITCOIN } from "@/lib/constants";
 import { CoinIcon } from "@/components/coin-icon";
 import { getAddressType, cn, getUtxoProof } from "@/lib/utils";
@@ -82,8 +82,6 @@ export function SwapReview({
 
   const [intentions, setIntentions] = useState<Intention[]>([]);
 
-  const addSpentUtxos = useAddSpentUtxos();
-  const removeSpentUtxos = useRemoveSpentUtxos();
   const recommendedFeeRate = useRecommendedFeeRateFromOrchestrator();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
@@ -403,8 +401,6 @@ export function SwapReview({
         throw new Error("Signed Failed");
       }
 
-      addSpentUtxos(toSpendUtxos);
-
       setStep(2);
 
       await Orchestrator.invoke({
@@ -447,7 +443,6 @@ export function SwapReview({
     } catch (error: any) {
       if (error.code !== 4001) {
         setErrorMessage(error.message || "Unknown Error");
-        removeSpentUtxos(toSpendUtxos);
       } else {
         setStep(0);
       }

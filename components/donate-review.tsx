@@ -10,8 +10,6 @@ import {
   ToSignInput,
 } from "@/types";
 
-import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
-
 import Decimal from "decimal.js";
 import { OKX, useLaserEyes } from "@omnisat/lasereyes-react";
 import { getAddressType } from "@/lib/utils";
@@ -79,8 +77,6 @@ export function DonateReview({
   const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
   const [initiatorUtxoProof, setInitiatorUtxoProof] = useState<number[]>();
 
-  const addSpentUtxos = useAddSpentUtxos();
-  const removeSpentUtxos = useRemoveSpentUtxos();
   const recommendedFeeRate = useRecommendedFeeRateFromOrchestrator();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
@@ -215,8 +211,6 @@ export function DonateReview({
         throw new Error("Signed Failed");
       }
 
-      addSpentUtxos(toSpendUtxos);
-
       setStep(2);
 
       await Orchestrator.invoke({
@@ -267,7 +261,6 @@ export function DonateReview({
       console.log(error);
       if (error.code !== 4001) {
         setErrorMessage(error.message || error.toString());
-        removeSpentUtxos(toSpendUtxos);
       } else {
         setStep(0);
       }

@@ -10,8 +10,6 @@ import {
   ToSignInput,
 } from "@/types";
 
-import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
-
 import { getUtxoProof } from "@/lib/utils";
 import Decimal from "decimal.js";
 import { OKX, useLaserEyes } from "@omnisat/lasereyes-react";
@@ -80,8 +78,6 @@ export function DepositReview({
   const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
   const [initiatorUtxoProof, setInitiatorUtxoProof] = useState<number[]>();
 
-  const addSpentUtxos = useAddSpentUtxos();
-  const removeSpentUtxos = useRemoveSpentUtxos();
   const recommendedFeeRate = useRecommendedFeeRateFromOrchestrator();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
@@ -256,8 +252,6 @@ export function DepositReview({
         throw new Error("Signed Failed");
       }
 
-      addSpentUtxos(toSpendUtxos);
-
       setStep(2);
 
       await Orchestrator.invoke({
@@ -310,7 +304,6 @@ export function DepositReview({
       console.log(error);
       if (error.code !== 4001) {
         setErrorMessage(error.message || error.toString());
-        removeSpentUtxos(toSpendUtxos);
       } else {
         setStep(0);
       }

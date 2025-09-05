@@ -102,4 +102,20 @@ export class Orchestrator {
     const res = (await actor.estimate_min_tx_fee(args)) as { Ok: bigint };
     return BigInt(res.Ok);
   }
+
+  static async filterSpentUtxos(
+    address: string,
+    utxos: UnspentOutput[]
+  ): Promise<UnspentOutput[]> {
+    const usedOutpoints = (await actor.get_used_outpoints([address])) as [
+      string,
+      string
+    ][];
+    return utxos.filter(
+      ({ txid, vout }) =>
+        usedOutpoints.findIndex(
+          ([outpoint]) => `${txid}:${vout}` === outpoint
+        ) < 0
+    );
+  }
 }
