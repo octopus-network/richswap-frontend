@@ -16,7 +16,9 @@ import { getLocale, getMessages } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "RichSwap",
-  description: "RichSwap",
+  description:
+    "RichSwap is a decentralized exchange for Bitcoin and Runes. Swap, provide liquidity, and trade Bitcoin-based assets with low fees and high security.",
+  keywords: "Bitcoin, Runes, DEX, Decentralized Exchange, Swap, Liquidity, BTC",
 };
 
 export default async function RootLayout({
