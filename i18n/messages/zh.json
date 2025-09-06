@@ -157,7 +157,7 @@
     "withdrawLiquidityDescription": "从 {poolName} 池中取出 {amountA} 个 {coinA} 和 {amountB} 个 {coinB}",
     "donateTitle": "捐赠到 {poolName}",
     "donateDescription": "向 {poolName} 池中捐赠 {amount} 个 {coin}",
-    "claimAndDonateTitle": "领取 & 捐赠到 {poolName}",
+    "claimAndDonateTitle": "领取 & 捐赠到 {poolName} 池",
     "claimAndDonateDescription": "领取 {amount} sats 并捐赠到 {poolName} 池",
     "disconnect": "断开连接",
     "extractFee": "提取手续费",
