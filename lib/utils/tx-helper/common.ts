@@ -250,14 +250,14 @@ export function getTxTitleAndDescription(transaction: TransactionInfo) {
     title = {
       key: "claimAndDonateTitle",
       data: {
-        poolName: getCoinSymbol(coinB),
+        poolName: "HOPE•YOU•GET•RICH",
       },
     };
     description = {
       key: "claimAndDonateDescription",
       data: {
         amount: formatNumber(coinAAmount, true),
-        poolName: getCoinSymbol(coinB),
+        poolName: "HOPE•YOU•GET•RICH",
       },
     };
   }
