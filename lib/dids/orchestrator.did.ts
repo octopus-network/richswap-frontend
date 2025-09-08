@@ -140,17 +140,11 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     update_time: IDL.Text,
     medium: IDL.Nat64,
   });
-  const UtxoProofVerificationStatus = IDL.Variant({
-    Enabled: IDL.Null,
-    Disabled: IDL.Null,
-    AllowEmpty: IDL.Null,
-  });
   const OrchestratorStatus = IDL.Record({
     last_block: IDL.Opt(BlockBasic),
     pending_tx_count: IDL.Nat64,
     mempool_tx_fee_rate: MempoolTxFeeRateView,
     invoke_paused: IDL.Bool,
-    utxo_proof_verification_status: UtxoProofVerificationStatus,
   });
   const TxStatus = IDL.Variant({
     Confirmed: IDL.Nat32,
