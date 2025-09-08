@@ -161,6 +161,9 @@ export async function GET() {
           ...coinB,
           balance: coin_reserveds[0]?.value.toString() ?? "0",
         },
+        protocolRevenue: attributesJson.protocol_revenue
+          ? attributesJson.protocol_revenue.toString()
+          : "0",
         coinADonation: attributesJson.total_btc_donation.toString(),
         coinBDonation: attributesJson.total_rune_donation.toString(),
       });

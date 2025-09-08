@@ -10,7 +10,6 @@ import { retry, RetryableError } from "./retry";
 import axios from "axios";
 import { Orchestrator } from "@/lib/orchestrator";
 
-import { useRemoveSpentUtxos } from "@/store/spent-utxos";
 import { getTxTitleAndDescription } from "@/lib/utils";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { MEMPOOL_URL } from "@/lib/constants";
@@ -32,7 +31,6 @@ export function TransactionUpdater() {
 
   const updateTransactionStatus = useUpdateTransactionStatus();
 
-  const removeSpentUtxos = useRemoveSpentUtxos();
   const addPopup = useAddPopup();
 
   const [timer, setTimer] = useState<number>(0);
@@ -88,9 +86,6 @@ export function TransactionUpdater() {
               return;
             } else if (receipt?.status === "Rejected") {
               console.log("rejected", receipt);
-              if (tx.utxos?.length) {
-                removeSpentUtxos(tx.utxos);
-              }
 
               addPopup(
                 t("transactionFailed"),
@@ -135,7 +130,6 @@ export function TransactionUpdater() {
     getReceipt,
     updateTransactionStatus,
     timer,
-    removeSpentUtxos,
     t,
   ]);
 

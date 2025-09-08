@@ -2,8 +2,15 @@
 
 import { PropsWithChildren } from "react";
 import { LaserEyesProvider } from "@omnisat/lasereyes-react";
-
-import { NETWORK } from "@/lib/constants";
+import { TooltipProvider } from "./ui/tooltip";
+import {
+  NETWORK,
+  EXCHANGE_ID,
+  EXCHANGE_CANISTER_ID,
+  MAESTRO_API_KEY,
+} from "@/lib/constants";
+import { Network, ReeProvider } from "@omnity/ree-client-ts-sdk";
+import { idlFactory } from "@/lib/dids/richswap.did";
 
 export function Providers({ children }: PropsWithChildren) {
   return (
@@ -12,7 +19,17 @@ export function Providers({ children }: PropsWithChildren) {
         network: NETWORK,
       }}
     >
-      {children}
+      <ReeProvider
+        config={{
+          network: NETWORK === "mainnet" ? Network.Mainnet : Network.Testnet,
+          maestroApiKey: MAESTRO_API_KEY,
+          exchangeIdlFactory: idlFactory,
+          exchangeId: EXCHANGE_ID,
+          exchangeCanisterId: EXCHANGE_CANISTER_ID,
+        }}
+      >
+        <TooltipProvider>{children}</TooltipProvider>
+      </ReeProvider>
     </LaserEyesProvider>
   );
 }

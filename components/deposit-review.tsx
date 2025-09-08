@@ -10,9 +10,7 @@ import {
   ToSignInput,
 } from "@/types";
 
-import { useAddSpentUtxos, useRemoveSpentUtxos } from "@/store/spent-utxos";
-
-import axios from "axios";
+import { getUtxoProof } from "@/lib/utils";
 import Decimal from "decimal.js";
 import { OKX, useLaserEyes } from "@omnisat/lasereyes-react";
 import { getAddressType } from "@/lib/utils";
@@ -26,7 +24,7 @@ import { formatNumber, getCoinSymbol } from "@/lib/utils";
 
 import { useWalletBtcUtxos, useWalletRuneUtxos } from "@/hooks/use-utxos";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import { Step } from "@/components/step";
 import { FileSignature, Shuffle } from "lucide-react";
@@ -80,8 +78,6 @@ export function DepositReview({
   const [outputCoins, setOutputCoins] = useState<OutputCoin[]>([]);
   const [initiatorUtxoProof, setInitiatorUtxoProof] = useState<number[]>();
 
-  const addSpentUtxos = useAddSpentUtxos();
-  const removeSpentUtxos = useRemoveSpentUtxos();
   const recommendedFeeRate = useRecommendedFeeRateFromOrchestrator();
   const addPopup = useAddPopup();
   const addTransaction = useAddTransaction();
@@ -103,7 +99,7 @@ export function DepositReview({
     [coinBAmount, coinBPrice]
   );
 
-  useEffect(() => {
+  const fetchUtxoProof = useCallback(() => {
     if (!toSpendUtxos.length || !paymentAddress) {
       setInitiatorUtxoProof(undefined);
       return;
@@ -113,23 +109,18 @@ export function DepositReview({
       (utxo) => utxo.address === paymentAddress
     );
 
-    axios
-      .post(`/api/utxos/get-proof`, {
-        address: paymentAddress,
-        utxos,
-      })
-      .then((res) => res.data)
-      .then((data) => {
-        if (data.data) {
-          setInitiatorUtxoProof(data.data);
-        } else {
-          setErrorMessage("Fetch proof failed");
-        }
-      })
-      .catch(() => {
-        setErrorMessage("Fetch proof failed");
-      });
+    getUtxoProof(utxos).then((proof) => {
+      if (proof) {
+        setInitiatorUtxoProof(proof);
+      } else {
+        setErrorMessage("FETCH_UTXO_PROOF_FAILED");
+      }
+    });
   }, [toSpendUtxos, paymentAddress]);
+
+  useEffect(() => {
+    fetchUtxoProof();
+  }, [fetchUtxoProof]);
 
   useEffect(() => {
     if (
@@ -261,8 +252,6 @@ export function DepositReview({
         throw new Error("Signed Failed");
       }
 
-      addSpentUtxos(toSpendUtxos);
-
       setStep(2);
 
       await Orchestrator.invoke({
@@ -306,6 +295,7 @@ export function DepositReview({
           coinB: getCoinSymbol(coinB),
           amountA: coinAAmount,
           amountB: coinBAmount,
+          poolName: getCoinSymbol(coinB),
         })
       );
 
@@ -314,7 +304,6 @@ export function DepositReview({
       console.log(error);
       if (error.code !== 4001) {
         setErrorMessage(error.message || error.toString());
-        removeSpentUtxos(toSpendUtxos);
       } else {
         setStep(0);
       }
@@ -339,14 +328,31 @@ export function DepositReview({
         <div className="break-all mt-2 text-sm">{t(errorMessage)}</div>
       </div>
 
-      <Button
-        onClick={onBack}
-        variant="secondary"
-        className="text-destructive"
-        size="lg"
-      >
-        {t("dismiss")}
-      </Button>
+      {errorMessage === "FETCH_UTXO_PROOF_FAILED" ? (
+        <>
+          <Button
+            onClick={() => {
+              setErrorMessage("");
+              fetchUtxoProof();
+            }}
+            size="lg"
+          >
+            {t("retry")}
+          </Button>
+          <Button onClick={onBack} variant="secondary" size="lg">
+            {t("cancel")}
+          </Button>
+        </>
+      ) : (
+        <Button
+          onClick={onBack}
+          variant="secondary"
+          className="text-destructive"
+          size="lg"
+        >
+          {t("dismiss")}
+        </Button>
+      )}
     </div>
   ) : (
     <>
@@ -419,14 +425,18 @@ export function DepositReview({
               size="xl"
               className="w-full"
               onClick={onSubmit}
-              disabled={!psbt || invalidAddressType}
+              disabled={!psbt || invalidAddressType || !initiatorUtxoProof}
             >
-              {!psbt && <Loader2 className="size-4 animate-spin" />}
+              {(!psbt || !initiatorUtxoProof) && (
+                <Loader2 className="size-4 animate-spin" />
+              )}
               {!psbt
                 ? t("generatingPsbt")
                 : invalidAddressType
                 ? t("unsupportedAddressType")
-                : t("signTransaction")}
+                : initiatorUtxoProof
+                ? t("signTransaction")
+                : t("fetchingProof")}
             </Button>
             {showCancelButton && (
               <Button

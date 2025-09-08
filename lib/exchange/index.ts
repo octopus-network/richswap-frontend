@@ -16,6 +16,8 @@ import {
   getP2trAressAndScript,
   formatCoinAmount,
   fetchCoinById,
+  bytesToHex,
+  addressToScriptPk,
 } from "../utils";
 import Decimal from "decimal.js";
 
@@ -108,6 +110,7 @@ export class Exchange {
       nonce: Number(data.nonce),
       coinADonation: attributes.total_btc_donation.toString(),
       coinBDonation: attributes.total_rune_donation.toString(),
+      protocolRevenue: attributes.protocol_revenue.toString(),
       utxos: [
         {
           txid: utxo.txid,
@@ -184,6 +187,7 @@ export class Exchange {
         nonce: Number(data.nonce),
         coinADonation: attributes.total_btc_donation.toString(),
         coinBDonation: attributes.total_rune_donation.toString(),
+        protocolRevenue: attributes.protocol_revenue.toString(),
       };
     }
   }
@@ -612,5 +616,63 @@ export class Exchange {
     };
 
     return route;
+  }
+
+  public static async getFeeCollector() {
+    const res = (await actor.get_fee_collector()) as string;
+
+    return res;
+  }
+
+  public static async preExtractFee(poolAddress: string) {
+    const res = await actor.pre_extract_fee(poolAddress).then((data: any) => {
+      if (data.Ok) {
+        return data.Ok as {
+          input: {
+            coins: [
+              {
+                id: string;
+                value: bigint;
+              }
+            ];
+            sats: bigint;
+            txid: string;
+            vout: number;
+          };
+          nonce: bigint;
+          output: {
+            id: string;
+            value: bigint;
+          };
+        };
+      } else {
+        throw new Error(data.Err ? Object.keys(data.Err)[0] : "Unknown Error");
+      }
+    });
+    const output = addressToScriptPk(poolAddress);
+
+    const rune = res.input.coins[0];
+
+    const utxo: UnspentOutput = {
+      txid: res.input.txid,
+      vout: res.input.vout,
+      satoshis: res.input.sats.toString(),
+      address: poolAddress,
+      pubkey: "",
+      addressType: AddressType.P2TR,
+      scriptPk: bytesToHex(output),
+      runes: [
+        {
+          id: rune.id,
+          amount: rune.value.toString(),
+        },
+      ],
+    };
+
+    return {
+      utxo,
+      nonce: res.nonce.toString(),
+      outputAmount: res.output.value.toString(),
+    };
   }
 }
