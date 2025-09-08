@@ -397,41 +397,43 @@ export default function Pool() {
                       ) : (
                         <Skeleton className="h-5 w-12" />
                       )}
-                      {Number(poolInfo.protocolRevenue ?? "0") <
-                      CLAIMABLE_PROTOCOL_FEE_THRESHOLD ? (
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Button
-                              className=""
-                              variant="outline"
-                              size="xs"
-                              disabled
-                            >
-                              {t("claimAndDonate")}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              {t("claimTips", {
-                                amount: CLAIMABLE_PROTOCOL_FEE_THRESHOLD,
-                              })}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <Button
-                          className=""
-                          variant="outline"
-                          size="xs"
-                          onClick={claimAndDonate}
-                          disabled={!donateQuote || claimAndDonating}
-                        >
-                          {claimAndDonating && (
-                            <Loader2 className="size-4 animate-spin" />
-                          )}
-                          {t("claimAndDonate")}
-                        </Button>
-                      )}
+                      {RICH_POOL !== address ? (
+                        Number(poolInfo.protocolRevenue ?? "0") <
+                        CLAIMABLE_PROTOCOL_FEE_THRESHOLD ? (
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Button
+                                className=""
+                                variant="outline"
+                                size="xs"
+                                disabled
+                              >
+                                {t("claimAndDonate")}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                {t("claimTips", {
+                                  amount: CLAIMABLE_PROTOCOL_FEE_THRESHOLD,
+                                })}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <Button
+                            className=""
+                            variant="outline"
+                            size="xs"
+                            onClick={claimAndDonate}
+                            disabled={!donateQuote || claimAndDonating}
+                          >
+                            {claimAndDonating && (
+                              <Loader2 className="size-4 animate-spin" />
+                            )}
+                            {t("claimAndDonate")}
+                          </Button>
+                        )
+                      ) : null}
                     </div>
                   </div>
                 )}
