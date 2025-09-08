@@ -116,18 +116,17 @@
     "withdrawLiquidityDescription": "Withdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
     "donateTitle": "Donate to {poolName}",
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
-
     "success": "Success",
     "signPsbt": "Sign PSBT",
     "24hVolume": "24H Volume",
     "protocolFee": "Protocol Fee",
-    "claimAndDonate": "Claim & Donate",
+    "claimAndDonate": "Extract & Donate",
     "fetchingProof": "Fetching UTXO Proof",
     "failed": "Failed",
-    "claimAndDonateSuccess": "Claim and donate success",
+    "claimAndDonateSuccess": "Extract and donate success",
     "retry": "Retry",
     "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
-    "claimTips": "Claimable: > {amount} sats"
+    "claimTips": "Extractable: > {amount} sats"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
@@ -157,8 +156,8 @@
     "withdrawLiquidityDescription": "Withdraw {amountA} {coinA} and {amountB} {coinB} from {poolName} pool",
     "donateTitle": "Donate to {poolName}",
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
-    "claimAndDonateTitle": "Claim & Donate to {poolName} pool",
-    "claimAndDonateDescription": "Claim {amount} sats and donate to {poolName} pool",
+    "claimAndDonateTitle": "Extract & Donate to {poolName} pool",
+    "claimAndDonateDescription": "Extract {amount} sats and donate to {poolName} pool",
     "disconnect": "Disconnect",
     "extractFee": "Extract Fee",
     "payment": "Payment"
