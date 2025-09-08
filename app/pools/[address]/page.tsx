@@ -17,15 +17,24 @@ import { useCoinPrice } from "@/hooks/use-prices";
 import { BITCOIN, RUNESCAN_URL, RICH_POOL } from "@/lib/constants";
 import { ellipseMiddle, formatNumber } from "@/lib/utils";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 import Circle from "react-circle";
 
+import { CLAIMABLE_PROTOCOL_FEE_THRESHOLD } from "@/lib/constants";
 import { useTranslations } from "next-intl";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 import { ManageLiquidityPanel } from "./manage-liquidity-panel";
 import Decimal from "decimal.js";
 import { useRee } from "@omnity/ree-client-ts-sdk";
-import { DonateState } from "@/types";
+
+import { TransactionStatus, TransactionType, DonateState } from "@/types";
 import { PopupStatus, useAddPopup } from "@/store/popups";
+import { useAddTransaction } from "@/store/transactions";
 
 export default function Pool() {
   const t = useTranslations("Pools");
@@ -36,6 +45,7 @@ export default function Pool() {
   const { paymentAddress, signPsbt } = useLaserEyes();
 
   const addPopup = useAddPopup();
+  const addTransaction = useAddTransaction();
 
   const [poolInfo, setPoolInfo] = useState<PoolInfo>();
   const [richPoolInfo, setRichPoolInfo] = useState<PoolInfo>();
@@ -110,13 +120,13 @@ export default function Pool() {
 
   const protocolFeeValue = useMemo(
     () =>
-      protocolFeeOffer?.outputAmount !== undefined
-        ? new Decimal(protocolFeeOffer.outputAmount)
+      poolInfo?.protocolRevenue !== undefined && btcPrice
+        ? new Decimal(poolInfo.protocolRevenue)
             .mul(btcPrice)
             .div(Math.pow(10, 8))
             .toNumber()
         : undefined,
-    [protocolFeeOffer, btcPrice]
+    [poolInfo, btcPrice]
   );
 
   useEffect(() => {
@@ -139,21 +149,20 @@ export default function Pool() {
     setClaimAndDonating(true);
 
     try {
-      const tx = await createTransaction({
-        involvedPoolAddresses: [poolInfo.address, RICH_POOL],
-      });
-
-      console.log("protocolFeeOffer", protocolFeeOffer);
-      console.log("donateQuote", donateQuote);
+      const tx = await createTransaction();
 
       tx.addIntention({
         action: "extract_protocol_fee",
         poolAddress: poolInfo.address,
+        poolUtxos: [protocolFeeOffer.utxo],
         inputCoins: [],
         outputCoins: [
           {
-            id: BITCOIN.id,
-            value: BigInt(protocolFeeOffer.outputAmount ?? "0"),
+            to: RICH_POOL,
+            coin: {
+              id: BITCOIN.id,
+              value: BigInt(protocolFeeOffer.outputAmount ?? "0"),
+            },
           },
         ],
         nonce: BigInt(protocolFeeOffer.nonce ?? "0"),
@@ -162,19 +171,21 @@ export default function Pool() {
       tx.addIntention({
         action: "donate",
         poolAddress: RICH_POOL,
+        poolUtxos: donateQuote.utxos,
         inputCoins: [
           {
-            id: BITCOIN.id,
-            value: BigInt(protocolFeeOffer.outputAmount ?? "0"),
+            from: poolInfo.address,
+            coin: {
+              id: BITCOIN.id,
+              value: BigInt(donateQuote.coinAAmount),
+            },
           },
         ],
         outputCoins: [],
         nonce: BigInt(donateQuote.nonce ?? "0"),
       });
 
-      console.log("await tx build");
-
-      const psbt = await tx.build();
+      const { psbt, txid } = await tx.build();
 
       const psbtBase64 = psbt.toBase64();
       const res = await signPsbt(psbtBase64);
@@ -186,7 +197,17 @@ export default function Pool() {
 
       await tx.send(signedPsbtHex);
 
+      addTransaction({
+        txid,
+        coinA: BITCOIN,
+        coinAAmount: donateQuote.coinAAmount,
+        type: TransactionType.CLAIM_PROTOCOL_FEE_AND_DONATE,
+        status: TransactionStatus.BROADCASTED,
+      });
+
       addPopup(t("success"), PopupStatus.SUCCESS, t("claimAndDonateSuccess"));
+
+      window.location.reload();
     } catch (err: any) {
       console.log(err);
       addPopup(t("failed"), PopupStatus.ERROR, err.message ?? "Unknown Error");
@@ -209,7 +230,9 @@ export default function Pool() {
                   </Button>
                 </Link>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-semibold">{poolInfo.name}</span>
+                  <span className="text-xl font-semibold truncate max-w-[220px]">
+                    {poolInfo.name}
+                  </span>
                 </div>
               </>
             ) : (
@@ -357,17 +380,14 @@ export default function Pool() {
                     )}
                   </div>
                 </div>
-                {protocolFeeOffer && (
+                {poolInfo && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
                       {t("protocolFee")}
                     </span>
                     <div className="flex flex-col items-end gap-0.5">
                       <span>
-                        {formatNumber(
-                          protocolFeeOffer.outputAmount ?? "0",
-                          true
-                        )}{" "}
+                        {formatNumber(poolInfo.protocolRevenue ?? "0", true)}{" "}
                         sats
                       </span>
                       {protocolFeeValue !== undefined ? (
@@ -377,18 +397,41 @@ export default function Pool() {
                       ) : (
                         <Skeleton className="h-5 w-12" />
                       )}
-                      <Button
-                        className=""
-                        variant="outline"
-                        size="xs"
-                        onClick={claimAndDonate}
-                        disabled={!donateQuote || claimAndDonating}
-                      >
-                        {claimAndDonating && (
-                          <Loader2 className="size-4 animate-spin" />
-                        )}
-                        {t("claimAndDonate")}
-                      </Button>
+                      {Number(poolInfo.protocolRevenue ?? "0") <
+                      CLAIMABLE_PROTOCOL_FEE_THRESHOLD ? (
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Button
+                              className=""
+                              variant="outline"
+                              size="xs"
+                              disabled
+                            >
+                              {t("claimAndDonate")}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {t("claimTips", {
+                                amount: CLAIMABLE_PROTOCOL_FEE_THRESHOLD,
+                              })}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Button
+                          className=""
+                          variant="outline"
+                          size="xs"
+                          onClick={claimAndDonate}
+                          disabled={!donateQuote || claimAndDonating}
+                        >
+                          {claimAndDonating && (
+                            <Loader2 className="size-4 animate-spin" />
+                          )}
+                          {t("claimAndDonate")}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}

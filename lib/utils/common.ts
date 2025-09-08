@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import * as bitcoin from "bitcoinjs-lib";
 import { BITCOIN, UNKNOWN_COIN, NETWORK } from "../constants";
 import * as ecc from "@bitcoinerlab/secp256k1";
-import { Coin } from "@/types";
+import { Coin, UnspentOutput } from "@/types";
 import axios from "axios";
 import Decimal from "decimal.js";
 import { toPsbtNetwork } from "./network";
@@ -97,6 +97,42 @@ export async function fetchCoinById(coinId: string): Promise<Coin> {
     .then((res) => res.data.data ?? []);
 
   return queryRes.length ? queryRes[0] : UNKNOWN_COIN;
+}
+
+export async function getUtxoProof(utxos: UnspentOutput[]) {
+  try {
+    const res = await axios
+      .post<{
+        success: boolean;
+        data: {
+          utxos: {
+            txid: string;
+            vout: number;
+            status: number;
+            value: number;
+            string: string;
+          }[];
+          network: string;
+          timestamp: number;
+          signature: string;
+        };
+      }>(`/api/utxos/get-proof`, {
+        utxos,
+      })
+      .then((res) => res.data.data);
+
+    if (!res) {
+      return null;
+    }
+    const jsonString = JSON.stringify(res);
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(jsonString);
+
+    return Array.from(bytes);
+  } catch (err) {
+    console.log("get utxo proof error", err);
+    return null;
+  }
 }
 
 export function isNumber(value: string) {
