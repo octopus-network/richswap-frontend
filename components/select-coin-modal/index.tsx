@@ -8,7 +8,7 @@ import { CoinWarningModal } from "./coin-warning-modal";
 import { BaseModal } from "../base-modal";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { useDebounce } from "@/hooks/use-debounce";
-import { CoinRow } from "./coin-row";
+import { CoinRowLite } from "./coin-row-lite";
 import { Loader2 } from "lucide-react";
 
 import { useSearchCoins } from "@/hooks/use-coins";
@@ -70,6 +70,7 @@ export function SelectCoinModal({
   const [coinWarningModalOpen, setCoinWarningModalOpen] = useState(false);
   const [isModalReady, setIsModalReady] = useState(false);
   const [toWarningCoin, setToWarningCoin] = useState<Coin>();
+  const [visibleCount, setVisibleCount] = useState(30);
   const searchCoins = useSearchCoins(debouncedQuery);
   const poolsTvl = usePoolsTvl();
   const poolList = usePoolList();
@@ -91,27 +92,31 @@ export function SelectCoinModal({
   const sortedCoins: Coin[] = useMemo(() => {
     if (!isModalReady) return [];
 
+    // Precompute maps to avoid repeated find/some in sort/filter
+    const tvlByCoinId: Record<string, number> = {};
+    for (const pool of poolList) {
+      const tvl = poolsTvl[pool.address] ?? poolsTvl[pool.key] ?? 0;
+      tvlByCoinId[pool.coinB.id] = tvl;
+    }
+
+    const swappableSet: Record<string, boolean> = {};
+    if (onlySwappableCoins) {
+      swappableSet[BITCOIN.id] = true;
+      for (const pool of poolList) {
+        swappableSet[pool.coinB.id] = true;
+      }
+    }
+
     const filteredCoins = Object.values(defaultCoins)
-      .filter((coin) => {
-        if (onlySwappableCoins) {
-          return (
-            coin.id === BITCOIN.id ||
-            poolList.some((pool) => pool.coinB.id === coin.id)
-          );
-        }
-        return true;
-      })
+      .filter((coin) => (onlySwappableCoins ? !!swappableSet[coin.id] : true))
       .filter(coinFilter(debouncedQuery));
 
     return filteredCoins.sort((a, b) => {
       if (a.id === "0:0") return -1;
       if (b.id === "0:0") return 1;
 
-      const poolA = poolList.find((pool) => pool.coinB.id === a.id);
-      const poolB = poolList.find((pool) => pool.coinB.id === b.id);
-
-      const poolATvl = poolA ? poolsTvl[poolA.address] : 0;
-      const poolBTvl = poolB ? poolsTvl[poolB.address] : 0;
+      const poolATvl = tvlByCoinId[a.id] ?? 0;
+      const poolBTvl = tvlByCoinId[b.id] ?? 0;
 
       return poolBTvl - poolATvl;
     });
@@ -123,6 +128,11 @@ export function SelectCoinModal({
     onlySwappableCoins,
     isModalReady,
   ]);
+
+  // Reset visible batch when data set changes or modal toggles
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [debouncedQuery, onlySwappableCoins, isModalReady]);
 
   const handleCoinSelect = (coin: Coin, hasWarning?: boolean) => {
     if (!hasWarning) {
@@ -172,9 +182,18 @@ export function SelectCoinModal({
         </div>
       </div>
       {isModalReady ? (
-        <div className="border-t mt-4 h-[calc(70vh_-_80px)] overflow-y-auto">
-          {sortedCoins.map((coin) => (
-            <CoinRow coin={coin} key={coin.id} onSelect={handleCoinSelect} />
+        <div
+          className="border-t mt-4 h-[calc(70vh_-_80px)] overflow-y-auto"
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 48) {
+              // near bottom, load next batch
+              setVisibleCount((v) => Math.min(v + 30, sortedCoins.length));
+            }
+          }}
+        >
+          {(sortedCoins.slice(0, visibleCount) as Coin[]).map((coin) => (
+            <CoinRowLite coin={coin} key={coin.id} onSelect={handleCoinSelect} />
           ))}
           {searchCoins?.length
             ? searchCoins
@@ -182,8 +201,9 @@ export function SelectCoinModal({
                   (item) =>
                     sortedCoins.findIndex((coin) => coin.id === item.id) < 0
                 )
+                .slice(0, Math.max(0, 100 - visibleCount))
                 .map((coin) => (
-                  <CoinRow
+                  <CoinRowLite
                     coin={coin}
                     key={`search-${coin.id}`}
                     onSelect={(coin) => handleCoinSelect(coin, true)}
