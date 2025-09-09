@@ -81,10 +81,14 @@ export default function Pool() {
       setDonateQuote(undefined);
       return;
     }
-    Exchange.preDonate(richPoolInfo, protocolFeeOffer.outputAmount).then(
-      setDonateQuote
-    );
-  }, [protocolFeeOffer, richPoolInfo]);
+    if (address === RICH_POOL) {
+      Exchange.preSelfDonate().then(setDonateQuote);
+    } else {
+      Exchange.preDonate(richPoolInfo, protocolFeeOffer.outputAmount).then(
+        setDonateQuote
+      );
+    }
+  }, [protocolFeeOffer, richPoolInfo, address]);
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
@@ -170,6 +174,70 @@ export default function Pool() {
 
       tx.addIntention({
         action: "donate",
+        poolAddress: RICH_POOL,
+        poolUtxos: donateQuote.utxos,
+        inputCoins: [
+          {
+            from: poolInfo.address,
+            coin: {
+              id: BITCOIN.id,
+              value: BigInt(donateQuote.coinAAmount),
+            },
+          },
+        ],
+        outputCoins: [],
+        nonce: BigInt(donateQuote.nonce ?? "0"),
+      });
+
+      const { psbt, txid } = await tx.build();
+
+      const psbtBase64 = psbt.toBase64();
+      const res = await signPsbt(psbtBase64);
+      const signedPsbtHex = res?.signedPsbtHex ?? "";
+
+      if (!signedPsbtHex) {
+        throw new Error("Signed Failed");
+      }
+
+      await tx.send(signedPsbtHex);
+
+      addTransaction({
+        txid,
+        coinA: BITCOIN,
+        coinAAmount: donateQuote.coinAAmount,
+        type: TransactionType.CLAIM_PROTOCOL_FEE_AND_DONATE,
+        status: TransactionStatus.BROADCASTED,
+      });
+
+      addPopup(t("success"), PopupStatus.SUCCESS, t("claimAndDonateSuccess"));
+
+      window.location.reload();
+    } catch (err: any) {
+      console.log(err);
+      addPopup(t("failed"), PopupStatus.ERROR, err.message ?? "Unknown Error");
+    } finally {
+      setClaimAndDonating(false);
+    }
+  };
+
+  const claimAndDonateSelf = async () => {
+    if (
+      !poolInfo ||
+      donateQuote?.state !== DonateState.VALID ||
+      !protocolFeeOffer
+    ) {
+      return;
+    }
+
+    setClaimAndDonating(true);
+
+    try {
+      const tx = await createTransaction();
+
+      console.log("donateQuote", donateQuote);
+
+      tx.addIntention({
+        action: "self_donate",
         poolAddress: RICH_POOL,
         poolUtxos: donateQuote.utxos,
         inputCoins: [
@@ -397,43 +465,45 @@ export default function Pool() {
                       ) : (
                         <Skeleton className="h-5 w-12" />
                       )}
-                      {RICH_POOL !== address ? (
-                        Number(poolInfo.protocolRevenue ?? "0") <
-                        CLAIMABLE_PROTOCOL_FEE_THRESHOLD ? (
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Button
-                                className=""
-                                variant="outline"
-                                size="xs"
-                                disabled
-                              >
-                                {t("claimAndDonate")}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {t("claimTips", {
-                                  amount: CLAIMABLE_PROTOCOL_FEE_THRESHOLD,
-                                })}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <Button
-                            className=""
-                            variant="outline"
-                            size="xs"
-                            onClick={claimAndDonate}
-                            disabled={!donateQuote || claimAndDonating}
-                          >
-                            {claimAndDonating && (
-                              <Loader2 className="size-4 animate-spin" />
-                            )}
-                            {t("claimAndDonate")}
-                          </Button>
-                        )
-                      ) : null}
+                      {Number(poolInfo.protocolRevenue ?? "0") <
+                      CLAIMABLE_PROTOCOL_FEE_THRESHOLD ? (
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Button
+                              className=""
+                              variant="outline"
+                              size="xs"
+                              disabled
+                            >
+                              {t("claimAndDonate")}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {t("claimTips", {
+                                amount: CLAIMABLE_PROTOCOL_FEE_THRESHOLD,
+                              })}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Button
+                          className=""
+                          variant="outline"
+                          size="xs"
+                          onClick={
+                            address === RICH_POOL
+                              ? claimAndDonateSelf
+                              : claimAndDonate
+                          }
+                          disabled={!donateQuote || claimAndDonating}
+                        >
+                          {claimAndDonating && (
+                            <Loader2 className="size-4 animate-spin" />
+                          )}
+                          {t("claimAndDonate")}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}

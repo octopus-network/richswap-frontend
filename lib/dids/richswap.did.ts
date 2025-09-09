@@ -15,9 +15,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     PriceImpactLimitExceeded: IDL.Null,
     RuneIndexerError: IDL.Text,
     PoolStateExpired: IDL.Nat64,
-    InvalidSignature: IDL.Null,
     TooSmallFunds: IDL.Null,
-    LiquidityLocked: IDL.Null,
     InvalidRuneId: IDL.Null,
     InvalidPool: IDL.Null,
     InvalidPsbt: IDL.Text,
@@ -25,7 +23,6 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     InvalidTxid: IDL.Null,
     InvalidLiquidity: IDL.Null,
     EmptyPool: IDL.Null,
-    InvalidLockMessage: IDL.Null,
     FetchBitcoinCanisterError: IDL.Null,
     LpNotFound: IDL.Null,
     NoConfirmedUtxos: IDL.Null,
@@ -35,7 +32,8 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     InsufficientFunds: IDL.Null,
   });
   const Result_1 = IDL.Variant({ Ok: IDL.Text, Err: ExchangeError });
-  const Result_2 = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
+  const Result_2 = IDL.Variant({ Ok: IDL.Null, Err: ExchangeError });
+  const Result_3 = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
   const CoinBalance = IDL.Record({ id: IDL.Text, value: IDL.Nat });
   const InputCoin = IDL.Record({ coin: CoinBalance, from: IDL.Text });
   const OutputCoin = IDL.Record({ to: IDL.Text, coin: CoinBalance });
@@ -68,7 +66,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     intention_index: IDL.Nat32,
     psbt_hex: IDL.Text,
   });
-  const Result_3 = IDL.Variant({
+  const Result_4 = IDL.Variant({
     Ok: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
     Err: ExchangeError,
   });
@@ -83,7 +81,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     user_share: IDL.Nat,
     user_incomes: IDL.Nat64,
   });
-  const Result_4 = IDL.Variant({ Ok: Liquidity, Err: ExchangeError });
+  const Result_5 = IDL.Variant({ Ok: Liquidity, Err: ExchangeError });
   const GetMinimalTxValueArgs = IDL.Record({
     zero_confirmed_tx_queue_length: IDL.Nat32,
     pool_address: IDL.Text,
@@ -111,14 +109,12 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     incomes: IDL.Nat64,
     total_btc_donation: IDL.Nat64,
     nonce: IDL.Nat64,
-    lp_locks: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat64)),
   });
-  const Result_5 = IDL.Variant({
+  const Result_6 = IDL.Variant({
     Ok: IDL.Opt(IDL.Tuple(IDL.Opt(PoolState), PoolState)),
     Err: IDL.Text,
   });
   const TxRecord = IDL.Record({ pools: IDL.Vec(IDL.Text) });
-  const Result_6 = IDL.Variant({ Ok: IDL.Null, Err: ExchangeError });
   const Result_7 = IDL.Variant({ Ok: IDL.Null, Err: IDL.Text });
   const LiquidityOffer = IDL.Record({
     output: CoinBalance,
@@ -183,12 +179,13 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   return IDL.Service({
     blocks_tx_records_count: IDL.Func([], [Result], ["query"]),
     create: IDL.Func([IDL.Text], [Result_1], []),
-    escape_hatch: IDL.Func([IDL.Text, IDL.Text, IDL.Nat64], [Result_2], []),
-    execute_tx: IDL.Func([ExecuteTxArgs], [Result_2], []),
-    get_all_lp: IDL.Func([IDL.Text], [Result_3], ["query"]),
+    donate_rich_protocol_revenue: IDL.Func([], [Result_2], []),
+    escape_hatch: IDL.Func([IDL.Text, IDL.Text, IDL.Nat64], [Result_3], []),
+    execute_tx: IDL.Func([ExecuteTxArgs], [Result_3], []),
+    get_all_lp: IDL.Func([IDL.Text], [Result_4], ["query"]),
     get_block: IDL.Func([IDL.Nat32], [IDL.Opt(NewBlockInfo)], ["query"]),
     get_fee_collector: IDL.Func([], [IDL.Text], ["query"]),
-    get_lp: IDL.Func([IDL.Text, IDL.Text], [Result_4], ["query"]),
+    get_lp: IDL.Func([IDL.Text, IDL.Text], [Result_5], ["query"]),
     get_max_block: IDL.Func([], [IDL.Opt(NewBlockInfo)], ["query"]),
     get_minimal_tx_value: IDL.Func(
       [GetMinimalTxValueArgs],
@@ -197,19 +194,19 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     ),
     get_pool_info: IDL.Func([GetPoolInfoArgs], [IDL.Opt(PoolInfo)], ["query"]),
     get_pool_list: IDL.Func([], [IDL.Vec(PoolBasic)], ["query"]),
-    get_pool_state_chain: IDL.Func([IDL.Text, IDL.Text], [Result_5], ["query"]),
+    get_pool_state_chain: IDL.Func([IDL.Text, IDL.Text], [Result_6], ["query"]),
     get_tx_affected: IDL.Func([IDL.Text], [IDL.Opt(TxRecord)], ["query"]),
     list_pools: IDL.Func(
       [IDL.Opt(IDL.Text), IDL.Nat64],
       [IDL.Vec(PoolInfo)],
       ["query"]
     ),
-    lock_lp: IDL.Func([IDL.Text, IDL.Text, IDL.Text], [Result_6], []),
     new_block: IDL.Func([NewBlockInfo], [Result_7], []),
     pause: IDL.Func([], [], []),
     pre_add_liquidity: IDL.Func([IDL.Text, CoinBalance], [Result_8], ["query"]),
     pre_donate: IDL.Func([IDL.Text, IDL.Nat64], [Result_9], ["query"]),
     pre_extract_fee: IDL.Func([IDL.Text], [Result_10], ["query"]),
+    pre_self_donate: IDL.Func([], [Result_9], ["query"]),
     pre_swap: IDL.Func([IDL.Text, CoinBalance], [Result_11], ["query"]),
     pre_withdraw_liquidity: IDL.Func(
       [IDL.Text, IDL.Text, IDL.Nat],
@@ -223,10 +220,9 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     rollback_tx: IDL.Func([RollbackTxArgs], [Result_7], []),
     set_donation_amount: IDL.Func(
       [IDL.Text, IDL.Nat64, IDL.Nat],
-      [Result_6],
+      [Result_2],
       []
     ),
-    set_fee_collector: IDL.Func([IDL.Text], [], []),
     set_orchestrator: IDL.Func([IDL.Principal], [], []),
     sync_with_btc: IDL.Func([IDL.Text, IDL.Nat64], [Result_1], []),
   });
