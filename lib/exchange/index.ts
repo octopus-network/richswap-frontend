@@ -11,7 +11,7 @@ import {
   SwapRoute,
 } from "@/types";
 
-import { BITCOIN } from "../constants";
+import { BITCOIN, RICH_POOL } from "../constants";
 import {
   getP2trAressAndScript,
   formatCoinAmount,
@@ -379,7 +379,6 @@ export class Exchange {
       const { input, nonce } = await actor
         .pre_donate(pool.address, BigInt(inputAmount))
         .then((data: any) => {
-          console.log("pre donate", pool, data);
           if (data.Ok) {
             return data.Ok;
           } else {
@@ -422,6 +421,60 @@ export class Exchange {
       return {
         state: DonateState.INVALID,
         coinAAmount: inputAmount,
+        errorMessage: error instanceof Error ? error.message : "Unknown Error",
+      };
+    }
+  }
+
+  public static async preSelfDonate(): Promise<DonateQuote | undefined> {
+    console.log("self donate");
+    try {
+      const { input, nonce, out_rune, out_sats } = await actor
+        .pre_self_donate()
+        .then((data: any) => {
+          if (data.Ok) {
+            return data.Ok;
+          } else {
+            throw new Error(
+              data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+            );
+          }
+        });
+
+      const output = addressToScriptPk(RICH_POOL);
+
+      const rune = input.coins[0];
+
+      const utxo: UnspentOutput = {
+        txid: input.txid,
+        vout: input.vout,
+        satoshis: input.sats.toString(),
+        address: RICH_POOL,
+        scriptPk: bytesToHex(output),
+        pubkey: "",
+        addressType: AddressType.P2TR,
+        runes: [
+          {
+            id: rune.id,
+            amount: rune.value.toString(),
+          },
+        ],
+      };
+
+      const quote = {
+        state: out_sats > BigInt(0) ? DonateState.VALID : DonateState.EMPTY,
+        coinAAmount: out_sats.toString(),
+        coinBAmount: out_rune.value.toString(),
+        utxos: [utxo],
+        nonce: nonce.toString(),
+      };
+
+      return quote;
+    } catch (error: any) {
+      console.log("self donate error", error);
+      return {
+        state: DonateState.INVALID,
+        coinAAmount: "0",
         errorMessage: error instanceof Error ? error.message : "Unknown Error",
       };
     }
