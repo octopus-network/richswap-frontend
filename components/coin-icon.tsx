@@ -29,6 +29,9 @@ export function CoinIcon({
     >
       <AvatarImage
         src={coin.icon ?? `${ORDINALS_URL}/content/${coin.etching}i0`}
+        loading="lazy"
+        decoding="async"
+        fetchPriority="low"
       />
       <AvatarFallback className="bg-accent">
         {coin.runeSymbol ?? coin.symbol?.slice(0, 2)}
