@@ -16,7 +16,7 @@ export function Footer() {
   const feeRate = useRecommendedFeeRateFromOrchestrator(true);
 
   return (
-    <div className="hidden items-center md:flex bg-background text-sm text-muted-foreground justify-between items-cetner fixed bottom-0 left-0 w-full border-t">
+    <div className="hidden items-center bg-background text-sm text-muted-foreground justify-between items-cetner fixed bottom-0 left-0 w-full border-t">
       <Link href={RUNESCAN_URL} target="_blank">
         <Image
           src="/static/icons/powered-by-ree.png"
