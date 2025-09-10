@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { gql, GraphQLClient } from "graphql-request";
-
+import { ENVIRONMENT } from "@/lib/constants";
 export const dynamic = "force-dynamic";
 
 function resolutionToMinutes(res: string) {
@@ -36,9 +36,12 @@ export async function GET(req: NextRequest) {
       }
     );
 
+    const klineTableName =
+      ENVIRONMENT === "staging" ? "k_line_minutes_staging" : "k_line_minutes";
+
     const query = gql`
       query GetKlineByToken($token: String!, $fromTs: bigint!, $toTs: bigint!) {
-        k_line_minutes(
+        ${klineTableName}(
           where: {
             token: { _eq: $token }
             timestamp: { _gte: $fromTs, _lte: $toTs }
@@ -58,12 +61,12 @@ export async function GET(req: NextRequest) {
     const fromTs = Number(from) * 1e9;
     const toTs = Number(to) * 1e9;
 
-    const { k_line_minutes: raw } = (await client.request(query, {
+    const { [klineTableName]: raw } = (await client.request(query, {
       token: rune,
       fromTs: fromTs.toString(),
       toTs: toTs.toString(),
     })) as {
-      k_line_minutes: {
+      [klineTableName]: {
         high: string;
         low: string;
         open: string;

@@ -57,6 +57,7 @@ export function WalletRow({ wallet }: { wallet: string }) {
       await connect(wallet as ProviderType);
       setConnectWalletModalOpen(false);
       setConnectingWallet(undefined);
+
       addPopup(
         t("walletConnected"),
         PopupStatus.INFO,

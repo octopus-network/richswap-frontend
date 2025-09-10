@@ -28,6 +28,8 @@ export async function GET(req: NextRequest) {
       cursor = res.next_cursor;
     } while (cursor !== null);
 
+    console.log("res", data);
+
     const addressType = getAddressType(address);
 
     const utxos = data.map((utxo) => ({
