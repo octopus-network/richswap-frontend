@@ -17,6 +17,9 @@ import { useAddUserCoin } from "@/store/user/hooks";
 import { usePoolList, usePoolsTvl } from "@/hooks/use-pools";
 import { BITCOIN } from "@/lib/constants";
 
+const BATCH_SIZE = 20;
+const LOAD_DELAY = 50;
+
 function coinFilter(query: string) {
   const searchingId = /^\d+:\d+$/.test(query);
   if (searchingId) {
@@ -66,33 +69,18 @@ export function SelectCoinModal({
   const defaultCoins = useDefaultCoins();
   const t = useTranslations("SelectCoin");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const debouncedQuery = useDebounce(searchQuery, 500); // 增加防抖时间到500ms
+  const debouncedQuery = useDebounce(searchQuery, 300);
   const [coinWarningModalOpen, setCoinWarningModalOpen] = useState(false);
-  const [isModalReady, setIsModalReady] = useState(false);
   const [toWarningCoin, setToWarningCoin] = useState<Coin>();
-  const [visibleCount, setVisibleCount] = useState(30);
+  const [loadedCount, setLoadedCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
   const searchCoins = useSearchCoins(debouncedQuery);
   const poolsTvl = usePoolsTvl();
   const poolList = usePoolList();
-
   const userCoinAdder = useAddUserCoin();
 
-  useEffect(() => {
-    setSearchQuery("");
-    if (open) {
-      const timer = setTimeout(() => {
-        setIsModalReady(true);
-      }, 200);
-      return () => clearTimeout(timer);
-    } else {
-      setIsModalReady(false);
-    }
-  }, [open]);
-
-  const sortedCoins: Coin[] = useMemo(() => {
-    if (!isModalReady) return [];
-
-    // Precompute maps to avoid repeated find/some in sort/filter
+  const allCoins: Coin[] = useMemo(() => {
     const tvlByCoinId: Record<string, number> = {};
     for (const pool of poolList) {
       const tvl = poolsTvl[pool.address] ?? poolsTvl[pool.key] ?? 0;
@@ -120,34 +108,72 @@ export function SelectCoinModal({
 
       return poolBTvl - poolATvl;
     });
-  }, [
-    defaultCoins,
-    debouncedQuery,
-    poolsTvl,
-    poolList,
-    onlySwappableCoins,
-    isModalReady,
-  ]);
+  }, [defaultCoins, debouncedQuery, poolsTvl, poolList, onlySwappableCoins]);
 
-  // Reset visible batch when data set changes or modal toggles
   useEffect(() => {
-    setVisibleCount(30);
-  }, [debouncedQuery, onlySwappableCoins, isModalReady]);
-
-  const handleCoinSelect = (coin: Coin, hasWarning?: boolean) => {
-    if (!hasWarning) {
-      onSelectCoin?.(coin);
-      setOpen(false);
-    } else {
-      setToWarningCoin(coin);
-      setCoinWarningModalOpen(true);
+    if (!open) {
+      setLoadedCount(0);
+      setIsLoading(false);
+      return;
     }
-  };
+
+    setIsLoading(true);
+    setLoadedCount(BATCH_SIZE);
+
+    const loadNextBatch = () => {
+      setLoadedCount((prev) => {
+        const next = prev + BATCH_SIZE;
+        if (next < allCoins.length) {
+          setTimeout(loadNextBatch, LOAD_DELAY);
+        } else {
+          setIsLoading(false);
+        }
+        return Math.min(next, allCoins.length);
+      });
+    };
+
+    if (allCoins.length > BATCH_SIZE) {
+      setTimeout(loadNextBatch, LOAD_DELAY);
+    } else {
+      setIsLoading(false);
+    }
+  }, [open, allCoins.length]);
+
+  useEffect(() => {
+    if (debouncedQuery) {
+      setLoadedCount(Math.min(BATCH_SIZE, allCoins.length));
+      setIsLoading(allCoins.length > BATCH_SIZE);
+    }
+  }, [debouncedQuery, allCoins.length]);
+
+  const visibleCoins = useMemo(() => {
+    const mainCoins = allCoins.slice(0, loadedCount);
+    const searchResults =
+      searchCoins
+        ?.filter(
+          (item) => allCoins.findIndex((coin) => coin.id === item.id) < 0
+        )
+        .slice(0, 20) || [];
+
+    return [...mainCoins, ...searchResults];
+  }, [allCoins, loadedCount, searchCoins]);
+
+  const handleCoinSelect = useCallback(
+    (coin: Coin, hasWarning?: boolean) => {
+      if (!hasWarning) {
+        onSelectCoin?.(coin);
+        setOpen(false);
+      } else {
+        setToWarningCoin(coin);
+        setCoinWarningModalOpen(true);
+      }
+    },
+    [onSelectCoin, setOpen]
+  );
 
   const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const input = event.target.value;
-
-    if (input.length <= 50) {
+    if (input.length <= 30) {
       setSearchQuery(input);
     }
   }, []);
@@ -181,41 +207,30 @@ export function SelectCoinModal({
           />
         </div>
       </div>
-      {isModalReady ? (
-        <div
-          className="border-t mt-4 h-[calc(70vh_-_80px)] overflow-y-auto"
-          onScroll={(e) => {
-            const el = e.currentTarget;
-            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 48) {
-              // near bottom, load next batch
-              setVisibleCount((v) => Math.min(v + 30, sortedCoins.length));
+
+      <div className="border-t mt-4 h-[calc(70vh_-_80px)] overflow-y-auto">
+        {visibleCoins.map((coin) => (
+          <CoinRowLite
+            key={coin.id}
+            coin={coin}
+            onSelect={(coin) =>
+              handleCoinSelect(
+                coin,
+                searchCoins?.some((sc) => sc.id === coin.id)
+              )
             }
-          }}
-        >
-          {(sortedCoins.slice(0, visibleCount) as Coin[]).map((coin) => (
-            <CoinRowLite coin={coin} key={coin.id} onSelect={handleCoinSelect} />
-          ))}
-          {searchCoins?.length
-            ? searchCoins
-                .filter(
-                  (item) =>
-                    sortedCoins.findIndex((coin) => coin.id === item.id) < 0
-                )
-                .slice(0, Math.max(0, 100 - visibleCount))
-                .map((coin) => (
-                  <CoinRowLite
-                    coin={coin}
-                    key={`search-${coin.id}`}
-                    onSelect={(coin) => handleCoinSelect(coin, true)}
-                  />
-                ))
-            : null}
-        </div>
-      ) : (
-        <div className="border-t mt-4 h-[calc(70vh_-_80px)] flex items-center justify-center">
-          <Loader2 className="size-5 text-muted-foreground animate-spin" />
-        </div>
-      )}
+          />
+        ))}
+
+        {isLoading && (
+          <div className="px-4 py-4 flex items-center justify-center">
+            <Loader2 className="size-4 text-muted-foreground animate-spin mr-2" />
+            <span className="text-sm text-muted-foreground">
+              Loading more coins...
+            </span>
+          </div>
+        )}
+      </div>
 
       <CoinWarningModal
         open={coinWarningModalOpen}
