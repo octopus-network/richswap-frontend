@@ -57,10 +57,26 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
 
   const poolAddress = useMemo(() => pool.address, [pool]);
 
+  const poolDonationInSats = useMemo(
+    () =>
+      pool.coinADonation !== undefined
+        ? Number(pool.coinADonation) * 2
+        : undefined,
+    [pool]
+  );
+
+  const poolDonationValue = useMemo(
+    () =>
+      poolDonationInSats !== undefined && btcPrice !== undefined
+        ? (poolDonationInSats * btcPrice) / Math.pow(10, 8)
+        : undefined,
+    [poolDonationInSats, btcPrice]
+  );
+
   return (
     <>
       <Link href={`/pools/${poolAddress}`}>
-        <div className="grid md:grid-cols-12 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors">
+        <div className="grid md:grid-cols-14 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors">
           <div className="col-span-4 flex items-center">
             <div className="hidden sm:block mr-3">
               <CoinIcon size="lg" coin={pool.coinB} />
@@ -123,6 +139,22 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                 </span>
                 <span className="text-muted-foreground text-xs">
                   ${formatNumber(poolFee, true)}
+                </span>
+              </div>
+            ) : (
+              <Skeleton className="h-5 w-20" />
+            )}
+          </div>
+          <div className="col-span-2 hidden md:flex">
+            {poolDonationValue !== undefined &&
+            poolDonationInSats !== undefined ? (
+              <div className="flex flex-col space-y-1">
+                <span className="font-semibold text-sm truncate">
+                  {formatNumber(poolDonationInSats, true)}{" "}
+                  <em className="font-normal">sats</em>
+                </span>
+                <span className="text-muted-foreground text-xs">
+                  ${formatNumber(poolDonationValue, true)}
                 </span>
               </div>
             ) : (

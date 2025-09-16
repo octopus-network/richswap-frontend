@@ -68,12 +68,12 @@ export function GlobalStateUpdater() {
 
   useEffect(() => {
     if (address && publicKey) {
-      // Orchestrator.getUnconfirmedUtxos(address, publicKey).then((_utxos) => {
-      //   setPendingRuneUtxos(_utxos);
-      // });
-      Orchestrator.getUnconfirmedUtxos(address, publicKey).then(() => {
-        setPendingRuneUtxos([]);
+      Orchestrator.getUnconfirmedUtxos(address, publicKey).then((_utxos) => {
+        setPendingRuneUtxos(_utxos);
       });
+      // Orchestrator.getUnconfirmedUtxos(address, publicKey).then(() => {
+      //   setPendingRuneUtxos([]);
+      // });
     }
   }, [address, publicKey, setPendingRuneUtxos, transactions, timer]);
 
@@ -93,10 +93,9 @@ export function GlobalStateUpdater() {
   useEffect(() => {
     if (paymentAddress && paymentPublicKey) {
       Orchestrator.getUnconfirmedUtxos(paymentAddress, paymentPublicKey).then(
-        // (_utxos) => {
-        () => {
-          setPendingBtcUtxos([]);
-          // setPendingBtcUtxos(_utxos);
+        (_utxos) => {
+          // setPendingBtcUtxos([]);
+          setPendingBtcUtxos(_utxos);
         }
       );
     }

@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 
-interface RunePriceData {
+export interface RunePriceData {
   price: number;
+  market_cap: number;
+  tvl: number;
   change: number;
   hasData: boolean;
   timestamp?: number;
@@ -49,6 +51,8 @@ export function useRunePrice(
       if (result.success) {
         const newPriceData: RunePriceData = {
           price: result.data.price,
+          market_cap: result.data.market_cap,
+          tvl: result.data.tvl,
           change: result.data.change,
           hasData: result.data.hasData,
           timestamp: result.data.timestamp,
