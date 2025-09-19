@@ -52,7 +52,9 @@
     "success": "Success",
     "retry": "Retry",
     "cancel": "Cancel",
-    "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed"
+    "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
+    "marketCap": "Market Cap",
+    "tvl": "TVL"
   },
   "Pools": {
     "pool": "Pool",
@@ -126,7 +128,8 @@
     "claimAndDonateSuccess": "Extract and donate success",
     "retry": "Retry",
     "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
-    "claimTips": "Extractable: > {amount} sats"
+    "claimTips": "Extractable: > {amount} sats",
+    "volume": "Volume(24h)"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",

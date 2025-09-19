@@ -32,7 +32,7 @@ export type InvokeArgs = {
   initiator_utxo_proof: number[],
   intention_set: IntentionSet;
   psbt_hex: string;
-  client_info?: string;
+  client_info?: [string];
 };
 
 export type TxOutputType =

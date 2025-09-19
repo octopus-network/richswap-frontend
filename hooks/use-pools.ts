@@ -36,7 +36,7 @@ export function usePoolsVolume() {
   const { data } = useSWR("/api/pools/volume/24h", (url: string) =>
     axios
       .get<{
-        data: number;
+        data: { pool_address: string; pool_name: string; volume: number }[];
       }>(url)
       .then((res) => res.data.data)
   );
@@ -88,9 +88,9 @@ export function usePoolsFee() {
 
     const tmpObj: Record<string, number> = {};
     poolList.forEach((pool) => {
-      const fees = new Decimal(formatCoinAmount(pool.lpFee ?? "0", BITCOIN)).mul(
-        btcPrice
-      );
+      const fees = new Decimal(
+        formatCoinAmount(pool.lpFee ?? "0", BITCOIN)
+      ).mul(btcPrice);
       tmpObj[pool.key] = fees.toNumber();
     });
     setFees(tmpObj);
@@ -109,4 +109,16 @@ export function usePoolFee(poolKey: string | undefined) {
   const fees = usePoolsFee();
 
   return useMemo(() => (poolKey ? fees[poolKey] : undefined), [poolKey, fees]);
+}
+
+export function usePoolVolume(poolAddress: string | undefined) {
+  const volumes = usePoolsVolume();
+
+  return useMemo(
+    () =>
+      poolAddress
+        ? volumes?.find((p) => p.pool_address === poolAddress)?.volume ?? 0
+        : undefined,
+    [poolAddress, volumes]
+  );
 }

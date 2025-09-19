@@ -11,10 +11,103 @@ import { Coin } from "@/types";
 import { CoinIcon } from "@/components/coin-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useKlineChartOpen, useToggleKlineChartOpen } from "@/store/user/hooks";
-import { useRunePrice } from "@/hooks/use-rune-price";
+import { RunePriceData, useRunePrice } from "@/hooks/use-rune-price";
 import Link from "next/link";
 import { RUNESCAN_URL } from "@/lib/constants";
 import { Loader2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+
+function Overview({
+  rune,
+  priceData,
+}: {
+  rune: Coin | undefined;
+  priceData: RunePriceData | null;
+}) {
+  const t = useTranslations("Swap");
+  return (
+    <div>
+      <div className="px-2 py-1.5 flex justify-between items-center">
+        <div className="flex items-center gap-2 h-10">
+          {rune ? (
+            <div className="flex space-x-2 items-center">
+              <CoinIcon coin={rune} />
+              <span className="font-semibold">{rune.name}</span>
+            </div>
+          ) : (
+            <div className="flex space-x-2 items-center">
+              <Skeleton className="size-8 rounded-full bg-slate-50/20" />
+              <Skeleton className="h-6 w-32 bg-slate-50/20" />
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col items-end">
+          {rune ? (
+            <Link href={`${RUNESCAN_URL}/runes/${rune.name}`} target="_blank">
+              <div className="flex items-center text-muted-foreground hover:text-foreground hover:underline cursor-pointer">
+                <span className="text-sm">{rune.id}</span>
+                <ExternalLink className="size-3 ml-1" />
+              </div>
+            </Link>
+          ) : (
+            <Skeleton className="h-5 w-20 bg-slate-50/20" />
+          )}
+        </div>
+      </div>
+      <Separator className="bg-slate-50/5" />
+      <div className="px-2 py-1.5 h-12 flex space-x-6 items-start">
+        {priceData && priceData.hasData ? (
+          <div className="flex-col flex">
+            <span className="text-sm font-semibold">
+              {formatNumber(priceData.price)} sats
+            </span>
+            <div className="flex flex-col">
+              <span
+                className={cn(
+                  "text-xs",
+                  priceData.change >= 0 ? "text-green-500" : "text-red-500"
+                )}
+              >
+                {priceData.change > 0
+                  ? `+${priceData.change.toFixed(2)}`
+                  : priceData.change.toFixed(2)}
+                %
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-col flex">
+            <Skeleton className="h-4 w-16 mb-1 bg-slate-50/20" />
+            <Skeleton className="h-3 w-12 bg-slate-50/20" />
+          </div>
+        )}
+
+        <div className="flex-col flex">
+          <span className="text-xs text-muted-foreground">
+            {t("marketCap")}
+          </span>
+          {priceData && priceData.hasData ? (
+            <span className="text-sm font-semibold">
+              {formatNumber(priceData.market_cap / 1e8)} ₿
+            </span>
+          ) : (
+            <Skeleton className="h-4 w-12 bg-slate-50/20" />
+          )}
+        </div>
+        <div className="flex-col flex">
+          <span className="text-xs text-muted-foreground">{t("tvl")}</span>
+          {priceData && priceData.hasData ? (
+            <span className="text-sm font-semibold">
+              {formatNumber(priceData.tvl / 1e8)} ₿
+            </span>
+          ) : (
+            <Skeleton className="h-4 w-12 bg-slate-50/20" />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SwapPage() {
   const t = useTranslations("Swap");
@@ -42,62 +135,9 @@ export default function SwapPage() {
           {klineChartOpen && (
             <div
               key="chart"
-              className="flex-1 w-full max-w-lg lg:max-w-full overflow-hidden bg-secondary/80 rounded-xl fle flex-col"
+              className="flex-1 w-full max-w-lg lg:max-w-full overflow-hidden bg-secondary/60 rounded-xl fle flex-col"
             >
-              <div className="px-4 py-3 flex justify-between items-center">
-                <div className="flex items-center gap-2 h-10">
-                  {rune ? (
-                    <>
-                      <CoinIcon coin={rune} />
-
-                      <div className="flex flex-col">
-                        <span className="font-semibold">{rune.name}</span>
-                        <Link
-                          href={`${RUNESCAN_URL}/runes/${rune.name}`}
-                          target="_blank"
-                        >
-                          <div className="flex items-center text-muted-foreground hover:text-foreground hover:underline cursor-pointer">
-                            <span className="text-xs">{rune.id}</span>
-                            <ExternalLink className="size-3 ml-1" />
-                          </div>
-                        </Link>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <Skeleton className="size-8 rounded-full bg-slate-50/20" />
-                      <Skeleton className="h-7 w-20 bg-slate-50/20" />
-                    </>
-                  )}
-                </div>
-                {priceData && priceData.hasData ? (
-                  <div className="flex-col flex items-end">
-                    <span className="text-sm font-semibold">
-                      {formatNumber(priceData.price)} sats
-                    </span>
-                    <div className="flex flex-col items-end">
-                      <span
-                        className={cn(
-                          "text-xs",
-                          priceData.change >= 0
-                            ? "text-green-500"
-                            : "text-red-500"
-                        )}
-                      >
-                        {priceData.change > 0
-                          ? `+${priceData.change.toFixed(2)}`
-                          : priceData.change.toFixed(2)}
-                        %
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex-col flex items-end">
-                    <Skeleton className="h-4 w-16 mb-1 bg-slate-50/20" />
-                    <Skeleton className="h-3 w-12 bg-slate-50/20" />
-                  </div>
-                )}
-              </div>
+              <Overview rune={rune} priceData={priceData} />
               <div className="h-[260px] lg:h-[420px] relative">
                 {chartLoading && (
                   <div className="absolute inset-0 bg-secondary items-center justify-center flex">

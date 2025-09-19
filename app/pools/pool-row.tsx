@@ -12,10 +12,13 @@ import Circle from "react-circle";
 import { CoinIcon } from "@/components/coin-icon";
 import { BITCOIN } from "@/lib/constants";
 import Link from "next/link";
+import { usePoolVolume } from "@/hooks/use-pools";
 
 export function PoolRow({ pool }: { pool: PoolInfo }) {
   const poolTvl = usePoolTvl(pool.key);
   const poolFee = usePoolFee(pool.key);
+
+  const poolVolumeInSats = usePoolVolume(pool.address);
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
@@ -57,10 +60,18 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
 
   const poolAddress = useMemo(() => pool.address, [pool]);
 
+  const poolVolumeValue = useMemo(
+    () =>
+      poolVolumeInSats !== undefined && btcPrice !== undefined
+        ? (poolVolumeInSats * btcPrice) / Math.pow(10, 8)
+        : undefined,
+    [poolVolumeInSats, btcPrice]
+  );
+
   return (
     <>
       <Link href={`/pools/${poolAddress}`}>
-        <div className="grid md:grid-cols-12 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors">
+        <div className="grid md:grid-cols-14 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors">
           <div className="col-span-4 flex items-center">
             <div className="hidden sm:block mr-3">
               <CoinIcon size="lg" coin={pool.coinB} />
@@ -123,6 +134,21 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                 </span>
                 <span className="text-muted-foreground text-xs">
                   ${formatNumber(poolFee, true)}
+                </span>
+              </div>
+            ) : (
+              <Skeleton className="h-5 w-20" />
+            )}
+          </div>
+          <div className="col-span-2 hidden md:flex">
+            {poolVolumeValue !== undefined && poolVolumeInSats !== undefined ? (
+              <div className="flex flex-col space-y-1">
+                <span className="font-semibold text-sm truncate">
+                  {formatNumber(poolVolumeInSats, true)}{" "}
+                  <em className="font-normal">sats</em>
+                </span>
+                <span className="text-muted-foreground text-xs">
+                  ${formatNumber(poolVolumeValue, true)}
                 </span>
               </div>
             ) : (

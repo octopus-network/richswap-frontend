@@ -1,53 +1,100 @@
 "use client";
 
 import { Coin } from "@/types";
-import { useState, useMemo, ChangeEvent, useCallback, useEffect } from "react";
+import {
+  useState,
+  useMemo,
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
 import { CoinWarningModal } from "./coin-warning-modal";
 import { BaseModal } from "../base-modal";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { useDebounce } from "@/hooks/use-debounce";
-import { CoinRow } from "./coin-row";
-import { Loader2 } from "lucide-react";
-
 import { useSearchCoins } from "@/hooks/use-coins";
 import { useTranslations } from "next-intl";
 import { useAddUserCoin } from "@/store/user/hooks";
 import { usePoolList, usePoolsTvl } from "@/hooks/use-pools";
 import { BITCOIN } from "@/lib/constants";
+import { getCoinSymbol, getCoinName, formatNumber } from "@/lib/utils";
+import { useCoinBalance } from "@/hooks/use-balance";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
+
+import { CoinIcon } from "../coin-icon";
+
+const ITEM_HEIGHT = 64;
+const CONTAINER_HEIGHT = 400;
+const VISIBLE_COUNT = Math.ceil(CONTAINER_HEIGHT / ITEM_HEIGHT) + 2;
+
+function VirtualCoinRow({
+  coin,
+  onSelect,
+  style,
+}: {
+  coin: Coin;
+  onSelect: (coin: Coin) => void;
+  style: React.CSSProperties;
+}) {
+  const { address } = useLaserEyes();
+  const balance = useCoinBalance(coin);
+  const coinSymbol = getCoinSymbol(coin);
+  const coinName = getCoinName(coin);
+
+  return (
+    <div
+      style={style}
+      className="absolute left-0 right-0 px-4 py-2 flex items-center justify-between hover:bg-secondary/50 cursor-pointer transition-colors duration-150"
+      onClick={() => onSelect(coin)}
+    >
+      <div className="flex items-center min-w-0 flex-1">
+        <CoinIcon coin={coin} />
+        <div className="flex flex-col min-w-0 flex-1 ml-2">
+          <span className="font-semibold text-sm truncate">{coinSymbol}</span>
+          <span className="text-muted-foreground text-xs truncate">
+            {coinName}
+          </span>
+        </div>
+      </div>
+      <div className="flex flex-col items-end flex-shrink-0 ml-2">
+        {address ? (
+          balance !== undefined ? (
+            <>
+              <span className="text-sm font-medium">
+                {formatNumber(balance)}
+              </span>
+              <span className="text-xs text-muted-foreground">-</span>
+            </>
+          ) : (
+            <>
+              <div className="h-5 w-16 bg-secondary/50 rounded animate-pulse" />
+              <div className="h-3 w-8 bg-secondary/30 rounded animate-pulse mt-1" />
+            </>
+          )
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 function coinFilter(query: string) {
+  if (!query) return () => true;
+
   const searchingId = /^\d+:\d+$/.test(query);
   if (searchingId) {
     return (coin: Coin) => coin.id === query;
   }
 
-  const queryParts = query
-    .toLowerCase()
-    .split(/\s+/)
-    .filter((s) => s.length > 0);
-
-  if (queryParts.length === 0) return () => true;
-
-  const match = (s: string): boolean => {
-    const parts = s
-      .toLowerCase()
-      .split(/\s+/)
-      .filter((s) => s.length > 0);
-
-    return queryParts.every(
-      (p) =>
-        p.length === 0 || parts.some((sp) => sp.startsWith(p) || sp.endsWith(p))
-    );
-  };
-
+  const queryLower = query.toLowerCase();
   return ({ name, symbol, runeSymbol, runeId }: Coin) =>
     Boolean(
-      (symbol && match(symbol)) ||
-        (name && match(name)) ||
-        (runeId && match(runeId)) ||
-        (runeSymbol && match(runeSymbol))
+      (symbol && symbol.toLowerCase().includes(queryLower)) ||
+        (name && name.toLowerCase().includes(queryLower)) ||
+        (runeId && runeId.toLowerCase().includes(queryLower)) ||
+        (runeSymbol && runeSymbol.toLowerCase().includes(queryLower))
     );
 }
 
@@ -66,97 +113,123 @@ export function SelectCoinModal({
   const defaultCoins = useDefaultCoins();
   const t = useTranslations("SelectCoin");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const debouncedQuery = useDebounce(searchQuery, 500); // 增加防抖时间到500ms
+  const debouncedQuery = useDebounce(searchQuery, 150);
   const [coinWarningModalOpen, setCoinWarningModalOpen] = useState(false);
-  const [isModalReady, setIsModalReady] = useState(false);
   const [toWarningCoin, setToWarningCoin] = useState<Coin>();
-  const searchCoins = useSearchCoins(debouncedQuery);
-  const poolsTvl = usePoolsTvl();
-  const poolList = usePoolList();
+  const [scrollTop, setScrollTop] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  const searchCoins = useSearchCoins(debouncedQuery);
+  const poolList = usePoolList();
+  const poolsTvl = usePoolsTvl();
   const userCoinAdder = useAddUserCoin();
 
-  useEffect(() => {
-    setSearchQuery("");
-    if (open) {
-      const timer = setTimeout(() => {
-        setIsModalReady(true);
-      }, 200);
-      return () => clearTimeout(timer);
-    } else {
-      setIsModalReady(false);
+  const allCoins = useMemo(() => {
+    const tvlMap = new Map<string, number>();
+    poolList.forEach((pool) => {
+      const tvl = poolsTvl[pool.address] ?? poolsTvl[pool.key] ?? 0;
+      tvlMap.set(pool.coinB.id, tvl);
+    });
+
+    const swappableSet = new Set<string>();
+    if (onlySwappableCoins) {
+      swappableSet.add(BITCOIN.id);
+      poolList.forEach((pool) => swappableSet.add(pool.coinB.id));
     }
-  }, [open]);
 
-  const sortedCoins: Coin[] = useMemo(() => {
-    if (!isModalReady) return [];
+    const coins = Object.values(defaultCoins);
+    const filtered = onlySwappableCoins
+      ? coins.filter((coin) => swappableSet.has(coin.id))
+      : coins;
 
-    const filteredCoins = Object.values(defaultCoins)
-      .filter((coin) => {
-        if (onlySwappableCoins) {
-          return (
-            coin.id === BITCOIN.id ||
-            poolList.some((pool) => pool.coinB.id === coin.id)
-          );
-        }
-        return true;
-      })
-      .filter(coinFilter(debouncedQuery));
+    const searched = filtered.filter(coinFilter(debouncedQuery));
 
-    return filteredCoins.sort((a, b) => {
+    const sorted = searched.sort((a, b) => {
       if (a.id === "0:0") return -1;
       if (b.id === "0:0") return 1;
-
-      const poolA = poolList.find((pool) => pool.coinB.id === a.id);
-      const poolB = poolList.find((pool) => pool.coinB.id === b.id);
-
-      const poolATvl = poolA ? poolsTvl[poolA.address] : 0;
-      const poolBTvl = poolB ? poolsTvl[poolB.address] : 0;
-
-      return poolBTvl - poolATvl;
+      return (tvlMap.get(b.id) ?? 0) - (tvlMap.get(a.id) ?? 0);
     });
+
+    const searchResults =
+      searchCoins?.filter(
+        (item) => !sorted.some((coin) => coin.id === item.id)
+      ) || [];
+
+    return [...sorted, ...searchResults];
   }, [
     defaultCoins,
     debouncedQuery,
     poolsTvl,
     poolList,
     onlySwappableCoins,
-    isModalReady,
+    searchCoins,
   ]);
 
-  const handleCoinSelect = (coin: Coin, hasWarning?: boolean) => {
-    if (!hasWarning) {
-      onSelectCoin?.(coin);
-      setOpen(false);
-    } else {
-      setToWarningCoin(coin);
-      setCoinWarningModalOpen(true);
+  const { visibleItems, totalHeight } = useMemo(() => {
+    const startIndex = Math.floor(scrollTop / ITEM_HEIGHT);
+    const endIndex = Math.min(startIndex + VISIBLE_COUNT, allCoins.length);
+
+    const items = [];
+    for (let i = startIndex; i < endIndex; i++) {
+      items.push({
+        coin: allCoins[i],
+        index: i,
+        top: i * ITEM_HEIGHT,
+      });
     }
-  };
+
+    return {
+      visibleItems: items,
+      totalHeight: allCoins.length * ITEM_HEIGHT,
+    };
+  }, [allCoins, scrollTop]);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop);
+  }, []);
+
+  const handleCoinSelect = useCallback(
+    (coin: Coin) => {
+      const isSearchResult = searchCoins?.some((sc) => sc.id === coin.id);
+
+      if (!isSearchResult) {
+        onSelectCoin?.(coin);
+        setOpen(false);
+      } else {
+        setToWarningCoin(coin);
+        setCoinWarningModalOpen(true);
+      }
+    },
+    [onSelectCoin, setOpen, searchCoins]
+  );
 
   const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const input = event.target.value;
-
     if (input.length <= 50) {
       setSearchQuery(input);
+      setScrollTop(0);
     }
   }, []);
 
   const handleConfirmCoin = useCallback(() => {
     if (!toWarningCoin) return;
-
     onSelectCoin?.(toWarningCoin);
     userCoinAdder(toWarningCoin);
     setCoinWarningModalOpen(false);
     setOpen(false);
   }, [toWarningCoin, onSelectCoin, userCoinAdder, setOpen]);
 
+  useEffect(() => {
+    if (open) {
+      setSearchQuery("");
+      setScrollTop(0);
+    }
+  }, [open]);
+
   return (
     <BaseModal open={open} setOpen={setOpen} className="max-w-md">
       <div className="px-4 pt-4">
-        <div className="flex flex-col">
-          <div className="text-lg font-bold">{t("selectCoin")}</div>
-        </div>
+        <div className="text-lg font-bold">{t("selectCoin")}</div>
         <div className="mt-4 border px-2 py-1 rounded-lg flex items-center hover:border-primary/60 duration-200 transition-colors">
           <Search className="size-5 text-muted-foreground" />
           <Input
@@ -171,31 +244,29 @@ export function SelectCoinModal({
           />
         </div>
       </div>
-      {isModalReady ? (
-        <div className="border-t mt-4 h-[calc(70vh_-_80px)] overflow-y-auto">
-          {sortedCoins.map((coin) => (
-            <CoinRow coin={coin} key={coin.id} onSelect={handleCoinSelect} />
-          ))}
-          {searchCoins?.length
-            ? searchCoins
-                .filter(
-                  (item) =>
-                    sortedCoins.findIndex((coin) => coin.id === item.id) < 0
-                )
-                .map((coin) => (
-                  <CoinRow
-                    coin={coin}
-                    key={`search-${coin.id}`}
-                    onSelect={(coin) => handleCoinSelect(coin, true)}
-                  />
-                ))
-            : null}
+
+      <div className="border-t mt-4">
+        <div
+          ref={scrollRef}
+          className="overflow-y-auto"
+          style={{ height: CONTAINER_HEIGHT }}
+          onScroll={handleScroll}
+        >
+          <div style={{ height: totalHeight, position: "relative" }}>
+            {visibleItems.map(({ coin, top }) => (
+              <VirtualCoinRow
+                key={coin.id}
+                coin={coin}
+                onSelect={handleCoinSelect}
+                style={{
+                  top,
+                  height: ITEM_HEIGHT,
+                }}
+              />
+            ))}
+          </div>
         </div>
-      ) : (
-        <div className="border-t mt-4 h-[calc(70vh_-_80px)] flex items-center justify-center">
-          <Loader2 className="size-5 text-muted-foreground animate-spin" />
-        </div>
-      )}
+      </div>
 
       <CoinWarningModal
         open={coinWarningModalOpen}
