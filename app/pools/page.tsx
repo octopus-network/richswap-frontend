@@ -28,7 +28,7 @@ import { useTranslations } from "next-intl";
 import Decimal from "decimal.js";
 import { Button } from "@/components/ui/button";
 
-type SortField = "tvl" | "fee" | "donation" | "yield" | "default";
+type SortField = "tvl" | "fee" | "volume" | "yield" | "default";
 type SortDirection = "asc" | "desc";
 
 export default function Pools() {
@@ -37,7 +37,7 @@ export default function Pools() {
   const poolsTrades = usePoolsTrades();
   const poolsFee = usePoolsFee();
   const btcPrice = useCoinPrice(BITCOIN.id);
-  const poolsVolumeInSats = usePoolsVolume();
+  const poolsVolume = usePoolsVolume();
   const t = useTranslations("Pools");
 
   const [sortField, setSortField] = useState<SortField>("default");
@@ -81,9 +81,11 @@ export default function Pools() {
           aValue = poolsFee[a.key] ?? 0;
           bValue = poolsFee[b.key] ?? 0;
           break;
-        case "donation":
-          aValue = a.coinADonation ? Number(a.coinADonation) * 2 : 0;
-          bValue = b.coinADonation ? Number(b.coinADonation) * 2 : 0;
+        case "volume":
+          aValue =
+            poolsVolume?.find((p) => p.pool_address === a.address)?.volume ?? 0;
+          bValue =
+            poolsVolume?.find((p) => p.pool_address === b.address)?.volume ?? 0;
           break;
         case "yield":
           const aTvl = poolsTvl[a.key] ?? 0;
@@ -97,7 +99,7 @@ export default function Pools() {
 
       return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
     });
-  }, [poolList, sortField, sortDirection, poolsTvl, poolsFee]);
+  }, [poolList, sortField, sortDirection, poolsTvl, poolsFee, poolsVolume]);
 
   const totalPoolsTvl = useMemo(
     () => Object.values(poolsTvl).reduce((total, curr) => total + curr, 0),
@@ -134,6 +136,13 @@ export default function Pools() {
       poolsFeeInBtc !== undefined ? poolsFeeInBtc * Math.pow(10, 8) : undefined,
     [poolsFeeInBtc]
   );
+
+  const poolsVolumeInSats = useMemo(() => {
+    if (!poolsVolume) {
+      return undefined;
+    }
+    return poolsVolume.reduce((total, curr) => total + curr.volume, 0);
+  }, [poolsVolume]);
 
   const poolsVolumeInBtc = useMemo(
     () =>
@@ -351,10 +360,10 @@ export default function Pools() {
                 variant="ghost"
                 size="sm"
                 className="h-auto p-0 text-muted-foreground hover:text-foreground font-normal"
-                onClick={() => handleSort("donation")}
+                onClick={() => handleSort("volume")}
               >
-                <span>{t("donation")}</span>
-                <SortIcon field="donation" />
+                <span>{t("volume")}</span>
+                <SortIcon field="volume" />
               </Button>
             </div>
 
