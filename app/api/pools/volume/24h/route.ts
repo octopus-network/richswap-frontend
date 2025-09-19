@@ -11,6 +11,7 @@ const REE_INDEXER_URL = process.env.NEXT_PUBLIC_REE_INDEXER_URL!;
 const query = gql`
   {
     volume_tx_by_pool_by_period(where: { period: { _eq: "24 Hours" }, exchange_id: { _eq: ${EXCHANGE_ID} } }) {
+      pool_address  
       pool_name
       volume
     }
@@ -33,10 +34,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: volume_tx_by_pool_by_period.reduce(
-        (total, curr) => total + curr.volume,
-        0
-      ),
+      data: volume_tx_by_pool_by_period,
     });
   } catch (error) {
     return NextResponse.json(

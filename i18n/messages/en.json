@@ -128,7 +128,8 @@
     "claimAndDonateSuccess": "Extract and donate success",
     "retry": "Retry",
     "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
-    "claimTips": "Extractable: > {amount} sats"
+    "claimTips": "Extractable: > {amount} sats",
+    "volume": "Volume"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",

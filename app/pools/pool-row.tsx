@@ -12,10 +12,13 @@ import Circle from "react-circle";
 import { CoinIcon } from "@/components/coin-icon";
 import { BITCOIN } from "@/lib/constants";
 import Link from "next/link";
+import { usePoolVolume } from "@/hooks/use-pools";
 
 export function PoolRow({ pool }: { pool: PoolInfo }) {
   const poolTvl = usePoolTvl(pool.key);
   const poolFee = usePoolFee(pool.key);
+
+  const poolVolumeInSats = usePoolVolume(pool.address);
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
@@ -57,20 +60,12 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
 
   const poolAddress = useMemo(() => pool.address, [pool]);
 
-  const poolDonationInSats = useMemo(
+  const poolVolumeValue = useMemo(
     () =>
-      pool.coinADonation !== undefined
-        ? Number(pool.coinADonation) * 2
+      poolVolumeInSats !== undefined && btcPrice !== undefined
+        ? (poolVolumeInSats * btcPrice) / Math.pow(10, 8)
         : undefined,
-    [pool]
-  );
-
-  const poolDonationValue = useMemo(
-    () =>
-      poolDonationInSats !== undefined && btcPrice !== undefined
-        ? (poolDonationInSats * btcPrice) / Math.pow(10, 8)
-        : undefined,
-    [poolDonationInSats, btcPrice]
+    [poolVolumeInSats, btcPrice]
   );
 
   return (
@@ -146,15 +141,14 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
             )}
           </div>
           <div className="col-span-2 hidden md:flex">
-            {poolDonationValue !== undefined &&
-            poolDonationInSats !== undefined ? (
+            {poolVolumeValue !== undefined && poolVolumeInSats !== undefined ? (
               <div className="flex flex-col space-y-1">
                 <span className="font-semibold text-sm truncate">
-                  {formatNumber(poolDonationInSats, true)}{" "}
+                  {formatNumber(poolVolumeInSats, true)}{" "}
                   <em className="font-normal">sats</em>
                 </span>
                 <span className="text-muted-foreground text-xs">
-                  ${formatNumber(poolDonationValue, true)}
+                  ${formatNumber(poolVolumeValue, true)}
                 </span>
               </div>
             ) : (
