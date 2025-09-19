@@ -14,22 +14,90 @@ import { BITCOIN } from "@/lib/constants";
 import { PoolRow } from "./pool-row";
 import { formatNumber } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { useMemo } from "react";
-import { Waves, Coins, ArrowLeftRight, Database } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  Waves,
+  Coins,
+  ArrowLeftRight,
+  Database,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import Decimal from "decimal.js";
+import { Button } from "@/components/ui/button";
+
+type SortField = "tvl" | "fee" | "donation" | "yield" | "default";
+type SortDirection = "asc" | "desc";
 
 export default function Pools() {
   const poolList = usePoolList();
-
   const poolsTvl = usePoolsTvl();
   const poolsTrades = usePoolsTrades();
   const poolsFee = usePoolsFee();
   const btcPrice = useCoinPrice(BITCOIN.id);
-
   const poolsVolumeInSats = usePoolsVolume();
-
   const t = useTranslations("Pools");
+
+  const [sortField, setSortField] = useState<SortField>("default");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="size-3 text-muted-foreground/50" />;
+    }
+    return sortDirection === "asc" ? (
+      <ArrowUp className="size-3 text-primary" />
+    ) : (
+      <ArrowDown className="size-3 text-primary" />
+    );
+  };
+
+  const sortedPoolList = useMemo(() => {
+    if (!poolList?.length || sortField === "default") {
+      return poolList;
+    }
+
+    return [...poolList].sort((a, b) => {
+      let aValue = 0;
+      let bValue = 0;
+
+      switch (sortField) {
+        case "tvl":
+          aValue = poolsTvl[a.key] ?? 0;
+          bValue = poolsTvl[b.key] ?? 0;
+          break;
+        case "fee":
+          aValue = poolsFee[a.key] ?? 0;
+          bValue = poolsFee[b.key] ?? 0;
+          break;
+        case "donation":
+          aValue = a.coinADonation ? Number(a.coinADonation) * 2 : 0;
+          bValue = b.coinADonation ? Number(b.coinADonation) * 2 : 0;
+          break;
+        case "yield":
+          const aTvl = poolsTvl[a.key] ?? 0;
+          const bTvl = poolsTvl[b.key] ?? 0;
+          const aFee = poolsFee[a.key] ?? 0;
+          const bFee = poolsFee[b.key] ?? 0;
+          aValue = aTvl === 0 ? 0 : (aFee * 100) / aTvl;
+          bValue = bTvl === 0 ? 0 : (bFee * 100) / bTvl;
+          break;
+      }
+
+      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+    });
+  }, [poolList, sortField, sortDirection, poolsTvl, poolsFee]);
 
   const totalPoolsTvl = useMemo(
     () => Object.values(poolsTvl).reduce((total, curr) => total + curr, 0),
@@ -229,7 +297,9 @@ export default function Pools() {
           </div>
           <Separator />
           <div className="flex justify-between">
-            <span className="text-muted-foreground text-sm">{t("24hVolume")}</span>
+            <span className="text-muted-foreground text-sm">
+              {t("24hVolume")}
+            </span>
             <div className="flex flex-col space-y-0.5 items-end">
               {poolsVolumeInBtc ? (
                 <span className="font-semibold">
@@ -249,24 +319,67 @@ export default function Pools() {
           </div>
         </div>
         <div className="mt-6 border rounded-xl overflow-hidden">
-          <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl md:grid-cols-12 grid-cols-9 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
+          <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl md:grid-cols-14 grid-cols-9 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
             <div className="col-span-4">{t("pool")}</div>
+
             <div className="col-span-3">
-              <span>{t("tvl")}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 text-muted-foreground hover:text-foreground font-normal"
+                onClick={() => handleSort("tvl")}
+              >
+                <span>{t("tvl")}</span>
+                <SortIcon field="tvl" />
+              </Button>
             </div>
+
             <div className="col-span-2">
-              <span>{t("fee")}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 text-muted-foreground hover:text-foreground font-normal"
+                onClick={() => handleSort("fee")}
+              >
+                <span>{t("fee")}</span>
+                <SortIcon field="fee" />
+              </Button>
             </div>
-            <div className="col-span-2 hidden md:flex">{t("yieldTvl")}</div>
-            {/* <div className="col-span-2 hidden md:flex">Your Share</div> */}
+
+            <div className="col-span-2 hidden md:flex">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 text-muted-foreground hover:text-foreground font-normal"
+                onClick={() => handleSort("donation")}
+              >
+                <span>{t("donation")}</span>
+                <SortIcon field="donation" />
+              </Button>
+            </div>
+
+            <div className="col-span-2 hidden md:flex">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 text-muted-foreground hover:text-foreground font-normal"
+                onClick={() => handleSort("yield")}
+              >
+                <span>{t("yieldTvl")}</span>
+                <SortIcon field="yield" />
+              </Button>
+            </div>
+
             <div className="col-span-1 hidden md:flex" />
           </div>
-          {poolList?.length
-            ? poolList.map((pool, idx) => <PoolRow pool={pool} key={idx} />)
+          {sortedPoolList?.length
+            ? sortedPoolList.map((pool, idx) => (
+                <PoolRow pool={pool} key={idx} />
+              ))
             : [1, 2, 3, 4, 5].map((idx) => (
                 <div
                   key={idx}
-                  className="grid md:grid-cols-12 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3 bg-secondary/20"
+                  className="grid md:grid-cols-14 grid-cols-9 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3 bg-secondary/20"
                 >
                   <div className="col-span-4 flex items-center space-x-3">
                     <Skeleton className="size-10 rounded-full hidden sm:block" />
@@ -281,9 +394,9 @@ export default function Pools() {
                   <div className="col-span-2 flex">
                     <Skeleton className="h-5 w-2/3" />
                   </div>
-                  {/* <div className="col-span-2 hidden md:flex">
+                  <div className="col-span-2 flex">
                     <Skeleton className="h-5 w-2/3" />
-                  </div> */}
+                  </div>
                   <div className="col-span-2 hidden md:flex">
                     <Skeleton className="h-5 w-2/3" />
                   </div>

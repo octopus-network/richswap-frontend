@@ -233,6 +233,12 @@ export function DonateReview({
           ],
         },
         psbt_hex: signedPsbtHex,
+        client_info: [
+          JSON.stringify({
+            client_type: "RICH_SWAP_FRONTEND",
+            wallet_type: provider,
+          }),
+        ],
       });
 
       addTransaction({

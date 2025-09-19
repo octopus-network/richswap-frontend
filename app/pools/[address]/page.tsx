@@ -234,8 +234,6 @@ export default function Pool() {
     try {
       const tx = await createTransaction();
 
-      console.log("donateQuote", donateQuote);
-
       tx.addIntention({
         action: "self_donate",
         poolAddress: RICH_POOL,

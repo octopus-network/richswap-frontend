@@ -37,6 +37,8 @@ export async function GET(req: NextRequest) {
         ) {
           close
           timestamp
+          market_cap
+          tvl
         }
       }
     `;
@@ -52,6 +54,8 @@ export async function GET(req: NextRequest) {
       k_line_minutes: {
         close: string;
         timestamp: number;
+        market_cap: number;
+        tvl: number;
       }[];
     };
 
@@ -69,6 +73,8 @@ export async function GET(req: NextRequest) {
           ) {
             close
             timestamp
+            tvl
+            market_cap
           }
         }
       `;
@@ -78,14 +84,25 @@ export async function GET(req: NextRequest) {
           token: rune,
           fromTs: (thirtyDaysAgo * 1e9).toString(),
           toTs: (now * 1e9).toString(),
-        })) as { k_line_minutes: { close: string; timestamp: number }[] };
+        })) as {
+          k_line_minutes: {
+            close: string;
+            timestamp: number;
+            market_cap: number;
+            tvl: number;
+          }[];
+        };
 
         if (fallbackResult.k_line_minutes?.length > 0) {
           const latestPrice = Number(fallbackResult.k_line_minutes[0].close);
+          const market_cap = fallbackResult.k_line_minutes[0].market_cap;
+          const tvl = fallbackResult.k_line_minutes[0].tvl;
           return NextResponse.json({
             success: true,
             data: {
               price: latestPrice,
+              market_cap,
+              tvl,
               change: 0,
               hasData: true,
               dataPoints: 1,
@@ -104,6 +121,8 @@ export async function GET(req: NextRequest) {
         success: true,
         data: {
           price: 0,
+          market_cap: 0,
+          tvl: 0,
           change: 0,
           hasData: false,
         },
@@ -127,6 +146,8 @@ export async function GET(req: NextRequest) {
       success: true,
       data: {
         price: currentPrice,
+        market_cap: sortedData[0].market_cap,
+        tvl: sortedData[0].tvl,
         change: change,
         hasData: true,
         dataPoints: raw.length,

@@ -45,7 +45,7 @@ export function useBtcUtxos(address: string | undefined, pubkey?: string) {
     const allUtxos = apiUtxos.concat(
       pendingUtxos.filter(
         (p) =>
-          p.runes.length &&
+          !p.runes.length &&
           apiUtxos.findIndex((c) => c.txid === p.txid && c.vout === p.vout) < 0
       )
     );
