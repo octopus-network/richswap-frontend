@@ -48,6 +48,7 @@ export function DepositReview({
   onSuccess,
   onBack,
   nonce,
+  lockBlocks,
   showCancelButton = false,
 }: {
   coinA: Coin | null;
@@ -59,6 +60,7 @@ export function DepositReview({
   onSuccess: () => void;
   onBack: () => void;
   nonce: string;
+  lockBlocks: number;
   showCancelButton?: boolean;
 }) {
   const { address, paymentAddress, provider, signPsbt } = useLaserEyes();
@@ -268,7 +270,7 @@ export function DepositReview({
               pool_utxo_received: poolReceiveUtxos,
               output_coins: outputCoins,
               pool_address: poolAddress,
-              action_params: "",
+              action_params: lockBlocks.toString(),
               nonce: BigInt(nonce),
             },
           ],

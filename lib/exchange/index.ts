@@ -207,6 +207,8 @@ export class Exchange {
         Exchange.getPoolInfo(poolAddress),
       ]);
 
+      console.log("position", res);
+
       if (!pool) {
         return null;
       }

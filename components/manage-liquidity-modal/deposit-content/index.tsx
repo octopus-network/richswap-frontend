@@ -19,19 +19,21 @@ export function DepositContent({
   const [coinBAmount, setCoinBAmount] = useState("");
   const [nonce, setNonce] = useState("0");
   const [poolUtxos, setPoolUtxos] = useState<UnspentOutput[]>();
-
+  const [lockBlocks, setLockBlocks] = useState(0);
   const [showReview, setShowReview] = useState(false);
 
   const onReview = (
     coinAAmount: string,
     coinBAmount: string,
     nonce: string,
-    poolUtxos: UnspentOutput[]
+    poolUtxos: UnspentOutput[],
+    lockBlocks: number
   ) => {
     setCoinAAmount(coinAAmount);
     setCoinBAmount(coinBAmount);
     setNonce(nonce);
     setPoolUtxos(poolUtxos);
+    setLockBlocks(lockBlocks);
     setShowReview(true);
     setOnReview(true);
   };
@@ -61,6 +63,7 @@ export function DepositContent({
               coinBAmount={coinBAmount}
               onSuccess={onSuccess}
               nonce={nonce}
+              lockBlocks={lockBlocks}
               poolUtxos={poolUtxos}
               onBack={onBack}
               showCancelButton={true}

@@ -14,6 +14,7 @@ import { PopupStatus, useAddPopup } from "@/store/popups";
 import { getCoinSymbol } from "@/lib/utils";
 
 import { useTranslations } from "next-intl";
+import { LockLpSelector } from "../lock-lp-selector";
 
 export function CreateForm({
   coinA,
@@ -25,6 +26,7 @@ export function CreateForm({
   setCoinBAmount,
   onNextStep,
   onPoolExsists,
+  setLockBlocks,
 }: {
   coinA: Coin;
   coinB: Coin | null;
@@ -39,6 +41,7 @@ export function CreateForm({
     utxos?: UnspentOutput[]
   ) => void;
   onPoolExsists?: (pool: PoolInfo) => void;
+  setLockBlocks: (value: number) => void;
 }) {
   const { address } = useLaserEyes();
   const [isCreating, setIsCreating] = useState(false);
@@ -136,6 +139,7 @@ export function CreateForm({
         onSelectCoin={setCoinB}
         onUserInput={setCoinBAmount}
       />
+      <LockLpSelector onLockChange={setLockBlocks} className="mt-4" />
       <div className="mt-6">
         {!address ? (
           <Button
