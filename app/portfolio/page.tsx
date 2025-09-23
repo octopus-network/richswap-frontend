@@ -23,13 +23,16 @@ export default function Portolios() {
           <span className="text-3xl font-semibold">{t("portfolio")}</span>
         </div>
         <div className="mt-6 border rounded-xl overflow-hidden">
-          <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl grid-cols-10 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
+          <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl grid-cols-11 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
             <div className="col-span-3">{t("pool")}</div>
-            <div className="col-span-3">
+            <div className="col-span-2">
               <span>{t("balance")}</span>
             </div>
-            <div className="col-span-3">
+            <div className="col-span-2">
               <span>{t("yield")}</span>
+            </div>
+            <div className="col-span-3">
+              <span>{t("unlockTime")}</span>
             </div>
           </div>
           {portfolios?.length ? (
@@ -45,7 +48,7 @@ export default function Portolios() {
               [1, 2, 3, 4, 5].map((idx) => (
                 <div
                   key={idx}
-                  className="grid grid-cols-10 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3 bg-secondary/20"
+                  className="grid grid-cols-11 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 px-4 py-3 bg-secondary/20"
                 >
                   <div className="col-span-3 flex items-center space-x-3">
                     <Skeleton className="size-10 rounded-full hidden sm:block" />
@@ -54,7 +57,10 @@ export default function Portolios() {
                       <Skeleton className="h-3 w-8" />
                     </div>
                   </div>
-                  <div className="col-span-3 flex">
+                  <div className="col-span-2 flex">
+                    <Skeleton className="h-5 w-2/3" />
+                  </div>
+                  <div className="col-span-2 hidden md:flex">
                     <Skeleton className="h-5 w-2/3" />
                   </div>
                   <div className="col-span-3 hidden md:flex">

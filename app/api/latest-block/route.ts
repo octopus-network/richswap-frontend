@@ -1,24 +1,22 @@
 import { NextResponse } from "next/server";
-
-import { OpenApi } from "@/lib/open-api";
+import { Maestro } from "@/lib/maestro";
 
 export const dynamic = "force-dynamic";
 
-const UNISAT_API = process.env.UNISAT_API!;
-const UNISAT_API_KEY = process.env.UNISAT_API_KEY!;
+const MAESTRO_API_URL = process.env.MAESTRO_API_URL!;
+const MAESTRO_API_KEY = process.env.MAESTRO_API_KEY!;
 
 export async function GET() {
   try {
-    const openApi = new OpenApi({
-      baseUrl: UNISAT_API,
-      apiKey: UNISAT_API_KEY,
+    const maestro = new Maestro({
+      baseUrl: MAESTRO_API_URL,
+      apiKey: MAESTRO_API_KEY,
     });
-
-    const { blocks } = await openApi.getBlockchainInfo();
+    const { data } = await maestro.latestBlock();
 
     return NextResponse.json({
       success: true,
-      data: blocks,
+      data: data.height,
     });
   } catch (error) {
     return NextResponse.json({

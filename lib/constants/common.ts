@@ -28,3 +28,5 @@ export const REE_INDEXER_URL =
 
 export const CLAIMABLE_PROTOCOL_FEE_THRESHOLD =
   NETWORK === "mainnet" ? 10_000 : 546;
+
+export const BITCOIN_BLOCK_TIME_MINUTES = 10;

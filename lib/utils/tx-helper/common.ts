@@ -1,91 +1,14 @@
 import { Coin, TransactionInfo, UnspentOutput, TransactionType } from "@/types";
 
 import { getCoinSymbol } from "../common";
-import { Runestone, Edict } from "runelib";
+
 import { AddressType, TxInput } from "@/types";
-import { getTxInfo, getRawTx } from "@/lib/chain-api";
-import { getAddressType } from "../address";
+
 import { formatNumber } from "../format-number";
 import { toPsbtNetwork } from "../network";
 import { hexToBytes } from "../common";
 import { NETWORK } from "@/lib/constants";
 import * as bitcoin from "bitcoinjs-lib";
-
-export async function getTxScript(outpoint: string) {
-  const [txid, vout] = outpoint.split(":");
-  const voutNumber = Number(vout);
-  const { vout: outputs } = await getTxInfo(txid);
-
-  const { scriptpubkey, scriptpubkey_address } = outputs[voutNumber];
-  return {
-    scriptPk: scriptpubkey,
-    address: scriptpubkey_address,
-  };
-}
-
-export async function getUtxoByOutpoint(
-  txid: string,
-  vout: number
-): Promise<UnspentOutput | undefined> {
-  const voutNumber = Number(vout);
-
-  const [{ vout: outputs }, rawTx] = (await Promise.all([
-    getTxInfo(txid),
-    getRawTx(txid),
-  ])) as [
-    {
-      vout: {
-        scriptpubkey: string;
-        scriptpubkey_address: string;
-        scriptpubkey_asm: string;
-        scriptpubkey_type: string;
-        value: number;
-      }[];
-      status: { confirmed: boolean; block_height: number };
-    },
-    string
-  ];
-
-  if (!outputs) {
-    return;
-  }
-
-  const { scriptpubkey, scriptpubkey_address, value } = outputs[voutNumber];
-
-  const opReturn = outputs.find(
-    ({ scriptpubkey_type }) => scriptpubkey_type === "op_return"
-  );
-
-  let edicts: Edict[] = [];
-  if (opReturn) {
-    const stone = Runestone.decipher(rawTx);
-
-    if (stone.isSome()) {
-      const value = stone.value();
-      edicts = value?.edicts || [];
-    }
-  }
-
-  const edict = edicts.find((e) => e.output === voutNumber);
-
-  return {
-    txid,
-    vout: voutNumber,
-    satoshis: value.toString(),
-    scriptPk: scriptpubkey,
-    address: scriptpubkey_address,
-    pubkey: "",
-    addressType: getAddressType(scriptpubkey_address),
-    runes: edict
-      ? [
-          {
-            id: `${edict.id.block}:${edict.id.idx}`,
-            amount: edict.amount.toString(),
-          },
-        ]
-      : [],
-  };
-}
 
 export function selectBtcUtxos(utxos: UnspentOutput[], targetAmount: bigint) {
   const selectedUtxos: UnspentOutput[] = [];

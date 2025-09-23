@@ -70,8 +70,14 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     intention_index: IDL.Nat32,
     psbt_hex: IDL.Text,
   });
+  const Liquidity = IDL.Record({
+    total_share: IDL.Nat,
+    user_share: IDL.Nat,
+    user_incomes: IDL.Nat64,
+    lock_until: IDL.Nat32,
+  });
   const Result_4 = IDL.Variant({
-    Ok: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+    Ok: IDL.Vec(IDL.Tuple(IDL.Text, Liquidity)),
     Err: ExchangeError,
   });
   const NewBlockInfo = IDL.Record({
@@ -79,11 +85,6 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     confirmed_txids: IDL.Vec(IDL.Text),
     block_timestamp: IDL.Nat64,
     block_height: IDL.Nat32,
-  });
-  const Liquidity = IDL.Record({
-    total_share: IDL.Nat,
-    user_share: IDL.Nat,
-    user_incomes: IDL.Nat64,
   });
   const Result_5 = IDL.Variant({ Ok: Liquidity, Err: ExchangeError });
   const GetMinimalTxValueArgs = IDL.Record({

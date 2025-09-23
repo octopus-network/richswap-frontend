@@ -207,16 +207,15 @@ export class Exchange {
         Exchange.getPoolInfo(poolAddress),
       ]);
 
-      console.log("position", res);
-
       if (!pool) {
         return null;
       }
 
-      const { total_share, user_incomes, user_share } = res as {
+      const { total_share, user_incomes, user_share, lock_until } = res as {
         total_share: bigint;
         user_incomes: bigint;
         user_share: bigint;
+        lock_until: number;
       };
 
       if (!Number(user_share) || !Number(total_share)) {
@@ -250,6 +249,7 @@ export class Exchange {
         coinBAmount,
         totalShare: total_share.toString(),
         userIncomes: user_incomes.toString(),
+        lockUntil: lock_until,
       };
     } catch (err: any) {
       console.error("Get position error", err);
@@ -259,7 +259,7 @@ export class Exchange {
 
   public static async getLps(poolAddress: string) {
     try {
-      const res = await actor.get_all_lp(poolAddress).then((data: any) => {
+      const res = (await actor.get_all_lp(poolAddress).then((data: any) => {
         if (data.Ok) {
           return data.Ok;
         } else {
@@ -267,37 +267,30 @@ export class Exchange {
             data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
           );
         }
-      });
+      })) as [
+        string,
+        {
+          total_share: bigint;
+          user_share: bigint;
+          lock_until: number;
+        }
+      ][];
 
       if (!res) {
         return [];
       }
 
-      const promises = res.map(([userAddress]: [string, string]) =>
-        actor
-          .get_lp(poolAddress, userAddress)
-          .then((data: any) => {
-            if (data.Ok) {
-              return data.Ok;
-            } else {
-              throw new Error(
-                data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
-              );
-            }
-          })
-          .then(({ total_share, user_share }) => {
-            return {
-              address: userAddress,
-              percentage: new Decimal(user_share.toString())
-                .mul(100)
-                .div(total_share.toString())
-                .toNumber(),
-            };
-          })
-          .catch(() => null)
+      return res.map(
+        ([address, { total_share, user_share, lock_until }]) =>
+          ({
+            address,
+            percentage: new Decimal(user_share.toString())
+              .mul(100)
+              .div(total_share.toString())
+              .toNumber(),
+            lockUntil: lock_until,
+          } as any)
       );
-
-      return Promise.all(promises);
     } catch (err: any) {
       console.log("get all lp error", err);
       return [];

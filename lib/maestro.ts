@@ -117,4 +117,40 @@ export class Maestro {
 
     return response;
   }
+
+  async latestBlock() {
+    const response = await this.axios
+      .get<{
+        last_updated: {
+          block_hash: string;
+          block_height: bigint;
+        };
+        data: {
+          height: number;
+        };
+      }>(`rpc/block/latest`)
+      .then((res) => res.data);
+
+    return response;
+  }
+
+  async btcPriceByTimestamp(timestamp: number) {
+    try {
+      const response = await this.axios
+        .get<{
+          price: number;
+          timestamp: number;
+        }>(`markets/prices/${timestamp}`)
+        .then((res) => res.data);
+
+      console.log("response", response);
+
+      return response;
+    } catch {
+      return {
+        price: 100000,
+        timestamp,
+      };
+    }
+  }
 }

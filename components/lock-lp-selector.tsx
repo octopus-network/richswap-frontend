@@ -3,13 +3,12 @@
 import { useState, useMemo } from "react";
 import { Calendar, Clock, Lock } from "lucide-react";
 import { Button } from "./ui/button";
-
 import { Label } from "./ui/label";
-
-import { format } from "date-fns";
+import moment from "moment";
 import { cn } from "@/lib/utils";
-
-const BITCOIN_BLOCK_TIME_MINUTES = 10;
+import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
+import { useTranslations } from "next-intl";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 
 interface LockLpSelectorProps {
   onLockChange?: (blocks: number, date: Date | null) => void;
@@ -19,13 +18,14 @@ interface LockLpSelectorProps {
 
 export function LockLpSelector({
   onLockChange,
-  disabled = false,
+
   className,
 }: LockLpSelectorProps) {
+  const t = useTranslations("LockLpSelector");
   const [isLocked, setIsLocked] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
-
+  const { address } = useLaserEyes();
   const lockInfo = useMemo(() => {
     if (!selectedDate || !isLocked) {
       return null;
@@ -84,11 +84,11 @@ export function LockLpSelector({
   };
 
   const presetOptions = [
-    { label: "1 Week", days: 7 },
-    { label: "1 Month", days: 30 },
-    { label: "3 Months", days: 90 },
-    { label: "6 Months", days: 180 },
-    { label: "1 Year", days: 365 },
+    { label: t("presets.1Week"), days: 7 },
+    { label: t("presets.1Month"), days: 30 },
+    { label: t("presets.3Months"), days: 90 },
+    { label: t("presets.6Months"), days: 180 },
+    { label: t("presets.1Year"), days: 365 },
   ];
 
   const handlePresetSelect = (days: number) => {
@@ -106,18 +106,21 @@ export function LockLpSelector({
           variant={isLocked ? "default" : "outline"}
           size="sm"
           onClick={handleLockToggle}
-          disabled={disabled}
-          className="flex items-center space-x-2"
+          disabled={!address}
+          className={cn(
+            "flex items-center space-x-2",
+            isLocked ? "border-primary" : "border-border"
+          )}
         >
           <Lock
             className={cn("size-4", isLocked && "text-primary-foreground")}
           />
-          <span>{isLocked ? "LP Locked" : "Lock LP"}</span>
+          <span>{isLocked ? t("lpLocked") : t("lockLp")}</span>
         </Button>
 
         {isLocked && lockInfo && (
           <div className="text-xs text-muted-foreground">
-            ~{lockInfo.blocks.toLocaleString()} blocks
+            ~{lockInfo.blocks.toLocaleString()} {t("blocks")}
           </div>
         )}
       </div>
@@ -126,7 +129,7 @@ export function LockLpSelector({
         <div className="space-y-3 p-3 border rounded-lg bg-secondary/20">
           <Label className="text-sm font-medium flex items-center space-x-2">
             <Calendar className="size-4" />
-            <span>Unlock Date</span>
+            <span>{t("unlockDate")}</span>
           </Label>
 
           <div className="flex flex-wrap gap-2">
@@ -137,10 +140,11 @@ export function LockLpSelector({
                 variant="outline"
                 size="xs"
                 onClick={() => handlePresetSelect(preset.days)}
-                disabled={disabled}
                 className={cn(
-                  "text-xs transition-colors border-border",
-                  selectedPreset === preset.days && "border-primary"
+                  "text-xs transition-colors",
+                  selectedPreset === preset.days
+                    ? "border-primary text-primary"
+                    : "border-border"
                 )}
               >
                 {preset.label}
@@ -152,32 +156,34 @@ export function LockLpSelector({
             <div className="space-y-2 p-2 bg-primary/5 rounded-md border">
               <div className="flex items-center space-x-2 text-sm">
                 <Clock className="size-4 text-primary" />
-                <span className="font-medium">Lock Duration:</span>
+                <span className="font-medium">{t("lockDuration")}:</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                 <div>
-                  <span className="font-medium">{lockInfo.days}</span> days
+                  <span className="font-medium">{lockInfo.days}</span>{" "}
+                  {t("days")}
                 </div>
                 <div>
-                  <span className="font-medium">{lockInfo.hours}</span> hours
+                  <span className="font-medium">{lockInfo.hours}</span>{" "}
+                  {t("hours")}
                 </div>
                 <div>
                   <span className="font-medium">
                     ~{lockInfo.blocks.toLocaleString()}
                   </span>{" "}
-                  blocks
+                  {t("blocks")}
                 </div>
                 <div>
                   <span className="font-medium">
-                    {format(lockInfo.date, "MMM dd")}
+                    {moment(lockInfo.date).format("YYYY-MM-DD HH:mm")}
                   </span>{" "}
-                  unlock
+                  {t("unlock")}
                 </div>
               </div>
 
               <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
-                * Estimated based on 10min average block time
+                {t("estimatedNote")}
               </div>
             </div>
           )}
