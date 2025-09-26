@@ -129,7 +129,11 @@
     "retry": "Retry",
     "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
     "claimTips": "Extractable: > {amount} sats",
-    "volume": "Volume(24h)"
+    "volume": "Volume(24h)",
+    "lpLockedUtil": "Liquidity locked until",
+    "unlockTime": "Unlock Time",
+    "blocks": "Blocks",
+    "remain": "Remain"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
@@ -182,10 +186,35 @@
     "pool": "Pool",
     "balance": "Balance",
     "yield": "Yield",
-    "connectWallet": "Connect Wallet"
+    "unlockTime": "Unlock Time",
+    "blocks": "Blocks",
+    "connectWallet": "Connect Wallet",
+    "remain": "Remain",
+    "unlocked": "Unlocked",
+    "days": "d",
+    "hours": "h",
+    "minutes": "m"
   },
   "SelectCoin": {
     "selectCoin": "Select Coin",
     "searchPlaceholder": "Input coin id or name"
+  },
+  "LockLpSelector": {
+    "lockLp": "Lock LP",
+    "lpLocked": "LP Locked",
+    "unlockDate": "Unlock Date",
+    "lockDuration": "Lock Duration",
+    "days": "days",
+    "hours": "hours",
+    "blocks": "blocks",
+    "unlock": "unlock",
+    "estimatedNote": "* Estimated based on 10min average block time",
+    "presets": {
+      "1Week": "1 Week",
+      "1Month": "1 Month", 
+      "3Months": "3 Months",
+      "6Months": "6 Months",
+      "1Year": "1 Year"
+    }
   }
 }

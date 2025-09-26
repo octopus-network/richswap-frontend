@@ -12,6 +12,7 @@ export function DepositReviewModal({
   coinBAmount,
   pool,
   nonce,
+  lockBlocks,
   poolUtxos,
 }: {
   open: boolean;
@@ -19,6 +20,7 @@ export function DepositReviewModal({
   coinBAmount: string;
   pool: PoolInfo;
   nonce: string;
+  lockBlocks: number;
   poolUtxos: UnspentOutput[];
   setOpen: (open: boolean) => void;
 }) {
@@ -45,6 +47,7 @@ export function DepositReviewModal({
           coinBAmount={coinBAmount}
           onSuccess={() => setOpen(false)}
           nonce={nonce}
+          lockBlocks={lockBlocks}
           poolUtxos={poolUtxos}
           onBack={() => setOpen(false)}
         />

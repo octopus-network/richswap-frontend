@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import Decimal from "decimal.js";
-import { getBtcPrice } from "@/lib/chain-api";
+
 import { PoolInfo } from "@/types";
 import { BITCOIN } from "@/lib/constants";
+import { Maestro } from "@/lib/maestro";
 
 export const dynamic = "force-dynamic";
 
 const STORAGE_URL = process.env.STORAGE_URL!;
+
+const MAESTRO_API_URL = process.env.MAESTRO_API_URL!;
+const MAESTRO_API_KEY = process.env.MAESTRO_API_KEY!;
 
 async function getPriceInBtc(coinId: string) {
   const pools = (await fetch(`${STORAGE_URL}/pool-list.json`, {
@@ -41,7 +45,14 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const btcPrice = await getBtcPrice();
+    const maestro = new Maestro({
+      baseUrl: MAESTRO_API_URL,
+      apiKey: MAESTRO_API_KEY,
+    });
+
+    const { price: btcPrice } = await maestro.btcPriceByTimestamp(
+      Math.floor(Date.now() / 1000)
+    );
 
     const idsArr = ids.split(",").filter((id) => id !== BITCOIN.id);
 

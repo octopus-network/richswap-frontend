@@ -3,14 +3,17 @@ import { CoinIcon } from "@/components/coin-icon";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { formatNumber, getCoinSymbol } from "@/lib/utils";
 import Decimal from "decimal.js";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { UnspentOutput } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Waves } from "lucide-react";
+import { Info, Waves } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Exchange } from "@/lib/exchange";
 import { useTranslations } from "next-intl";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useLatestBlock } from "@/hooks/use-latest-block";
+import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
+import moment from "moment";
 
 export function WithdrawForm({
   position,
@@ -27,6 +30,7 @@ export function WithdrawForm({
 }) {
   const coinAPrice = useCoinPrice(position?.coinA?.id);
   const coinBPrice = useCoinPrice(position?.coinB?.id);
+  const { data: latestBlock } = useLatestBlock();
 
   const [withdrawPercentage, setWithdrawPercentage] = useState(0);
   const [nonce, setNonce] = useState("0");
@@ -70,6 +74,32 @@ export function WithdrawForm({
         setErrorMessage(err.message);
       });
   }, [debouncedPercentage, position]);
+
+  const unlockRemainBlocks = useMemo(() => {
+    if (!position || !latestBlock) {
+      return undefined;
+    }
+
+    if (position.lockUntil === 0) {
+      return 0;
+    }
+
+    if (latestBlock >= position.lockUntil) {
+      return 0;
+    }
+
+    return position.lockUntil - latestBlock;
+  }, [position, latestBlock]);
+
+  const unlockMoment = useMemo(() => {
+    if (!unlockRemainBlocks) {
+      return undefined;
+    }
+
+    const remainingMinutes = unlockRemainBlocks * BITCOIN_BLOCK_TIME_MINUTES;
+
+    return moment().add(remainingMinutes, "minutes");
+  }, [unlockRemainBlocks]);
 
   return (
     <div>
@@ -125,10 +155,17 @@ export function WithdrawForm({
                 defaultValue={[0]}
                 max={100}
                 step={1}
+                disabled={Boolean(unlockRemainBlocks && unlockRemainBlocks > 0)}
                 onValueChange={([value]) => setWithdrawPercentage(value)}
               />
               <span>{withdrawPercentage}%</span>
             </div>
+            {unlockRemainBlocks && unlockRemainBlocks > 0 ? (
+              <div className="text-sm text-destructive flex items-center">
+                <Info className="mr-1 size-3" /> {t("lpLockedUtil")}{" "}
+                ~{unlockMoment?.format("YYYY-MM-DD HH:mm")}
+              </div>
+            ) : null}
           </div>
           <Button
             className="mt-4 w-full"

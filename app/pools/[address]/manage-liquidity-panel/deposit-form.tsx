@@ -13,6 +13,7 @@ import Decimal from "decimal.js";
 import { useTranslations } from "next-intl";
 import { DepositReviewModal } from "./deposit-review-modal";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
+import { LockLpSelector } from "@/components/lock-lp-selector";
 
 import {
   useDerivedDepositInfo,
@@ -40,6 +41,15 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
   const coinBBalance = useCoinBalance(pool?.coinB);
 
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
+
+  const [lockBlocks, setLockBlocks] = useState(0);
+
+  const handleLockChange = (blocks: number, date: Date | null) => {
+    setLockBlocks(blocks);
+    console.log(
+      `LP will be locked for ${blocks} blocks until ${date?.toLocaleDateString()}`
+    );
+  };
 
   useEffect(() => {
     return () => {
@@ -176,6 +186,7 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
         value={isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT]}
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
+      <LockLpSelector onLockChange={handleLockChange} className="mt-4" />
       <div className="mt-6">
         {!address ? (
           <Button
@@ -225,6 +236,7 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
             isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT]
           }
           nonce={deposit?.nonce ?? "0"}
+          lockBlocks={lockBlocks}
           poolUtxos={deposit?.utxos ?? []}
         />
       )}

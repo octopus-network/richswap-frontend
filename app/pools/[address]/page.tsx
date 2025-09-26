@@ -15,15 +15,13 @@ import { ExternalLink } from "lucide-react";
 import { usePoolTvl, usePoolFee } from "@/hooks/use-pools";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { BITCOIN, RUNESCAN_URL, RICH_POOL } from "@/lib/constants";
-import { ellipseMiddle, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-import Circle from "react-circle";
 
 import { CLAIMABLE_PROTOCOL_FEE_THRESHOLD } from "@/lib/constants";
 import { useTranslations } from "next-intl";
@@ -35,6 +33,7 @@ import { useRee } from "@omnity/ree-client-ts-sdk";
 import { TransactionStatus, TransactionType, DonateState } from "@/types";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { useAddTransaction } from "@/store/transactions";
+import LpRow from "./lp-row";
 
 export default function Pool() {
   const t = useTranslations("Pools");
@@ -513,42 +512,22 @@ export default function Pool() {
             <span className="font-semibold text-lg">
               {t("liquidityProviders")}
             </span>
-            <div className="flex justify-between mt-3 text-muted-foreground text-sm">
-              <span>{t("address")}</span>
-              <span>{t("percentage")}</span>
+            <div className="grid grid-cols-9 mt-3 text-muted-foreground text-sm">
+              <span className="col-span-4">{t("address")}</span>
+              <span className="col-span-3">{t("unlockTime")}</span>
+              <span className="col-span-2 justify-end inline-flex">
+                {t("percentage")}
+              </span>
             </div>
             <div className="flex flex-col gap-3 mt-3">
               {lps.length
                 ? lps
                     .sort((a, b) => b.percentage - a.percentage)
-                    .map((lp) => (
-                      <div className="flex justify-between" key={lp.address}>
-                        <Link
-                          href={`${RUNESCAN_URL}/address/${lp.address}`}
-                          className="group hover:underline inline-flex items-center"
-                          target="_blank"
-                        >
-                          <span>{ellipseMiddle(lp.address, 14)}</span>
-                          <ExternalLink className="ml-1 size-3 group-hover:text-foreground text-muted-foreground" />
-                        </Link>
-                        <div className="flex items-center">
-                          <Circle
-                            progress={lp.percentage}
-                            size="18"
-                            lineWidth="60"
-                            progressColor="#f6d75a"
-                            bgColor="#4c9aff"
-                            showPercentage={false}
-                          />
-                          <span className="ml-1">
-                            {lp.percentage.toFixed(2)}%
-                          </span>
-                        </div>
-                      </div>
-                    ))
+                    .map((lp) => <LpRow lp={lp} key={lp.address} />)
                 : [1, 2, 3, 4].map((idx) => (
                     <div className="flex justify-between" key={idx}>
                       <Skeleton className="h-6 w-2/3" />
+                      <Skeleton className="h-6 w-12" />
                       <Skeleton className="h-6 w-12" />
                     </div>
                   ))}

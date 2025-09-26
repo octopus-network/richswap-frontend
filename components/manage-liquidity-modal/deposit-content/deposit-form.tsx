@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 import { useTranslations } from "next-intl";
+import { LockLpSelector } from "@/components/lock-lp-selector";
 
 import {
   formatCoinAmount,
@@ -33,7 +34,8 @@ export function DepositForm({
     coinAAmount: string,
     coinBAmount: string,
     nonce: string,
-    poolUtxos: UnspentOutput[]
+    poolUtxos: UnspentOutput[],
+    lockBlocks: number
   ) => void;
 }) {
   const { address } = useLaserEyes();
@@ -53,6 +55,15 @@ export function DepositForm({
   const coinBBalance = useCoinBalance(pool?.coinB);
 
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
+
+  const [lockBlocks, setLockBlocks] = useState(0);
+
+  const handleLockChange = (blocks: number, date: Date | null) => {
+    setLockBlocks(blocks);
+    console.log(
+      `LP will be locked for ${blocks} blocks until ${date?.toLocaleDateString()}`
+    );
+  };
 
   useEffect(() => {
     return () => {
@@ -200,6 +211,7 @@ export function DepositForm({
         value={isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT]}
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
+      <LockLpSelector onLockChange={handleLockChange} className="mt-4" />
       <div className="mt-6">
         {!address ? (
           <Button
@@ -228,7 +240,8 @@ export function DepositForm({
                 isEmptyPool ? inputAmount : formattedAmounts[Field.INPUT],
                 isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT],
                 deposit?.nonce ?? "0",
-                deposit?.utxos ?? []
+                deposit?.utxos ?? [],
+                lockBlocks
               )
             }
           >

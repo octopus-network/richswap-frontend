@@ -23,13 +23,15 @@ export function usePoolList() {
     (url: string) =>
       axios
         .get<{
-          data: PoolInfo[];
+          data: {
+            pools: PoolInfo[];
+          };
         }>(url)
         .then((res) => res.data.data),
     { refreshInterval: 30 * 1000 }
   );
 
-  return useMemo(() => data ?? [], [data]);
+  return useMemo(() => data?.pools ?? [], [data]);
 }
 
 export function usePoolsVolume() {
@@ -67,12 +69,20 @@ export function usePoolsTvl() {
 }
 
 export function usePoolsTrades() {
-  const poolList = usePoolList();
-
-  return useMemo(
-    () => poolList.reduce((acc, pool) => acc + pool.nonce, 0),
-    [poolList]
+  const { data } = useSWR(
+    "/api/pools",
+    (url: string) =>
+      axios
+        .get<{
+          data: {
+            trades: number;
+          };
+        }>(url)
+        .then((res) => res.data.data),
+    { refreshInterval: 30 * 1000 }
   );
+
+  return data?.trades ?? 0;
 }
 
 export function usePoolsFee() {

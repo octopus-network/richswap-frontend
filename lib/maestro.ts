@@ -117,4 +117,58 @@ export class Maestro {
 
     return response;
   }
+
+  async latestBlock() {
+    const response = await this.axios
+      .get<{
+        last_updated: {
+          block_hash: string;
+          block_height: bigint;
+        };
+        data: {
+          height: number;
+        };
+      }>(`rpc/block/latest`)
+      .then((res) => res.data);
+
+    return response;
+  }
+
+  async btcPriceByTimestamp(timestamp: number) {
+    try {
+      const response = await this.axios
+        .get<{
+          price: number;
+          timestamp: number;
+        }>(`markets/prices/${timestamp}`)
+        .then((res) => res.data);
+
+      return response;
+    } catch {
+      return {
+        price: 100000,
+        timestamp,
+      };
+    }
+  }
+
+  async satoshiBalanceByAddress(address: string) {
+    const response = await this.axios
+      .get<{
+        data: string;
+      }>(`mempool/addresses/${address}/balance`)
+      .then((res) => res.data);
+
+    return response;
+  }
+
+  async runesByAddress(address: string) {
+    const response = await this.axios
+      .get<{
+        data: Record<string, string>;
+      }>(`mempool/addresses/${address}/runes`)
+      .then((res) => res.data);
+
+    return response;
+  }
 }

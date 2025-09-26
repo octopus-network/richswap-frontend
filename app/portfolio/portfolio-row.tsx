@@ -8,18 +8,24 @@ import { formatNumber } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 
 import { useCoinPrice } from "@/hooks/use-prices";
-
+import { useLatestBlock } from "@/hooks/use-latest-block";
 import Decimal from "decimal.js";
+import moment from "moment";
 import { CoinIcon } from "@/components/coin-icon";
-import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
+import {
+  BITCOIN,
+  RUNESCAN_URL,
+  BITCOIN_BLOCK_TIME_MINUTES,
+} from "@/lib/constants";
+import { useTranslations } from "next-intl";
 
 export function PortfolioRow({ position }: { position: Position }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
     useState(false);
-
   const poolTvl = usePoolTvl(position.pool.key);
-
   const btcPrice = useCoinPrice(BITCOIN.id);
+  const { data: latestBlock } = useLatestBlock();
+  const t = useTranslations("Portfolio");
 
   const positionPercentage = useMemo(
     () =>
@@ -72,10 +78,36 @@ export function PortfolioRow({ position }: { position: Position }) {
 
   const poolAddress = useMemo(() => position.pool.address, [position]);
 
+  const unlockRemainBlocks = useMemo(() => {
+    if (!position || !latestBlock) {
+      return undefined;
+    }
+
+    if (position.lockUntil === 0) {
+      return 0;
+    }
+
+    if (latestBlock >= position.lockUntil) {
+      return 0;
+    }
+
+    return position.lockUntil - latestBlock;
+  }, [position, latestBlock]);
+
+  const unlockMoment = useMemo(() => {
+    if (unlockRemainBlocks === undefined) {
+      return undefined;
+    }
+
+    const remainingMinutes = unlockRemainBlocks * BITCOIN_BLOCK_TIME_MINUTES;
+
+    return moment().add(remainingMinutes, "minutes");
+  }, [unlockRemainBlocks]);
+
   return (
     <>
       <div
-        className="grid grid-cols-10 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors"
+        className="grid grid-cols-11 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors"
         onClick={() => setManageLiquidityModalOpen(true)}
       >
         <div className="col-span-3 flex items-center">
@@ -114,7 +146,7 @@ export function PortfolioRow({ position }: { position: Position }) {
             </span>
           </div>
         </div>
-        <div className="col-span-3">
+        <div className="col-span-2">
           {positionValue !== undefined && positionValueInBtc !== undefined ? (
             <>
               <div
@@ -153,7 +185,7 @@ export function PortfolioRow({ position }: { position: Position }) {
             <Skeleton className="h-5 w-20" />
           )}
         </div>
-        <div className="col-span-3">
+        <div className="col-span-2">
           {positionYieldValue !== undefined && positionYield !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
@@ -166,6 +198,22 @@ export function PortfolioRow({ position }: { position: Position }) {
             </div>
           ) : (
             <Skeleton className="h-5 w-20" />
+          )}
+        </div>
+        <div className="col-span-3">
+          {position.lockUntil === 0 ? (
+            <span className="text-sm text-muted-foreground">-</span>
+          ) : unlockMoment === undefined ? (
+            <Skeleton className="h-5 w-16" />
+          ) : (
+            <div className="flex flex-col">
+              <span className="text-sm">
+                ~{unlockMoment.format("YYYY-MM-DD HH:mm")}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {t("remain")} {unlockRemainBlocks} {t("blocks")}
+              </span>
+            </div>
           )}
         </div>
         <div className="col-span-1 hidden md:flex justify-end">

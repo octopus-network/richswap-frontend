@@ -15,14 +15,18 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     PriceImpactLimitExceeded: IDL.Null,
     RuneIndexerError: IDL.Text,
     PoolStateExpired: IDL.Nat64,
+    InvalidSignature: IDL.Null,
     TooSmallFunds: IDL.Null,
+    LiquidityLocked: IDL.Null,
     InvalidRuneId: IDL.Null,
     InvalidPool: IDL.Null,
     InvalidPsbt: IDL.Text,
     PoolAlreadyExists: IDL.Null,
     InvalidTxid: IDL.Null,
     InvalidLiquidity: IDL.Null,
+    BlockSyncing: IDL.Null,
     EmptyPool: IDL.Null,
+    InvalidLockMessage: IDL.Null,
     FetchBitcoinCanisterError: IDL.Null,
     LpNotFound: IDL.Null,
     NoConfirmedUtxos: IDL.Null,
@@ -66,8 +70,14 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     intention_index: IDL.Nat32,
     psbt_hex: IDL.Text,
   });
+  const Liquidity = IDL.Record({
+    total_share: IDL.Nat,
+    user_share: IDL.Nat,
+    user_incomes: IDL.Nat64,
+    lock_until: IDL.Nat32,
+  });
   const Result_4 = IDL.Variant({
-    Ok: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+    Ok: IDL.Vec(IDL.Tuple(IDL.Text, Liquidity)),
     Err: ExchangeError,
   });
   const NewBlockInfo = IDL.Record({
@@ -75,11 +85,6 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     confirmed_txids: IDL.Vec(IDL.Text),
     block_timestamp: IDL.Nat64,
     block_height: IDL.Nat32,
-  });
-  const Liquidity = IDL.Record({
-    total_share: IDL.Nat,
-    user_share: IDL.Nat,
-    user_incomes: IDL.Nat64,
   });
   const Result_5 = IDL.Variant({ Ok: Liquidity, Err: ExchangeError });
   const GetMinimalTxValueArgs = IDL.Record({
@@ -109,6 +114,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     incomes: IDL.Nat64,
     total_btc_donation: IDL.Nat64,
     nonce: IDL.Nat64,
+    lp_locks: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat32)),
   });
   const Result_6 = IDL.Variant({
     Ok: IDL.Opt(IDL.Tuple(IDL.Opt(PoolState), PoolState)),
@@ -201,6 +207,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
       [IDL.Vec(PoolInfo)],
       ["query"]
     ),
+    lock_lp: IDL.Func([IDL.Text, IDL.Text, IDL.Text], [Result_2], []),
     new_block: IDL.Func([NewBlockInfo], [Result_7], []),
     pause: IDL.Func([], [], []),
     pre_add_liquidity: IDL.Func([IDL.Text, CoinBalance], [Result_8], ["query"]),
