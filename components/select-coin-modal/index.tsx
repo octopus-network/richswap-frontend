@@ -1,14 +1,7 @@
 "use client";
 
 import { Coin } from "@/types";
-import {
-  useState,
-  useMemo,
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import { useState, useMemo, ChangeEvent, useCallback, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
 import { CoinWarningModal } from "./coin-warning-modal";
@@ -20,65 +13,10 @@ import { useTranslations } from "next-intl";
 import { useAddUserCoin } from "@/store/user/hooks";
 import { usePoolList, usePoolsTvl } from "@/hooks/use-pools";
 import { BITCOIN } from "@/lib/constants";
-import { getCoinSymbol, getCoinName, formatNumber } from "@/lib/utils";
-import { useCoinBalance } from "@/hooks/use-balance";
-import { useLaserEyes } from "@omnisat/lasereyes-react";
 
-import { CoinIcon } from "../coin-icon";
+import { useRuneBalances } from "@/hooks/use-balance";
 
-const ITEM_HEIGHT = 64;
-const CONTAINER_HEIGHT = 400;
-const VISIBLE_COUNT = Math.ceil(CONTAINER_HEIGHT / ITEM_HEIGHT) + 2;
-
-function VirtualCoinRow({
-  coin,
-  onSelect,
-  style,
-}: {
-  coin: Coin;
-  onSelect: (coin: Coin) => void;
-  style: React.CSSProperties;
-}) {
-  const { address } = useLaserEyes();
-  const balance = useCoinBalance(coin);
-  const coinSymbol = getCoinSymbol(coin);
-  const coinName = getCoinName(coin);
-
-  return (
-    <div
-      style={style}
-      className="absolute left-0 right-0 px-4 py-2 flex items-center justify-between hover:bg-secondary/50 cursor-pointer transition-colors duration-150"
-      onClick={() => onSelect(coin)}
-    >
-      <div className="flex items-center min-w-0 flex-1">
-        <CoinIcon coin={coin} />
-        <div className="flex flex-col min-w-0 flex-1 ml-2">
-          <span className="font-semibold text-sm truncate">{coinSymbol}</span>
-          <span className="text-muted-foreground text-xs truncate">
-            {coinName}
-          </span>
-        </div>
-      </div>
-      <div className="flex flex-col items-end flex-shrink-0 ml-2">
-        {address ? (
-          balance !== undefined ? (
-            <>
-              <span className="text-sm font-medium">
-                {formatNumber(balance)}
-              </span>
-              <span className="text-xs text-muted-foreground">-</span>
-            </>
-          ) : (
-            <>
-              <div className="h-5 w-16 bg-secondary/50 rounded animate-pulse" />
-              <div className="h-3 w-8 bg-secondary/30 rounded animate-pulse mt-1" />
-            </>
-          )
-        ) : null}
-      </div>
-    </div>
-  );
-}
+import { CoinRow } from "./coin-row";
 
 function coinFilter(query: string) {
   if (!query) return () => true;
@@ -103,6 +41,7 @@ export function SelectCoinModal({
   setOpen,
   onSelectCoin,
   onlySwappableCoins = false,
+  toBuy,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -116,13 +55,13 @@ export function SelectCoinModal({
   const debouncedQuery = useDebounce(searchQuery, 150);
   const [coinWarningModalOpen, setCoinWarningModalOpen] = useState(false);
   const [toWarningCoin, setToWarningCoin] = useState<Coin>();
-  const [scrollTop, setScrollTop] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const searchCoins = useSearchCoins(debouncedQuery);
   const poolList = usePoolList();
   const poolsTvl = usePoolsTvl();
   const userCoinAdder = useAddUserCoin();
+
+  const runeBalances = useRuneBalances();
 
   const allCoins = useMemo(() => {
     const tvlMap = new Map<string, number>();
@@ -147,7 +86,14 @@ export function SelectCoinModal({
     const sorted = searched.sort((a, b) => {
       if (a.id === "0:0") return -1;
       if (b.id === "0:0") return 1;
-      return (tvlMap.get(b.id) ?? 0) - (tvlMap.get(a.id) ?? 0);
+      if (toBuy) {
+        return (tvlMap.get(b.id) ?? 0) - (tvlMap.get(a.id) ?? 0);
+      } else {
+        return runeBalances
+          ? Number(runeBalances[b.id] ?? "0") -
+              Number(runeBalances[a.id] ?? "0")
+          : 0;
+      }
     });
 
     const searchResults =
@@ -163,30 +109,9 @@ export function SelectCoinModal({
     poolList,
     onlySwappableCoins,
     searchCoins,
+    runeBalances,
+    toBuy,
   ]);
-
-  const { visibleItems, totalHeight } = useMemo(() => {
-    const startIndex = Math.floor(scrollTop / ITEM_HEIGHT);
-    const endIndex = Math.min(startIndex + VISIBLE_COUNT, allCoins.length);
-
-    const items = [];
-    for (let i = startIndex; i < endIndex; i++) {
-      items.push({
-        coin: allCoins[i],
-        index: i,
-        top: i * ITEM_HEIGHT,
-      });
-    }
-
-    return {
-      visibleItems: items,
-      totalHeight: allCoins.length * ITEM_HEIGHT,
-    };
-  }, [allCoins, scrollTop]);
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrollTop(e.currentTarget.scrollTop);
-  }, []);
 
   const handleCoinSelect = useCallback(
     (coin: Coin) => {
@@ -207,7 +132,6 @@ export function SelectCoinModal({
     const input = event.target.value;
     if (input.length <= 50) {
       setSearchQuery(input);
-      setScrollTop(0);
     }
   }, []);
 
@@ -222,12 +146,11 @@ export function SelectCoinModal({
   useEffect(() => {
     if (open) {
       setSearchQuery("");
-      setScrollTop(0);
     }
   }, [open]);
 
   return (
-    <BaseModal open={open} setOpen={setOpen} className="max-w-md">
+    <BaseModal open={open} setOpen={setOpen} className="max-w-md flex flex-col">
       <div className="px-4 pt-4">
         <div className="text-lg font-bold">{t("selectCoin")}</div>
         <div className="mt-4 border px-2 py-1 rounded-lg flex items-center hover:border-primary/60 duration-200 transition-colors">
@@ -245,27 +168,10 @@ export function SelectCoinModal({
         </div>
       </div>
 
-      <div className="border-t mt-4">
-        <div
-          ref={scrollRef}
-          className="overflow-y-auto"
-          style={{ height: CONTAINER_HEIGHT }}
-          onScroll={handleScroll}
-        >
-          <div style={{ height: totalHeight, position: "relative" }}>
-            {visibleItems.map(({ coin, top }) => (
-              <VirtualCoinRow
-                key={coin.id}
-                coin={coin}
-                onSelect={handleCoinSelect}
-                style={{
-                  top,
-                  height: ITEM_HEIGHT,
-                }}
-              />
-            ))}
-          </div>
-        </div>
+      <div className="overflow-y-auto h-[calc(70vh_-_80px)] border-t flex-1 mt-4">
+        {allCoins.map((coin) => (
+          <CoinRow key={coin.id} coin={coin} onSelect={handleCoinSelect} />
+        ))}
       </div>
 
       <CoinWarningModal

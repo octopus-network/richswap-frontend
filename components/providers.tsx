@@ -11,8 +11,11 @@ import {
 } from "@/lib/constants";
 import { Network, ReeProvider } from "@omnity/ree-client-ts-sdk";
 import { idlFactory } from "@/lib/dids/richswap.did";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 
 export function Providers({ children }: PropsWithChildren) {
+  const [queryClient] = useState(() => new QueryClient());
   return (
     <LaserEyesProvider
       config={{
@@ -28,7 +31,9 @@ export function Providers({ children }: PropsWithChildren) {
           exchangeCanisterId: EXCHANGE_CANISTER_ID,
         }}
       >
-        <TooltipProvider>{children}</TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>{children}</TooltipProvider>
+        </QueryClientProvider>
       </ReeProvider>
     </LaserEyesProvider>
   );

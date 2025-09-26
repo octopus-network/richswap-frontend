@@ -143,8 +143,6 @@ export class Maestro {
         }>(`markets/prices/${timestamp}`)
         .then((res) => res.data);
 
-      console.log("response", response);
-
       return response;
     } catch {
       return {
@@ -152,5 +150,25 @@ export class Maestro {
         timestamp,
       };
     }
+  }
+
+  async satoshiBalanceByAddress(address: string) {
+    const response = await this.axios
+      .get<{
+        data: string;
+      }>(`mempool/addresses/${address}/balance`)
+      .then((res) => res.data);
+
+    return response;
+  }
+
+  async runesByAddress(address: string) {
+    const response = await this.axios
+      .get<{
+        data: Record<string, string>;
+      }>(`mempool/addresses/${address}/runes`)
+      .then((res) => res.data);
+
+    return response;
   }
 }
