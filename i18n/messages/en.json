@@ -210,6 +210,8 @@
     "unlock": "unlock",
     "estimatedNote": "* Estimated based on 10min average block time",
     "presets": {
+      "1Hour": "1 Hour",
+      "1Day": "1 Day",
       "1Week": "1 Week",
       "1Month": "1 Month", 
       "3Months": "3 Months",

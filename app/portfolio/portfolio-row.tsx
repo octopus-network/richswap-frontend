@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 
+import LockLpButton from "./lock-lp-button";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useLatestBlock } from "@/hooks/use-latest-block";
 import Decimal from "decimal.js";
@@ -202,7 +203,7 @@ export function PortfolioRow({ position }: { position: Position }) {
         </div>
         <div className="col-span-3">
           {position.lockUntil === 0 ? (
-            <span className="text-sm text-muted-foreground">-</span>
+            <LockLpButton poolAddress={poolAddress} />
           ) : unlockMoment === undefined ? (
             <Skeleton className="h-5 w-16" />
           ) : (

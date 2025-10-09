@@ -45,6 +45,25 @@ export class Exchange {
     return poolAddress;
   }
 
+  public static async lockLp(
+    address: string,
+    message: string,
+    signature: string
+  ) {
+    return await actor
+      .lock_lp(address, message, signature)
+      .then((data: any) => {
+        console.log("lock lp res", data);
+        if (data.Ok) {
+          return data.Ok;
+        } else {
+          throw new Error(
+            data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+          );
+        }
+      });
+  }
+
   public static async getPool(
     inputCoin: Coin,
     outputCoin: Coin

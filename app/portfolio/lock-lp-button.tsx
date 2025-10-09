@@ -1,35 +1,36 @@
-"use client";
+import { Button } from "@/components/ui/button";
 
+import { Calendar, Clock, Lock, Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 import { useState, useMemo } from "react";
-import { Calendar, Clock, Lock } from "lucide-react";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
 import moment from "moment";
 import { cn } from "@/lib/utils";
+
+import { Exchange } from "@/lib/exchange";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
-import { useTranslations } from "next-intl";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
 
-interface LockLpSelectorProps {
-  onLockChange?: (blocks: number, date: Date | null) => void;
-  disabled?: boolean;
-  className?: string;
-}
-
-export function LockLpSelector({
-  onLockChange,
-
-  className,
-}: LockLpSelectorProps) {
+export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
+  const { paymentAddress, signMessage } = useLaserEyes();
   const t = useTranslations("LockLpSelector");
-  const [isLocked, setIsLocked] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedPresetHours, setSelectedPresetHours] = useState<
-    number | null
-  >(null);
-  const { address } = useLaserEyes();
+  const [selectedPresetHours, setSelectedPresetHours] = useState<number | null>(
+    null
+  );
+  const [blocks, setBlocks] = useState(0);
+  const [isLocking, setIsLocking] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
   const lockInfo = useMemo(() => {
-    if (!selectedDate || !isLocked) {
+    if (!selectedDate) {
       return null;
     }
 
@@ -53,37 +54,7 @@ export function LockLpSelector({
       blocks: estimatedBlocks,
       date: selectedDate,
     };
-  }, [selectedDate, isLocked]);
-
-  const handleLockToggle = () => {
-    const newLocked = !isLocked;
-    setIsLocked(newLocked);
-
-    if (!newLocked) {
-      setSelectedDate(null);
-      setSelectedPresetHours(null);
-      onLockChange?.(0, null);
-    } else if (selectedDate && lockInfo) {
-      onLockChange?.(lockInfo.blocks, selectedDate);
-    }
-  };
-
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
-
-    setSelectedDate(date);
-
-    if (isLocked) {
-      const now = new Date();
-      const timeDiff = date.getTime() - now.getTime();
-
-      if (timeDiff > 0) {
-        const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
-        const blocks = Math.ceil(minutesDiff / BITCOIN_BLOCK_TIME_MINUTES);
-        onLockChange?.(blocks, date);
-      }
-    }
-  };
+  }, [selectedDate]);
 
   const presetOptions = [
     { label: t("presets.1Hour"), hours: 1 },
@@ -95,6 +66,21 @@ export function LockLpSelector({
     { label: t("presets.1Year"), hours: 365 * 24 },
   ];
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+
+    setSelectedDate(date);
+
+    const now = new Date();
+    const timeDiff = date.getTime() - now.getTime();
+
+    if (timeDiff > 0) {
+      const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
+      const blocks = Math.ceil(minutesDiff / BITCOIN_BLOCK_TIME_MINUTES);
+      setBlocks(blocks);
+    }
+  };
+
   const handlePresetSelect = (hours: number) => {
     const futureDate = new Date();
     futureDate.setTime(futureDate.getTime() + hours * 60 * 60 * 1000);
@@ -102,35 +88,40 @@ export function LockLpSelector({
     handleDateSelect(futureDate);
   };
 
+  const onLock = async (): Promise<boolean> => {
+    if (!lockInfo || !blocks || !signMessage) {
+      return false;
+    }
+    setIsLocking(true);
+    try {
+      const message = `${poolAddress}:${blocks}`;
+      const signature = await signMessage(message, {
+        protocol: "bip322",
+      });
+      await Exchange.lockLp(paymentAddress, message, signature);
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    } finally {
+      setIsLocking(false);
+    }
+  };
+
   return (
-    <div className={cn("space-y-3", className)}>
-      <div className="flex items-center space-x-2">
+    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+      <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
         <Button
-          type="button"
-          variant={isLocked ? "default" : "outline"}
           size="sm"
-          onClick={handleLockToggle}
-          disabled={!address}
-          className={cn(
-            "flex items-center space-x-2",
-            isLocked ? "border-primary" : "border-border"
-          )}
+          variant="secondary"
+          className="border border-transparent hover:border-primary hover:text-primary"
         >
-          <Lock
-            className={cn("size-4", isLocked && "text-primary-foreground")}
-          />
-          <span>{isLocked ? t("lpLocked") : t("lockLp")}</span>
+          <Lock className="size-4" />
+          {t("lockLp")}
         </Button>
-
-        {isLocked && lockInfo && (
-          <div className="text-xs text-muted-foreground">
-            ~{lockInfo.blocks.toLocaleString()} {t("blocks")}
-          </div>
-        )}
-      </div>
-
-      {isLocked && (
-        <div className="space-y-3 p-3 border rounded-lg bg-secondary/20">
+      </PopoverTrigger>
+      <PopoverContent onClick={(e) => e.stopPropagation()}>
+        <div className="space-y-3">
           <Label className="text-sm font-medium flex items-center space-x-2">
             <Calendar className="size-4" />
             <span>{t("unlockDate")}</span>
@@ -191,8 +182,21 @@ export function LockLpSelector({
               </div>
             </div>
           )}
+          <Button
+            disabled={!lockInfo || isLocking}
+            className="w-full"
+            onClick={async () => {
+              const locked = await onLock();
+              if (locked) {
+                setIsPopoverOpen(false);
+              }
+            }}
+          >
+            {isLocking && <Loader2 className="size-4 animate-spin" />}
+            {t("lockLp")}
+          </Button>
         </div>
-      )}
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }
