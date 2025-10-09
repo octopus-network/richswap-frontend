@@ -73,6 +73,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   const Liquidity = IDL.Record({
     total_share: IDL.Nat,
     user_share: IDL.Nat,
+    locked_revenue: IDL.Nat64,
     user_incomes: IDL.Nat64,
     lock_until: IDL.Nat32,
   });
@@ -112,6 +113,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     utxo: IDL.Opt(Utxo),
     total_rune_donation: IDL.Nat,
     incomes: IDL.Nat64,
+    locked_lp_revenue: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat64)),
     total_btc_donation: IDL.Nat64,
     nonce: IDL.Nat64,
     lp_locks: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat32)),
@@ -131,13 +133,22 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     Ok: LiquidityOffer,
     Err: ExchangeError,
   });
+  const PreClaimOutput = IDL.Record({
+    nonce: IDL.Nat64,
+    claim_sats: IDL.Nat64,
+    input: Utxo,
+  });
+  const Result_9 = IDL.Variant({
+    Ok: PreClaimOutput,
+    Err: ExchangeError,
+  });
   const DonateIntention = IDL.Record({
     out_rune: CoinBalance,
     out_sats: IDL.Nat64,
     nonce: IDL.Nat64,
     input: Utxo,
   });
-  const Result_9 = IDL.Variant({
+  const Result_10 = IDL.Variant({
     Ok: DonateIntention,
     Err: ExchangeError,
   });
@@ -146,7 +157,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     nonce: IDL.Nat64,
     input: Utxo,
   });
-  const Result_10 = IDL.Variant({
+  const Result_11 = IDL.Variant({
     Ok: ExtractFeeOffer,
     Err: ExchangeError,
   });
@@ -156,28 +167,28 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     price_impact: IDL.Nat32,
     input: Utxo,
   });
-  const Result_11 = IDL.Variant({ Ok: SwapOffer, Err: ExchangeError });
+  const Result_12 = IDL.Variant({ Ok: SwapOffer, Err: ExchangeError });
   const WithdrawalOffer = IDL.Record({
     nonce: IDL.Nat64,
     input: Utxo,
     user_outputs: IDL.Vec(CoinBalance),
   });
-  const Result_12 = IDL.Variant({
+  const Result_13 = IDL.Variant({
     Ok: WithdrawalOffer,
     Err: ExchangeError,
   });
   const BlockInfo = IDL.Record({ height: IDL.Nat32, hash: IDL.Text });
-  const Result_13 = IDL.Variant({
+  const Result_14 = IDL.Variant({
     Ok: IDL.Vec(BlockInfo),
     Err: IDL.Text,
   });
-  const Result_14 = IDL.Variant({ Ok: PoolInfo, Err: ExchangeError });
+  const Result_15 = IDL.Variant({ Ok: PoolInfo, Err: ExchangeError });
   const TxRecordInfo = IDL.Record({
     records: IDL.Vec(IDL.Text),
     txid: IDL.Text,
     confirmed: IDL.Bool,
   });
-  const Result_15 = IDL.Variant({
+  const Result_16 = IDL.Variant({
     Ok: IDL.Vec(TxRecordInfo),
     Err: IDL.Text,
   });
@@ -211,18 +222,19 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     new_block: IDL.Func([NewBlockInfo], [Result_7], []),
     pause: IDL.Func([], [], []),
     pre_add_liquidity: IDL.Func([IDL.Text, CoinBalance], [Result_8], ["query"]),
-    pre_donate: IDL.Func([IDL.Text, IDL.Nat64], [Result_9], ["query"]),
-    pre_extract_fee: IDL.Func([IDL.Text], [Result_10], ["query"]),
-    pre_self_donate: IDL.Func([], [Result_9], ["query"]),
-    pre_swap: IDL.Func([IDL.Text, CoinBalance], [Result_11], ["query"]),
+    pre_claim_revenue: IDL.Func([IDL.Text, IDL.Text], [Result_9], ["query"]),
+    pre_donate: IDL.Func([IDL.Text, IDL.Nat64], [Result_10], ["query"]),
+    pre_extract_fee: IDL.Func([IDL.Text], [Result_11], ["query"]),
+    pre_self_donate: IDL.Func([], [Result_10], ["query"]),
+    pre_swap: IDL.Func([IDL.Text, CoinBalance], [Result_12], ["query"]),
     pre_withdraw_liquidity: IDL.Func(
       [IDL.Text, IDL.Text, IDL.Nat],
-      [Result_12],
+      [Result_13],
       ["query"]
     ),
-    query_blocks: IDL.Func([], [Result_13], ["query"]),
-    query_pool: IDL.Func([IDL.Text], [Result_14], ["query"]),
-    query_tx_records: IDL.Func([], [Result_15], ["query"]),
+    query_blocks: IDL.Func([], [Result_14], ["query"]),
+    query_pool: IDL.Func([IDL.Text], [Result_15], ["query"]),
+    query_tx_records: IDL.Func([], [Result_16], ["query"]),
     recover: IDL.Func([], [], []),
     rollback_tx: IDL.Func([RollbackTxArgs], [Result_7], []),
     set_donation_amount: IDL.Func(

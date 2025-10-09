@@ -194,7 +194,9 @@
     "unlocked": "已解锁",
     "days": "天",
     "hours": "小时",
-    "minutes": "分钟"
+    "minutes": "分钟",
+    "actions": "操作",
+    "manage": "管理"
   },
   "SelectCoin": {
     "selectCoin": "选择代币",

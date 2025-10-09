@@ -193,7 +193,9 @@
     "unlocked": "Unlocked",
     "days": "d",
     "hours": "h",
-    "minutes": "m"
+    "minutes": "m",
+    "actions": "Actions",
+    "manage": "Manage"
   },
   "SelectCoin": {
     "selectCoin": "Select Coin",
@@ -213,7 +215,7 @@
       "1Hour": "1 Hour",
       "1Day": "1 Day",
       "1Week": "1 Week",
-      "1Month": "1 Month", 
+      "1Month": "1 Month",
       "3Months": "3 Months",
       "6Months": "6 Months",
       "1Year": "1 Year"

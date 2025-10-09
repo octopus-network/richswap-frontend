@@ -1,13 +1,12 @@
 import { Position } from "@/types";
 
-import { useState, useMemo } from "react";
-import { ChevronRight, ExternalLink } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { ExternalLink } from "lucide-react";
 import { usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/utils";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 
-import LockLpButton from "./lock-lp-button";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { useLatestBlock } from "@/hooks/use-latest-block";
 import Decimal from "decimal.js";
@@ -19,6 +18,10 @@ import {
   BITCOIN_BLOCK_TIME_MINUTES,
 } from "@/lib/constants";
 import { useTranslations } from "next-intl";
+import LockLpButton from "./lock-lp-button";
+import { Button } from "@/components/ui/button";
+import { Exchange } from "@/lib/exchange";
+import { UnspentOutput, Coin } from "@/types";
 
 export function PortfolioRow({ position }: { position: Position }) {
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
@@ -27,6 +30,27 @@ export function PortfolioRow({ position }: { position: Position }) {
   const btcPrice = useCoinPrice(BITCOIN.id);
   const { data: latestBlock } = useLatestBlock();
   const t = useTranslations("Portfolio");
+
+  const [, setClaimRes] = useState<{
+    utxos: UnspentOutput[];
+    nonce: string;
+    output: {
+      coinA: Coin;
+      coinB: Coin;
+      coinAAmount: string;
+      coinBAmount: string;
+    };
+  } | null>(null);
+
+  useEffect(() => {
+    Exchange.preClaimRevenue(position.pool, position.userAddress)
+      .then((res) => {
+        setClaimRes(res);
+      })
+      .catch(() => {
+        setClaimRes(null);
+      });
+  }, [position]);
 
   const positionPercentage = useMemo(
     () =>
@@ -107,10 +131,7 @@ export function PortfolioRow({ position }: { position: Position }) {
 
   return (
     <>
-      <div
-        className="grid grid-cols-11 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors"
-        onClick={() => setManageLiquidityModalOpen(true)}
-      >
+      <div className="grid grid-cols-12 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors">
         <div className="col-span-3 flex items-center">
           <div className="hidden sm:block mr-3">
             <CoinIcon size="lg" coin={position.pool.coinB} />
@@ -203,7 +224,7 @@ export function PortfolioRow({ position }: { position: Position }) {
         </div>
         <div className="col-span-3">
           {position.lockUntil === 0 ? (
-            <LockLpButton poolAddress={poolAddress} />
+            <span className="text-sm text-muted-foreground">-</span>
           ) : unlockMoment === undefined ? (
             <Skeleton className="h-5 w-16" />
           ) : (
@@ -217,8 +238,19 @@ export function PortfolioRow({ position }: { position: Position }) {
             </div>
           )}
         </div>
-        <div className="col-span-1 hidden md:flex justify-end">
-          <ChevronRight className="size-4 md:size-5 text-muted-foreground" />
+        <div className="col-span-2 hidden md:flex">
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setManageLiquidityModalOpen(true)}
+              size="sm"
+            >
+              {t("manage")}
+            </Button>
+            {position.lockUntil === 0 && (
+              <LockLpButton poolAddress={poolAddress} />
+            )}
+          </div>
         </div>
       </div>
       <ManageLiquidityModal
