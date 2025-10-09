@@ -213,7 +213,7 @@
     "unlock": "解锁",
     "estimatedNote": "* 基于 10 分钟平均出块时间估算",
     "presets": {
-      "1Hour": "1 小时",
+      "10Minutes": "10 分钟",
       "1Day": "1 天",
       "1Week": "1 周",
       "1Month": "1 个月",

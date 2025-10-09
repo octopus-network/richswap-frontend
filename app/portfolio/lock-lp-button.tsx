@@ -41,8 +41,8 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
       return null;
     }
 
-    const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-    const hoursDiff = Math.ceil(timeDiff / (1000 * 60 * 60));
+    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+    const hoursDiff = Math.round(timeDiff / (1000 * 60 * 60));
     const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
 
     const estimatedBlocks = Math.ceil(minutesDiff / BITCOIN_BLOCK_TIME_MINUTES);
@@ -57,7 +57,7 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
   }, [selectedDate]);
 
   const presetOptions = [
-    { label: t("presets.1Hour"), hours: 1 },
+    { label: t("presets.10Minutes"), hours: 0.1 },
     { label: t("presets.1Day"), hours: 24 },
     { label: t("presets.1Week"), hours: 7 * 24 },
     { label: t("presets.1Month"), hours: 30 * 24 },
