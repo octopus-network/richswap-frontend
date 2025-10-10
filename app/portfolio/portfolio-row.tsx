@@ -1,7 +1,7 @@
 import { Position } from "@/types";
 
 import { useState, useMemo, useEffect } from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import { usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/utils";
@@ -21,36 +21,30 @@ import { useTranslations } from "next-intl";
 import LockLpButton from "./lock-lp-button";
 import { Button } from "@/components/ui/button";
 import { Exchange } from "@/lib/exchange";
-import { UnspentOutput, Coin } from "@/types";
+import { useRee } from "@omnity/ree-client-ts-sdk";
+import { useAddPopup, PopupStatus } from "@/store/popups";
+import { useAddTransaction } from "@/store/transactions";
+import { TransactionStatus, TransactionType } from "@/types";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 
 export function PortfolioRow({ position }: { position: Position }) {
+  const [isClaiming, setIsClaiming] = useState(false);
+
   const [manageLiquidityModalOpen, setManageLiquidityModalOpen] =
     useState(false);
+
+  const addPopup = useAddPopup();
+  const addTransaction = useAddTransaction();
   const poolTvl = usePoolTvl(position.pool.key);
   const btcPrice = useCoinPrice(BITCOIN.id);
   const { data: latestBlock } = useLatestBlock();
   const t = useTranslations("Portfolio");
 
-  const [, setClaimRes] = useState<{
-    utxos: UnspentOutput[];
-    nonce: string;
-    output: {
-      coinA: Coin;
-      coinB: Coin;
-      coinAAmount: string;
-      coinBAmount: string;
-    };
-  } | null>(null);
+  const { signPsbt, paymentAddress } = useLaserEyes();
 
-  useEffect(() => {
-    Exchange.preClaimRevenue(position.pool, position.userAddress)
-      .then((res) => {
-        setClaimRes(res);
-      })
-      .catch(() => {
-        setClaimRes(null);
-      });
-  }, [position]);
+  const { createTransaction } = useRee();
+
+  useEffect(() => {}, [position]);
 
   const positionPercentage = useMemo(
     () =>
@@ -85,20 +79,36 @@ export function PortfolioRow({ position }: { position: Position }) {
     [btcPrice, positionValue]
   );
 
-  const positionYield = useMemo(
-    () => (position ? position.userIncomes : undefined),
+  // const positionYield = useMemo(
+  //   () => (position ? position.userIncomes : undefined),
+  //   [position]
+  // );
+
+  const positionRevenue = useMemo(
+    () => (position ? position.lockedRevenue : undefined),
     [position]
   );
 
-  const positionYieldValue = useMemo(
+  // const positionYieldValue = useMemo(
+  //   () =>
+  //     positionYield && btcPrice
+  //       ? new Decimal(positionYield)
+  //           .mul(btcPrice)
+  //           .div(Math.pow(10, 8))
+  //           .toNumber()
+  //       : undefined,
+  //   [positionYield, btcPrice]
+  // );
+
+  const positionRevuenueValue = useMemo(
     () =>
-      positionYield && btcPrice
-        ? new Decimal(positionYield)
+      positionRevenue && btcPrice
+        ? new Decimal(positionRevenue)
             .mul(btcPrice)
             .div(Math.pow(10, 8))
             .toNumber()
         : undefined,
-    [positionYield, btcPrice]
+    [positionRevenue, btcPrice]
   );
 
   const poolAddress = useMemo(() => position.pool.address, [position]);
@@ -128,6 +138,76 @@ export function PortfolioRow({ position }: { position: Position }) {
 
     return moment().add(remainingMinutes, "minutes");
   }, [unlockRemainBlocks]);
+
+  const onClaim = async () => {
+    setIsClaiming(true);
+
+    try {
+      const preClaimRes = await Exchange.preClaimRevenue(
+        position.pool,
+        position.userAddress
+      );
+
+      if (!preClaimRes) {
+        throw new Error("Pre Claim Revenue Failed");
+      }
+
+      const tx = await createTransaction();
+
+      tx.addIntention({
+        action: "claim_revenue",
+        poolAddress: poolAddress,
+        poolUtxos: preClaimRes.utxos,
+        actionParams: paymentAddress,
+        inputCoins: [
+          {
+            from: poolAddress,
+            coin: {
+              id: BITCOIN.id,
+              value: BigInt(preClaimRes.output),
+            },
+          },
+        ],
+        outputCoins: [
+          {
+            to: paymentAddress,
+            coin: {
+              id: BITCOIN.id,
+              value: BigInt(preClaimRes.output),
+            },
+          },
+        ],
+        nonce: BigInt(preClaimRes.nonce ?? "0"),
+      });
+
+      const { psbt, txid } = await tx.build();
+
+      const psbtBase64 = psbt.toBase64();
+      const res = await signPsbt(psbtBase64);
+      const signedPsbtHex = res?.signedPsbtHex ?? "";
+
+      if (!signedPsbtHex) {
+        throw new Error("Signed Failed");
+      }
+
+      await tx.send(signedPsbtHex);
+
+      addTransaction({
+        txid,
+        coinA: BITCOIN,
+        coinB: position.pool.coinB,
+        coinAAmount: preClaimRes.output,
+        type: TransactionType.CLAIM_REVENUE,
+        status: TransactionStatus.BROADCASTED,
+      });
+
+      addPopup(t("success"), PopupStatus.SUCCESS, t("claimRevenueSuccess"));
+    } catch (err: any) {
+      console.log(err);
+      addPopup(t("failed"), PopupStatus.ERROR, err.message ?? "Unknown Error");
+    }
+    setIsClaiming(false);
+  };
 
   return (
     <>
@@ -208,21 +288,22 @@ export function PortfolioRow({ position }: { position: Position }) {
           )}
         </div>
         <div className="col-span-2">
-          {positionYieldValue !== undefined && positionYield !== undefined ? (
+          {positionRevuenueValue !== undefined &&
+          positionRevenue !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
-                {formatNumber(positionYield, true)}{" "}
+                {formatNumber(positionRevenue, true)}{" "}
                 <em className="font-normal">sats</em>
               </span>
               <span className="text-muted-foreground text-xs">
-                ${formatNumber(positionYieldValue, true)}
+                ${formatNumber(positionRevuenueValue, true)}
               </span>
             </div>
           ) : (
             <Skeleton className="h-5 w-20" />
           )}
         </div>
-        <div className="col-span-3">
+        <div className="col-span-2">
           {position.lockUntil === 0 ? (
             <span className="text-sm text-muted-foreground">-</span>
           ) : unlockMoment === undefined ? (
@@ -238,7 +319,7 @@ export function PortfolioRow({ position }: { position: Position }) {
             </div>
           )}
         </div>
-        <div className="col-span-2 hidden md:flex">
+        <div className="col-span-3 hidden md:flex">
           <div className="flex space-x-2">
             <Button
               variant="outline"
@@ -247,9 +328,16 @@ export function PortfolioRow({ position }: { position: Position }) {
             >
               {t("manage")}
             </Button>
-            {position.lockUntil === 0 && (
+            {Number(position.lockedRevenue) > 1000 ? (
+              <Button size="sm" onClick={onClaim} disabled={isClaiming}>
+                {isClaiming ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : null}
+                Claim Revenue
+              </Button>
+            ) : position.lockUntil === 0 ? (
               <LockLpButton poolAddress={poolAddress} />
-            )}
+            ) : null}
           </div>
         </div>
       </div>

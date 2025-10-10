@@ -96,6 +96,7 @@
     "noPosition": "No Position",
     "youAreDepositing": "You're Depositing",
     "youAreDonating": "You're donating",
+    "youAreClaiming": "You're claiming",
     "youAreWithdrawing": "You're withdrawing",
     "withdrawing": "Withrawing",
     "depositing": "Depositing",
@@ -165,6 +166,8 @@
     "donateDescription": "Donate {amount} {coin} to {poolName} pool",
     "claimAndDonateTitle": "Extract & Donate to {poolName} pool",
     "claimAndDonateDescription": "Extract {amount} sats and donate to {poolName} pool",
+    "claimRevenueTitle": "Claim Revenue from {poolName} pool",
+    "claimRevenueDescription": "Claim {amount} sats from {poolName} pool",
     "disconnect": "Disconnect",
     "extractFee": "Extract Fee",
     "payment": "Payment"
@@ -195,7 +198,13 @@
     "hours": "h",
     "minutes": "m",
     "actions": "Actions",
-    "manage": "Manage"
+    "manage": "Manage",
+    "revenue": "Revenue",
+    "success": "Success",
+    "failed": "Failed",
+    "claimRevenueTitle": "Claim Revenue from {poolName}",
+    "claimRevenueDescription": "Claim {amount} sats from {poolName} pool",
+    "claimRevenueSuccess": "Claim revenue success"
   },
   "SelectCoin": {
     "selectCoin": "Select Coin",

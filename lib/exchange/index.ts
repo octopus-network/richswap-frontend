@@ -9,6 +9,7 @@ import {
   PoolInfo,
   AddressType,
   SwapRoute,
+  Position,
 } from "@/types";
 
 import { BITCOIN, RICH_POOL } from "../constants";
@@ -211,7 +212,10 @@ export class Exchange {
     }
   }
 
-  public static async getPosition(poolAddress: string, userAddress: string) {
+  public static async getPosition(
+    poolAddress: string,
+    userAddress: string
+  ): Promise<Position | null> {
     try {
       const [res, pool] = await Promise.all([
         actor.get_lp(poolAddress, userAddress).then((data: any) => {
@@ -230,10 +234,17 @@ export class Exchange {
         return null;
       }
 
-      const { total_share, user_incomes, user_share, lock_until } = res as {
+      const {
+        total_share,
+        user_incomes,
+        user_share,
+        locked_revenue,
+        lock_until,
+      } = res as {
         total_share: bigint;
         user_incomes: bigint;
         user_share: bigint;
+        locked_revenue: bigint;
         lock_until: number;
       };
 
@@ -268,6 +279,7 @@ export class Exchange {
         coinBAmount,
         totalShare: total_share.toString(),
         userIncomes: user_incomes.toString(),
+        lockedRevenue: locked_revenue.toString(),
         lockUntil: lock_until,
       };
     } catch (err: any) {
@@ -446,12 +458,7 @@ export class Exchange {
   ): Promise<{
     utxos: UnspentOutput[];
     nonce: string;
-    output: {
-      coinA: Coin;
-      coinB: Coin;
-      coinAAmount: string;
-      coinBAmount: string;
-    };
+    output: string;
   } | null> {
     const res = await actor
       .pre_claim_revenue(pool.address, userAddress)
@@ -459,6 +466,7 @@ export class Exchange {
         console.log("pre claim revenue", data);
         if (data.Ok) {
           return data.Ok as {
+            claim_sats: bigint;
             input: {
               coins: [
                 {
@@ -471,16 +479,6 @@ export class Exchange {
               vout: number;
             };
             nonce: bigint;
-            user_outputs: [
-              {
-                id: string;
-                value: bigint;
-              },
-              {
-                id: string;
-                value: bigint;
-              }
-            ];
           };
         } else {
           throw new Error(
@@ -488,11 +486,6 @@ export class Exchange {
           );
         }
       });
-
-    const coinA = BITCOIN;
-    const [_coinA, _coinB] = res.user_outputs;
-
-    const coinB = await this.getCoinById(_coinB.id);
 
     const { output } = getP2trAressAndScript(pool.key);
 
@@ -517,12 +510,7 @@ export class Exchange {
     return {
       utxos: [utxo],
       nonce: res.nonce.toString(),
-      output: {
-        coinA,
-        coinB,
-        coinAAmount: formatCoinAmount(_coinA.value.toString(), coinA),
-        coinBAmount: formatCoinAmount(_coinB.value.toString(), coinB),
-      },
+      output: res.claim_sats.toString(),
     };
   }
 

@@ -183,6 +183,20 @@ export function getTxTitleAndDescription(transaction: TransactionInfo) {
         poolName: "HOPE•YOU•GET•RICH",
       },
     };
+  } else if (type === TransactionType.CLAIM_REVENUE) {
+    title = {
+      key: "claimRevenueTitle",
+      data: {
+        poolName: getCoinSymbol(coinB),
+      },
+    };
+    description = {
+      key: "claimRevenueDescription",
+      data: {
+        amount: formatNumber(coinAAmount, true),
+        poolName: getCoinSymbol(coinB),
+      },
+    };
   }
   return {
     title,

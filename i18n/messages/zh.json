@@ -196,7 +196,8 @@
     "hours": "小时",
     "minutes": "分钟",
     "actions": "操作",
-    "manage": "管理"
+    "manage": "管理",
+    "revenue": "收益"
   },
   "SelectCoin": {
     "selectCoin": "选择代币",
