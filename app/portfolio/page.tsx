@@ -29,7 +29,7 @@ export default function Portolios() {
               <span>{t("balance")}</span>
             </div>
             <div className="col-span-2">
-              <span>{t("revenue")}</span>
+              <span>{t("yield")}</span>
             </div>
             <div className="col-span-2">
               <span>{t("unlockTime")}</span>

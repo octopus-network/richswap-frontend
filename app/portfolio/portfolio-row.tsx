@@ -79,37 +79,37 @@ export function PortfolioRow({ position }: { position: Position }) {
     [btcPrice, positionValue]
   );
 
-  // const positionYield = useMemo(
-  //   () => (position ? position.userIncomes : undefined),
-  //   [position]
-  // );
-
-  const positionRevenue = useMemo(
-    () => (position ? position.lockedRevenue : undefined),
+  const positionYield = useMemo(
+    () => (position ? position.userIncomes : undefined),
     [position]
   );
 
-  // const positionYieldValue = useMemo(
-  //   () =>
-  //     positionYield && btcPrice
-  //       ? new Decimal(positionYield)
-  //           .mul(btcPrice)
-  //           .div(Math.pow(10, 8))
-  //           .toNumber()
-  //       : undefined,
-  //   [positionYield, btcPrice]
+  // const positionRevenue = useMemo(
+  //   () => (position ? position.lockedRevenue : undefined),
+  //   [position]
   // );
 
-  const positionRevuenueValue = useMemo(
+  const positionYieldValue = useMemo(
     () =>
-      positionRevenue && btcPrice
-        ? new Decimal(positionRevenue)
+      positionYield && btcPrice
+        ? new Decimal(positionYield)
             .mul(btcPrice)
             .div(Math.pow(10, 8))
             .toNumber()
         : undefined,
-    [positionRevenue, btcPrice]
+    [positionYield, btcPrice]
   );
+
+  // const positionRevuenueValue = useMemo(
+  //   () =>
+  //     positionRevenue && btcPrice
+  //       ? new Decimal(positionRevenue)
+  //           .mul(btcPrice)
+  //           .div(Math.pow(10, 8))
+  //           .toNumber()
+  //       : undefined,
+  //   [positionRevenue, btcPrice]
+  // );
 
   const poolAddress = useMemo(() => position.pool.address, [position]);
 
@@ -288,15 +288,14 @@ export function PortfolioRow({ position }: { position: Position }) {
           )}
         </div>
         <div className="col-span-2">
-          {positionRevuenueValue !== undefined &&
-          positionRevenue !== undefined ? (
+          {positionYieldValue !== undefined && positionYield !== undefined ? (
             <div className="flex flex-col space-y-1">
               <span className="font-semibold text-sm truncate">
-                {formatNumber(positionRevenue, true)}{" "}
+                {formatNumber(positionYield, true)}{" "}
                 <em className="font-normal">sats</em>
               </span>
               <span className="text-muted-foreground text-xs">
-                ${formatNumber(positionRevuenueValue, true)}
+                ${formatNumber(positionYieldValue, true)}
               </span>
             </div>
           ) : (
@@ -333,7 +332,7 @@ export function PortfolioRow({ position }: { position: Position }) {
                 {isClaiming ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : null}
-                Claim Revenue
+                Claim {formatNumber(position.lockedRevenue, true)} sats
               </Button>
             ) : position.lockUntil === 0 ? (
               <LockLpButton poolAddress={poolAddress} />
