@@ -23,12 +23,12 @@ export default function Portolios() {
           <span className="text-3xl font-semibold">{t("portfolio")}</span>
         </div>
         <div className="mt-6 border rounded-xl overflow-hidden">
-          <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl grid-cols-12 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
+          <div className="grid px-4 bg-secondary/50 text-sm rounded-t-xl grid-cols-10 sm:grid-cols-12 items-center gap-1 sm:gap-3 md:gap-6 py-3 text-muted-foreground">
             <div className="col-span-3">{t("pool")}</div>
             <div className="col-span-2">
               <span>{t("balance")}</span>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-2 hidden sm:flex">
               <span>{t("yield")}</span>
             </div>
             <div className="col-span-2">

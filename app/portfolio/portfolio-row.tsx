@@ -26,6 +26,7 @@ import { useAddPopup, PopupStatus } from "@/store/popups";
 import { useAddTransaction } from "@/store/transactions";
 import { TransactionStatus, TransactionType } from "@/types";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
+import YieldChart from "./yield-chart";
 
 export function PortfolioRow({ position }: { position: Position }) {
   const [isClaiming, setIsClaiming] = useState(false);
@@ -211,7 +212,7 @@ export function PortfolioRow({ position }: { position: Position }) {
 
   return (
     <>
-      <div className="grid grid-cols-12 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors">
+      <div className="grid grid-cols-10 sm:grid-cols-12 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors">
         <div className="col-span-3 flex items-center">
           <div className="hidden sm:block mr-3">
             <CoinIcon size="lg" coin={position.pool.coinB} />
@@ -287,16 +288,15 @@ export function PortfolioRow({ position }: { position: Position }) {
             <Skeleton className="h-5 w-20" />
           )}
         </div>
-        <div className="col-span-2">
+        <div className="col-span-2 hidden sm:flex relative">
+          <div className="h-5 w-20" />
           {positionYieldValue !== undefined && positionYield !== undefined ? (
-            <div className="flex flex-col space-y-1">
-              <span className="font-semibold text-sm truncate">
-                {formatNumber(positionYield, true)}{" "}
-                <em className="font-normal">sats</em>
-              </span>
-              <span className="text-muted-foreground text-xs">
-                ${formatNumber(positionYieldValue, true)}
-              </span>
+            <div className="absolute -left-10 -top-4">
+              <YieldChart
+                yieldSats={Number(positionYield)}
+                yieldValue={positionYieldValue}
+                claimable={Number(position.lockedRevenue)}
+              />
             </div>
           ) : (
             <Skeleton className="h-5 w-20" />
@@ -327,8 +327,12 @@ export function PortfolioRow({ position }: { position: Position }) {
             >
               {t("manage")}
             </Button>
-            {Number(position.lockedRevenue) > 1000 ? (
-              <Button size="sm" onClick={onClaim} disabled={isClaiming}>
+            {Number(position.lockedRevenue) > 0 ? (
+              <Button
+                size="sm"
+                onClick={onClaim}
+                disabled={isClaiming || Number(position.lockedRevenue) < 1000}
+              >
                 {isClaiming ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : null}
