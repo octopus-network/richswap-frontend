@@ -134,7 +134,9 @@
     "lpLockedUtil": "Liquidity locked until",
     "unlockTime": "Unlock Time",
     "blocks": "Blocks",
-    "remain": "Remain"
+    "remain": "Remain",
+    "standard": "Standard",
+    "onetime": "Onetime"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
@@ -204,7 +206,10 @@
     "failed": "Failed",
     "claimRevenueTitle": "Claim Revenue from {poolName}",
     "claimRevenueDescription": "Claim {amount} sats from {poolName} pool",
-    "claimRevenueSuccess": "Claim revenue success"
+    "claimRevenueSuccess": "Claim revenue success",
+    "claimRevenueSats": "Claim {amount} sats",
+    "unclaimableSats": "Unclaimable",
+    "claimableSats": "Claimable"
   },
   "SelectCoin": {
     "selectCoin": "Select Coin",

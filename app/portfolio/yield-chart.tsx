@@ -1,12 +1,5 @@
-import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 import { formatNumber } from "@/lib/utils";
-
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { useMemo } from "react";
 
 export default function YieldChart({
   yieldSats,
@@ -17,78 +10,60 @@ export default function YieldChart({
   yieldValue: number;
   claimable: number;
 }) {
-  const chartConfig = {
-    total: {
-      label: "Total",
-      color: "hsl(var(--chart-1))",
-    },
-    claimable: {
-      label: "Claimable",
-      color: "hsl(var(--chart-2))",
-    },
-  } satisfies ChartConfig;
+  const { progress, dashArray, dashOffset } = useMemo(() => {
+    const total = Math.max(yieldSats, claimable);
+    const ratio = total > 0 ? Math.min(claimable / total, 1) : 0;
+    const radius = 52;
+    const circumference = 2 * Math.PI * radius;
+
+    return {
+      progress: ratio,
+      dashArray: `${circumference} ${circumference}`,
+      dashOffset: circumference * (1 - ratio),
+    };
+  }, [yieldSats, claimable]);
 
   return (
-    <ChartContainer
-      config={chartConfig}
-      className="mx-auto w-[140px] aspect-21/7"
-    >
-      <RadialBarChart
-        data={[
-          {
-            total: yieldSats,
-            claimable: claimable,
-          },
-        ]}
-        endAngle={180}
-        innerRadius={38}
-        outerRadius={50}
+    <div className="relative flex h-[120px] w-[120px] items-center justify-center">
+      <svg
+        width={120}
+        height={120}
+        viewBox="0 0 120 120"
+        className="-rotate-90 transform text-muted-foreground"
       >
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent hideLabel />}
+        <circle
+          cx={60}
+          cy={60}
+          r={52}
+          fill="transparent"
+          stroke="currentColor"
+          strokeWidth={12}
+          className="opacity-20"
         />
-        <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
-          <Label
-            content={({ viewBox }) => {
-              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                return (
-                  <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) - 4}
-                      className="fill-foreground text-xs font-bold"
-                    >
-                      {formatNumber(yieldSats, true)} sats
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 12}
-                      className="fill-muted-foreground text-xs"
-                    >
-                      ${formatNumber(yieldValue, true)}
-                    </tspan>
-                  </text>
-                );
-              }
-            }}
-          />
-        </PolarRadiusAxis>
-        <RadialBar
-          dataKey="total"
-          stackId="a"
-          cornerRadius={5}
-          fill="hsl(var(--chart-1))"
-          className="stroke-transparent stroke-2"
+        <circle
+          cx={60}
+          cy={60}
+          r={52}
+          fill="transparent"
+          stroke="hsl(var(--chart-2))"
+          strokeWidth={12}
+          strokeLinecap="round"
+          strokeDasharray={dashArray}
+          strokeDashoffset={dashOffset}
+          className="transition-all duration-300 ease-in-out"
         />
-        <RadialBar
-          dataKey="claimable"
-          fill="hsl(var(--chart-2))"
-          stackId="a"
-          cornerRadius={5}
-          className="stroke-transparent stroke-2"
-        />
-      </RadialBarChart>
-    </ChartContainer>
+      </svg>
+      <div className="absolute flex flex-col items-center text-center">
+        <span className="text-base font-semibold text-foreground">
+          {formatNumber(yieldSats, true)} sats
+        </span>
+        <span className="text-xs text-muted-foreground">
+          ${formatNumber(yieldValue, true)}
+        </span>
+        <span className="mt-1 text-[10px] uppercase tracking-wide text-primary/80">
+          {formatNumber(progress * 100, true)}%
+        </span>
+      </div>
+    </div>
   );
 }

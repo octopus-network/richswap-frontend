@@ -18,6 +18,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     InvalidSignature: IDL.Null,
     TooSmallFunds: IDL.Null,
     LiquidityLocked: IDL.Null,
+    OnetimePool: IDL.Null,
     InvalidRuneId: IDL.Null,
     InvalidPool: IDL.Null,
     InvalidPsbt: IDL.Text,
@@ -36,6 +37,10 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     InsufficientFunds: IDL.Null,
   });
   const Result_1 = IDL.Variant({ Ok: IDL.Text, Err: ExchangeError });
+  const PoolTemplate = IDL.Variant({
+    onetime: IDL.Null,
+    standard: IDL.Null,
+  });
   const Result_2 = IDL.Variant({ Ok: IDL.Null, Err: ExchangeError });
   const Result_3 = IDL.Variant({ Ok: IDL.Text, Err: IDL.Text });
   const CoinBalance = IDL.Record({ id: IDL.Text, value: IDL.Nat });
@@ -196,6 +201,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
   return IDL.Service({
     blocks_tx_records_count: IDL.Func([], [Result], ["query"]),
     create: IDL.Func([IDL.Text], [Result_1], []),
+    create_with_template: IDL.Func([IDL.Text, PoolTemplate], [Result_1], []),
     donate_rich_protocol_revenue: IDL.Func([], [Result_2], []),
     escape_hatch: IDL.Func([IDL.Text, IDL.Text, IDL.Nat64], [Result_3], []),
     execute_tx: IDL.Func([ExecuteTxArgs], [Result_3], []),

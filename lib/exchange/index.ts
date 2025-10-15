@@ -46,6 +46,24 @@ export class Exchange {
     return poolAddress;
   }
 
+  public static async createPoolWithTemplate(
+    coinId: string,
+    template: "onetime" | "standard" = "standard"
+  ) {
+    const poolAddress = await actor
+      .create_with_template(coinId, template)
+      .then((data: any) => {
+        if (data.Ok) {
+          return data.Ok;
+        } else {
+          throw new Error(
+            data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+          );
+        }
+      });
+    return poolAddress;
+  }
+
   public static async lockLp(
     address: string,
     message: string,

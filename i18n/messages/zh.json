@@ -134,7 +134,9 @@
     "lpLockedUtil": "流动性已锁定至",
     "unlockTime": "解锁时间",
     "blocks": "区块",
-    "remain": "剩余"
+    "remain": "剩余",
+    "standard": "标准",
+    "onetime": "一次性"
   },
   "ConnectWallet": {
     "connectAWallet": "连接钱包",
@@ -197,7 +199,10 @@
     "minutes": "分钟",
     "actions": "操作",
     "manage": "管理",
-    "revenue": "收益"
+    "revenue": "收益",
+    "claimRevenueSats": "提取 {amount} sats",
+    "unclaimableSats": "不可提取的",
+    "claimableSats": "可提取的"
   },
   "SelectCoin": {
     "selectCoin": "选择代币",

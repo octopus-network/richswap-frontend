@@ -5,6 +5,11 @@ import { ExternalLink, Loader2 } from "lucide-react";
 import { usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ManageLiquidityModal } from "@/components/manage-liquidity-modal";
 
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -26,7 +31,8 @@ import { useAddPopup, PopupStatus } from "@/store/popups";
 import { useAddTransaction } from "@/store/transactions";
 import { TransactionStatus, TransactionType } from "@/types";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
-import YieldChart from "./yield-chart";
+
+import Circle from "react-circle";
 
 export function PortfolioRow({ position }: { position: Position }) {
   const [isClaiming, setIsClaiming] = useState(false);
@@ -288,16 +294,50 @@ export function PortfolioRow({ position }: { position: Position }) {
             <Skeleton className="h-5 w-20" />
           )}
         </div>
-        <div className="col-span-2 hidden sm:flex relative">
-          <div className="h-5 w-20" />
+        <div className="col-span-2 hidden sm:flex">
           {positionYieldValue !== undefined && positionYield !== undefined ? (
-            <div className="absolute -left-10 -top-4">
-              <YieldChart
-                yieldSats={Number(positionYield)}
-                yieldValue={positionYieldValue}
-                claimable={Number(position.lockedRevenue)}
-              />
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center space-x-4">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-sm truncate">
+                      {formatNumber(positionYield, true)} sats
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      ${formatNumber(positionYieldValue, true)}
+                    </span>
+                  </div>
+                  <Circle
+                    progress={
+                      (Number(position.lockedRevenue) * 100) /
+                      Number(positionYield)
+                    }
+                    size="28"
+                    lineWidth="60"
+                    progressColor="#f6d75a"
+                    bgColor="#4c9aff"
+                    showPercentage={false}
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {t("unclaimableSats")}
+                  {": "}
+                  {
+                    formatNumber(
+                      Number(positionYield) - Number(position.lockedRevenue)
+                    ).split(".")[0]
+                  }{" "}
+                  sats
+                </p>
+                <p>
+                  {t("claimableSats")}
+                  {": "}
+                  {formatNumber(position.lockedRevenue).split(".")[0]} sats
+                </p>
+              </TooltipContent>
+            </Tooltip>
           ) : (
             <Skeleton className="h-5 w-20" />
           )}
@@ -336,7 +376,9 @@ export function PortfolioRow({ position }: { position: Position }) {
                 {isClaiming ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : null}
-                Claim {formatNumber(position.lockedRevenue, true)} sats
+                {t("claimRevenueSats", {
+                  amount: formatNumber(position.lockedRevenue, true),
+                })}
               </Button>
             ) : position.lockUntil === 0 ? (
               <LockLpButton poolAddress={poolAddress} />
