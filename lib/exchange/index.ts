@@ -237,7 +237,7 @@ export class Exchange {
     try {
       const [res, pool] = await Promise.all([
         actor.get_lp(poolAddress, userAddress).then((data: any) => {
-          if (data.Ok) {
+          if (data.hasOwnProperty("Ok")) {
             return data.Ok;
           } else {
             throw new Error(
