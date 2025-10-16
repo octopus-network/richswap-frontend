@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 
-import { Calendar, Clock, Lock, Loader2 } from "lucide-react";
+import { Calendar, Clock, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
 import { useState, useMemo } from "react";
@@ -17,6 +17,7 @@ import {
 
 import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
+import { PopupStatus, useAddPopup } from "@/store/popups";
 
 export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
   const { paymentAddress, signMessage } = useLaserEyes();
@@ -28,6 +29,8 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
   const [blocks, setBlocks] = useState(0);
   const [isLocking, setIsLocking] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  const addPopup = useAddPopup();
 
   const lockInfo = useMemo(() => {
     if (!selectedDate) {
@@ -92,6 +95,7 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
     if (!lockInfo || !blocks || !signMessage) {
       return false;
     }
+
     setIsLocking(true);
     try {
       const message = `${poolAddress}:${blocks}`;
@@ -100,8 +104,13 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
       });
       await Exchange.lockLp(paymentAddress, message, signature);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      addPopup(
+        t("failed"),
+        PopupStatus.ERROR,
+        error.message ?? "Unknown Error"
+      );
       return false;
     } finally {
       setIsLocking(false);
@@ -116,7 +125,6 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
           variant="secondary"
           className="border border-transparent hover:border-primary hover:text-primary"
         >
-          <Lock className="size-4" />
           {t("lockLp")}
         </Button>
       </PopoverTrigger>

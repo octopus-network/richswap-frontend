@@ -322,14 +322,9 @@ export function PortfolioRow({ position }: { position: Position }) {
               </TooltipTrigger>
               <TooltipContent>
                 <p>
-                  {t("unclaimableSats")}
+                  {t("compounded")}
                   {": "}
-                  {
-                    formatNumber(
-                      Number(positionYield) - Number(position.lockedRevenue)
-                    ).split(".")[0]
-                  }{" "}
-                  sats
+                  {formatNumber(Number(positionYield)).split(".")[0]} sats
                 </p>
                 <p>
                   {t("claimableSats")}
@@ -342,23 +337,46 @@ export function PortfolioRow({ position }: { position: Position }) {
             <Skeleton className="h-5 w-20" />
           )}
         </div>
-        <div className="col-span-2">
-          {position.lockUntil === 0 ? (
-            <span className="text-sm text-muted-foreground">-</span>
-          ) : unlockMoment === undefined ? (
-            <Skeleton className="h-5 w-16" />
-          ) : (
-            <div className="flex flex-col">
-              <span className="text-sm">
-                ~{unlockMoment.format("YYYY-MM-DD HH:mm")}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {t("remain")} {unlockRemainBlocks} {t("blocks")}
-              </span>
-            </div>
-          )}
+        <div className="col-span-3">
+          <div className="flex items-center space-x-1">
+            {position.lockUntil === 0 ? (
+              <span className="text-sm text-muted-foreground">-</span>
+            ) : unlockMoment === undefined ? (
+              <Skeleton className="h-5 w-16" />
+            ) : (
+              <div className="flex flex-col">
+                <span className="text-sm">
+                  ~{unlockMoment.format("YYYY-MM-DD HH:mm")}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {t("remain")} {unlockRemainBlocks} {t("blocks")}
+                </span>
+              </div>
+            )}
+            {Number(position.lockedRevenue) > 0 && (
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    size="sm"
+                    onClick={onClaim}
+                    disabled={
+                      isClaiming || Number(position.lockedRevenue) < 10000
+                    }
+                  >
+                    {isClaiming ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : null}
+                    {t("claim")}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("claimable")} &gt; 10000 sats</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
-        <div className="col-span-3 hidden md:flex">
+        <div className="col-span-2 hidden md:flex">
           <div className="flex space-x-2">
             <Button
               variant="outline"
@@ -367,20 +385,7 @@ export function PortfolioRow({ position }: { position: Position }) {
             >
               {t("manage")}
             </Button>
-            {Number(position.lockedRevenue) > 0 ? (
-              <Button
-                size="sm"
-                onClick={onClaim}
-                disabled={isClaiming || Number(position.lockedRevenue) < 1000}
-              >
-                {isClaiming ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : null}
-                {t("claimRevenueSats", {
-                  amount: formatNumber(position.lockedRevenue, true),
-                })}
-              </Button>
-            ) : position.lockUntil === 0 ? (
+            {position.lockUntil === 0 ? (
               <LockLpButton poolAddress={poolAddress} />
             ) : null}
           </div>

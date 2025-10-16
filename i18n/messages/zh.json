@@ -201,7 +201,9 @@
     "manage": "管理",
     "revenue": "收益",
     "claimRevenueSats": "提取 {amount} sats",
-    "unclaimableSats": "不可提取的",
+    "compounded": "复合收益",
+    "claim": "提取",
+    "claimable": "可提取",
     "claimableSats": "可提取的"
   },
   "SelectCoin": {
@@ -226,6 +228,7 @@
       "3Months": "3 个月", 
       "6Months": "6 个月",
       "1Year": "1 年"
-    }
+    },
+    "failed": "失败"
   }
 }

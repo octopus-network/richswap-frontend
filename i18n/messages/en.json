@@ -208,7 +208,9 @@
     "claimRevenueDescription": "Claim {amount} sats from {poolName} pool",
     "claimRevenueSuccess": "Claim revenue success",
     "claimRevenueSats": "Claim {amount} sats",
-    "unclaimableSats": "Unclaimable",
+    "compounded": "Compounded",
+    "claim": "Claim",
+    "claimable": "Claimable",
     "claimableSats": "Claimable"
   },
   "SelectCoin": {
@@ -233,6 +235,7 @@
       "3Months": "3 Months",
       "6Months": "6 Months",
       "1Year": "1 Year"
-    }
+    },
+    "failed": "Failed"
   }
 }

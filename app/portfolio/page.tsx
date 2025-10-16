@@ -31,10 +31,10 @@ export default function Portolios() {
             <div className="col-span-2 hidden sm:flex">
               <span>{t("yield")}</span>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-3">
               <span>{t("unlockTime")}</span>
             </div>
-            <div className="col-span-3">
+            <div className="col-span-2">
               <span>{t("actions")}</span>
             </div>
           </div>
@@ -66,10 +66,10 @@ export default function Portolios() {
                   <div className="col-span-2 hidden md:flex">
                     <Skeleton className="h-5 w-2/3" />
                   </div>
-                  <div className="col-span-2 hidden md:flex">
+                  <div className="col-span-3 hidden md:flex">
                     <Skeleton className="h-5 w-2/3" />
                   </div>
-                  <div className="col-span-3 hidden md:flex">
+                  <div className="col-span-2 hidden md:flex">
                     <Skeleton className="h-5 w-2/3" />
                   </div>
                 </div>
