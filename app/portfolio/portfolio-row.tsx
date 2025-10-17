@@ -386,7 +386,8 @@ export function PortfolioRow({ position }: { position: Position }) {
             >
               {t("manage")}
             </Button>
-            {position.lockUntil === 0 ? (
+            {position.lockUntil === 0 ||
+            (latestBlock && latestBlock >= position.lockUntil) ? (
               <LockLpButton poolAddress={poolAddress} />
             ) : null}
           </div>
