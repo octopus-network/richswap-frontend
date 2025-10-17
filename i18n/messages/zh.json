@@ -189,11 +189,12 @@
     "pool": "池子",
     "balance": "余额",
     "yield": "收益",
+    "lockTime": "锁定时间",
     "unlockTime": "解锁时间",
     "blocks": "区块",
     "connectWallet": "连接钱包",
     "remain": "剩余",
-    "unlocked": "已解锁",
+    "unlocked": "未锁定",
     "days": "天",
     "hours": "小时",
     "minutes": "分钟",
@@ -202,7 +203,7 @@
     "revenue": "收益",
     "claimRevenueSats": "提取 {amount} sats",
     "compounded": "复合收益",
-    "claim": "提取",
+    "claim": "提取收益",
     "claimable": "可提取",
     "claimableSats": "可提取的"
   },
@@ -212,6 +213,9 @@
   },
   "LockLpSelector": {
     "lockLp": "锁定 LP",
+    "extend": "延长",
+    "lockTime": "锁定时间",
+    "extendTime": "延长时间",
     "lpLocked": "LP 已锁定",
     "unlockDate": "解锁日期",
     "lockDuration": "锁定时长",
@@ -225,10 +229,12 @@
       "1Day": "1 天",
       "1Week": "1 周",
       "1Month": "1 个月",
-      "3Months": "3 个月", 
+      "3Months": "3 个月",
       "6Months": "6 个月",
       "1Year": "1 年"
     },
-    "failed": "失败"
+    "failed": "失败",
+    "success": "成功",
+    "lockLpSuccess": "锁定 LP 成功"
   }
 }

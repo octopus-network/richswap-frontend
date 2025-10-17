@@ -133,7 +133,7 @@ export function PortfolioRow({ position }: { position: Position }) {
       return 0;
     }
 
-    return (position.lockUntil - latestBlock) || 1;
+    return position.lockUntil - latestBlock || 1;
   }, [position, latestBlock]);
 
   const unlockMoment = useMemo(() => {
@@ -338,10 +338,12 @@ export function PortfolioRow({ position }: { position: Position }) {
           )}
         </div>
         <div className="col-span-3">
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-2">
             {position.lockUntil === 0 ||
             (latestBlock && latestBlock > position.lockUntil) ? (
-              <span className="text-sm text-muted-foreground">-</span>
+              <span className="text-sm text-muted-foreground">
+                {t("unlocked")}
+              </span>
             ) : unlockMoment === undefined ? (
               <Skeleton className="h-5 w-16" />
             ) : (
@@ -354,6 +356,18 @@ export function PortfolioRow({ position }: { position: Position }) {
                 </span>
               </div>
             )}
+            <LockLpButton poolAddress={poolAddress} position={position} />
+          </div>
+        </div>
+        <div className="col-span-2 hidden md:flex">
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setManageLiquidityModalOpen(true)}
+              size="sm"
+            >
+              {t("manage")}
+            </Button>
             {Number(position.lockedRevenue) > 0 && (
               <Tooltip>
                 <TooltipTrigger>
@@ -371,25 +385,16 @@ export function PortfolioRow({ position }: { position: Position }) {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{t("claimable")} &gt; 10000 sats</p>
+                  <p>
+                    {t("claimable")}:{" "}
+                    {Number(position.lockedRevenue) < 1000
+                      ? `&gt;{" "}10000`
+                      : position.lockedRevenue}{" "}
+                    sats
+                  </p>
                 </TooltipContent>
               </Tooltip>
             )}
-          </div>
-        </div>
-        <div className="col-span-2 hidden md:flex">
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setManageLiquidityModalOpen(true)}
-              size="sm"
-            >
-              {t("manage")}
-            </Button>
-            {position.lockUntil === 0 ||
-            (latestBlock && latestBlock > position.lockUntil) ? (
-              <LockLpButton poolAddress={poolAddress} />
-            ) : null}
           </div>
         </div>
       </div>

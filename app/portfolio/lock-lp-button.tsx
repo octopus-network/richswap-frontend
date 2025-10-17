@@ -7,6 +7,7 @@ import { useState, useMemo } from "react";
 import moment from "moment";
 import { cn } from "@/lib/utils";
 
+import { type Position } from "@/types";
 import { Exchange } from "@/lib/exchange";
 
 import {
@@ -18,8 +19,15 @@ import {
 import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { PopupStatus, useAddPopup } from "@/store/popups";
+import { useLatestBlock } from "@/hooks/use-latest-block";
 
-export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
+export default function LockLpButton({
+  poolAddress,
+  position,
+}: {
+  poolAddress: string;
+  position: Position;
+}) {
   const { paymentAddress, signMessage } = useLaserEyes();
   const t = useTranslations("LockLpSelector");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -29,6 +37,8 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
   const [blocks, setBlocks] = useState(0);
   const [isLocking, setIsLocking] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  const { data: latestBlock } = useLatestBlock();
 
   const addPopup = useAddPopup();
 
@@ -91,19 +101,33 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
     handleDateSelect(futureDate);
   };
 
-  const onLock = async (): Promise<boolean> => {
-    if (!lockInfo || !blocks || !signMessage) {
+  const isLocked = useMemo(
+    () =>
+      position.lockUntil === 0 ||
+      (latestBlock && latestBlock > position.lockUntil)
+        ? false
+        : true,
+    [position.lockUntil, latestBlock]
+  );
+
+  const onLock = async () => {
+    if (!lockInfo || !blocks || !signMessage || !latestBlock) {
       return false;
     }
 
     setIsLocking(true);
     try {
-      const message = `${poolAddress}:${blocks}`;
+      const toLockBlocks =
+        blocks + (isLocked ? position.lockUntil - latestBlock : 0);
+
+      console.log("toLockBlocks", toLockBlocks);
+      const message = `${poolAddress}:${toLockBlocks}`;
       const signature = await signMessage(message, {
         protocol: "bip322",
       });
       await Exchange.lockLp(paymentAddress, message, signature);
-      return true;
+      addPopup(t("success"), PopupStatus.SUCCESS, t("lockLpSuccess"));
+      setIsPopoverOpen(false);
     } catch (error: any) {
       console.log(error);
       addPopup(
@@ -125,14 +149,14 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
           variant="secondary"
           className="border border-transparent hover:border-primary hover:text-primary"
         >
-          {t("lockLp")}
+          {isLocked ? t("extend") : t("lockLp")}
         </Button>
       </PopoverTrigger>
       <PopoverContent onClick={(e) => e.stopPropagation()}>
         <div className="space-y-3">
           <Label className="text-sm font-medium flex items-center space-x-2">
             <Calendar className="size-4" />
-            <span>{t("unlockDate")}</span>
+            <span>{isLocked ? t("extendTime") : t("lockTime")}</span>
           </Label>
 
           <div className="flex flex-wrap gap-2">
@@ -193,15 +217,10 @@ export default function LockLpButton({ poolAddress }: { poolAddress: string }) {
           <Button
             disabled={!lockInfo || isLocking}
             className="w-full"
-            onClick={async () => {
-              const locked = await onLock();
-              if (locked) {
-                setIsPopoverOpen(false);
-              }
-            }}
+            onClick={onLock}
           >
             {isLocking && <Loader2 className="size-4 animate-spin" />}
-            {t("lockLp")}
+            {!isLocked ? t("lockLp") : t("extend")}
           </Button>
         </div>
       </PopoverContent>

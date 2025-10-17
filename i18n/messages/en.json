@@ -219,6 +219,8 @@
   },
   "LockLpSelector": {
     "lockLp": "Lock LP",
+    "extend": "Extend",
+    "extendTime": "Extend Time",
     "lpLocked": "LP Locked",
     "unlockDate": "Unlock Date",
     "lockDuration": "Lock Duration",
@@ -236,6 +238,8 @@
       "6Months": "6 Months",
       "1Year": "1 Year"
     },
-    "failed": "Failed"
+    "failed": "Failed",
+    "success": "Success",
+    "lockLpSuccess": "Lock LP success"
   }
 }
