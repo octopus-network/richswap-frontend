@@ -73,7 +73,7 @@ export class Exchange {
       .lock_lp(address, message, signature)
       .then((data: any) => {
         console.log("lock lp res", data);
-        if (data.Ok) {
+        if (data.hasOwnProperty("Ok")) {
           return data.Ok;
         } else {
           throw new Error(

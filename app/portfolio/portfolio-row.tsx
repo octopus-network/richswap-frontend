@@ -129,11 +129,11 @@ export function PortfolioRow({ position }: { position: Position }) {
       return 0;
     }
 
-    if (latestBlock >= position.lockUntil) {
+    if (latestBlock > position.lockUntil) {
       return 0;
     }
 
-    return position.lockUntil - latestBlock;
+    return (position.lockUntil - latestBlock) || 1;
   }, [position, latestBlock]);
 
   const unlockMoment = useMemo(() => {
@@ -340,7 +340,7 @@ export function PortfolioRow({ position }: { position: Position }) {
         <div className="col-span-3">
           <div className="flex items-center space-x-1">
             {position.lockUntil === 0 ||
-            (latestBlock && latestBlock >= position.lockUntil) ? (
+            (latestBlock && latestBlock > position.lockUntil) ? (
               <span className="text-sm text-muted-foreground">-</span>
             ) : unlockMoment === undefined ? (
               <Skeleton className="h-5 w-16" />
@@ -387,7 +387,7 @@ export function PortfolioRow({ position }: { position: Position }) {
               {t("manage")}
             </Button>
             {position.lockUntil === 0 ||
-            (latestBlock && latestBlock >= position.lockUntil) ? (
+            (latestBlock && latestBlock > position.lockUntil) ? (
               <LockLpButton poolAddress={poolAddress} />
             ) : null}
           </div>
