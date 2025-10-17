@@ -361,7 +361,7 @@ export function PortfolioRow({ position }: { position: Position }) {
                     size="sm"
                     onClick={onClaim}
                     disabled={
-                      isClaiming || Number(position.lockedRevenue) < 10000
+                      isClaiming || Number(position.lockedRevenue) < 1000
                     }
                   >
                     {isClaiming ? (
