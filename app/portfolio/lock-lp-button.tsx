@@ -228,7 +228,7 @@ export default function LockLpButton({
                 </div>
                 <div className="col-span-2">
                   <span className="font-medium">
-                    {moment(lockInfo.date).format("YYYY-MM-DD HH:mm")}
+                    ~{moment(lockInfo.date).format("YYYY-MM-DD HH:mm")}
                   </span>{" "}
                   {t("unlock")}
                 </div>
