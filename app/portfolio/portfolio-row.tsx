@@ -389,7 +389,7 @@ export function PortfolioRow({ position }: { position: Position }) {
                     {t("claimable")}:{" "}
                     {Number(position.lockedRevenue) < 1000
                       ? `&gt;{" "}10000`
-                      : position.lockedRevenue}{" "}
+                      : formatNumber(position.lockedRevenue)}{" "}
                     sats
                   </p>
                 </TooltipContent>
