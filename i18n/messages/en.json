@@ -224,6 +224,7 @@
     "lpLocked": "LP Locked",
     "unlockDate": "Unlock Date",
     "lockDuration": "Lock Duration",
+    "extendDuration": "Extend Duration",
     "days": "days",
     "hours": "hours",
     "blocks": "blocks",

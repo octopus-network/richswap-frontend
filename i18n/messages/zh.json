@@ -219,6 +219,7 @@
     "lpLocked": "LP 已锁定",
     "unlockDate": "解锁日期",
     "lockDuration": "锁定时长",
+    "extendDuration": "延长时长",
     "days": "天",
     "hours": "小时",
     "blocks": "区块",

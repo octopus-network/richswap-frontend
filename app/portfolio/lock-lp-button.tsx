@@ -42,32 +42,51 @@ export default function LockLpButton({
 
   const addPopup = useAddPopup();
 
+  const isLocked = useMemo(
+    () =>
+      position.lockUntil === 0 ||
+      (latestBlock && latestBlock > position.lockUntil)
+        ? false
+        : true,
+    [position.lockUntil, latestBlock]
+  );
+
   const lockInfo = useMemo(() => {
     if (!selectedDate) {
       return null;
     }
 
     const now = new Date();
-    const timeDiff = selectedDate.getTime() - now.getTime();
+    const extensionMs = selectedDate.getTime() - now.getTime();
 
-    if (timeDiff <= 0) {
+    if (extensionMs <= 0) {
       return null;
     }
 
-    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
-    const hoursDiff = Math.round(timeDiff / (1000 * 60 * 60));
-    const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
+    const daysDiff = Math.round(extensionMs / (1000 * 60 * 60 * 24));
+    const hoursDiff = Math.round(extensionMs / (1000 * 60 * 60));
+    const minutesDiff = Math.ceil(extensionMs / (1000 * 60));
 
-    const estimatedBlocks = Math.ceil(minutesDiff / BITCOIN_BLOCK_TIME_MINUTES);
+    const extensionBlocks = Math.ceil(minutesDiff / BITCOIN_BLOCK_TIME_MINUTES);
+
+    let unlockDate = selectedDate;
+
+    if (isLocked && latestBlock) {
+      const remainingBlocks = Math.max(position.lockUntil - latestBlock, 0);
+      const remainingMs =
+        remainingBlocks * BITCOIN_BLOCK_TIME_MINUTES * 60 * 1000;
+      const currentUnlockDate = new Date(now.getTime() + remainingMs);
+      unlockDate = new Date(currentUnlockDate.getTime() + extensionMs);
+    }
 
     return {
       days: daysDiff,
       hours: hoursDiff,
       minutes: minutesDiff,
-      blocks: estimatedBlocks,
-      date: selectedDate,
+      blocks: extensionBlocks,
+      date: unlockDate,
     };
-  }, [selectedDate]);
+  }, [selectedDate, isLocked, latestBlock, position.lockUntil]);
 
   const presetOptions = [
     { label: t("presets.10Minutes"), hours: 0.1 },
@@ -100,15 +119,6 @@ export default function LockLpButton({
     setSelectedPresetHours(hours);
     handleDateSelect(futureDate);
   };
-
-  const isLocked = useMemo(
-    () =>
-      position.lockUntil === 0 ||
-      (latestBlock && latestBlock > position.lockUntil)
-        ? false
-        : true,
-    [position.lockUntil, latestBlock]
-  );
 
   const onLock = async () => {
     if (!lockInfo || !blocks || !signMessage || !latestBlock) {
@@ -183,25 +193,40 @@ export default function LockLpButton({
             <div className="space-y-2 p-2 bg-primary/5 rounded-md border">
               <div className="flex items-center space-x-2 text-sm">
                 <Clock className="size-4 text-primary" />
-                <span className="font-medium">{t("lockDuration")}:</span>
+                <span className="font-medium">
+                  {isLocked ? t("extendDuration") : t("lockDuration")}:
+                </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                <div>
-                  <span className="font-medium">{lockInfo.days}</span>{" "}
-                  {t("days")}
-                </div>
-                <div>
-                  <span className="font-medium">{lockInfo.hours}</span>{" "}
-                  {t("hours")}
+                <div className="flex items-center">
+                  <div>
+                    <span className="font-medium">
+                      {isLocked
+                        ? `${lockInfo.days.toLocaleString()}`
+                        : lockInfo.days.toLocaleString()}
+                    </span>{" "}
+                    {t("days")}
+                  </div>
+                  <div>
+                    (
+                    <span className="font-medium">
+                      {isLocked
+                        ? `${lockInfo.hours.toLocaleString()}`
+                        : lockInfo.hours.toLocaleString()}
+                    </span>{" "}
+                    {t("hours")})
+                  </div>
                 </div>
                 <div>
                   <span className="font-medium">
-                    ~{lockInfo.blocks.toLocaleString()}
+                    {`${
+                      isLocked ? "+" : "~"
+                    }${lockInfo.blocks.toLocaleString()}`}
                   </span>{" "}
                   {t("blocks")}
                 </div>
-                <div>
+                <div className="col-span-2">
                   <span className="font-medium">
                     {moment(lockInfo.date).format("YYYY-MM-DD HH:mm")}
                   </span>{" "}
