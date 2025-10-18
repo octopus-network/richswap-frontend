@@ -229,7 +229,8 @@
     "hours": "hours",
     "blocks": "blocks",
     "unlock": "unlock",
-    "estimatedNote": "* Estimated based on 10min average block time",
+    "estimatedNote": "* Estimated based on 10min average block time.",
+    "lockTips": "* Locking applies to your full current LP position and all future additions in this pool. You can't lock partial amounts. Fees become claimable (over 10K sats threshold). Unlocks automatically at end. Proceed if sure.",
     "presets": {
       "10Minutes": "10 Minutes",
       "1Day": "1 Day",

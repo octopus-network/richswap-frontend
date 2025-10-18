@@ -189,6 +189,9 @@ export function LockLpSelector({
               <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
                 {t("estimatedNote")}
               </div>
+              <div className="text-xs text-muted-foreground">
+                {t("lockTips")}
+              </div>
             </div>
           )}
         </div>
