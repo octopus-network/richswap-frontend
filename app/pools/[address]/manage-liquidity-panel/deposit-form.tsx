@@ -1,4 +1,4 @@
-import { PoolInfo, Field, DepositState } from "@/types";
+import { PoolInfo, Field, DepositState, Position } from "@/types";
 import { CoinField } from "@/components/coin-field";
 import { Plus } from "lucide-react";
 
@@ -14,6 +14,9 @@ import { useTranslations } from "next-intl";
 import { DepositReviewModal } from "./deposit-review-modal";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 import { LockLpSelector } from "@/components/lock-lp-selector";
+import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
+import moment from "moment";
+import { useLatestBlock } from "@/hooks/use-latest-block";
 
 import {
   useDerivedDepositInfo,
@@ -21,11 +24,18 @@ import {
   useDepositActionHandlers,
 } from "@/store/deposit/hooks";
 
-export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
+export function DepositForm({
+  pool,
+  position,
+}: {
+  pool: PoolInfo | undefined;
+  position: Position | null | undefined;
+}) {
   const { address } = useLaserEyes();
 
   const { onUserInput } = useDepositActionHandlers();
   const depositState = useDepositState();
+  const { data: latestBlock } = useLatestBlock();
 
   const t = useTranslations("Pools");
   const { independentField, typedValue } = depositState;
@@ -146,6 +156,32 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
     }
   }, [deposit, inputAmount, formattedAmounts, isEmptyPool]);
 
+  const unlockRemainBlocks = useMemo(() => {
+    if (!position || !latestBlock) {
+      return undefined;
+    }
+
+    if (position.lockUntil === 0) {
+      return 0;
+    }
+
+    if (latestBlock >= position.lockUntil) {
+      return 0;
+    }
+
+    return position.lockUntil - latestBlock;
+  }, [position, latestBlock]);
+
+  const unlockMoment = useMemo(() => {
+    if (!unlockRemainBlocks) {
+      return undefined;
+    }
+
+    const remainingMinutes = unlockRemainBlocks * BITCOIN_BLOCK_TIME_MINUTES;
+
+    return moment().add(remainingMinutes, "minutes");
+  }, [unlockRemainBlocks]);
+
   return (
     <>
       <CoinField
@@ -186,7 +222,14 @@ export function DepositForm({ pool }: { pool: PoolInfo | undefined }) {
         value={isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT]}
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
-      <LockLpSelector onLockChange={handleLockChange} className="mt-4" />
+      <div className="flex justify-between items-start mt-4 relative">
+        <LockLpSelector onLockChange={handleLockChange} className="" />
+        {unlockMoment && (
+          <span className="text-muted-foreground text-xs absolute right-0 top-2">
+            {t("lpLockedUtil")} ~{unlockMoment?.format("YYYY-MM-DD HH:mm")}
+          </span>
+        )}
+      </div>
       <div className="mt-6">
         {!address ? (
           <Button

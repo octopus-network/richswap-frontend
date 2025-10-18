@@ -45,7 +45,7 @@ export function ManageLiquidityPanel({
           </TabsList>
         </div>
         <TabsContent value="deposit">
-          <DepositForm pool={pool} />
+          <DepositForm pool={pool} position={position} />
         </TabsContent>
         <TabsContent value="withdraw">
           <WithdrawForm position={position} />
