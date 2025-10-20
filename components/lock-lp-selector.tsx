@@ -16,7 +16,7 @@ interface LockLpSelectorProps {
   onLockChange?: (blocks: number, date: Date | null) => void;
   disabled?: boolean;
   className?: string;
-  position: Position | undefined | null;
+  position?: Position | null;
 }
 
 export function LockLpSelector({
