@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/popover";
 
 import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
-import { useLaserEyes } from "@omnisat/lasereyes-react";
+import { useLaserEyes, OKX } from "@omnisat/lasereyes-react";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { useLatestBlock } from "@/hooks/use-latest-block";
 
@@ -28,7 +28,7 @@ export default function LockLpButton({
   poolAddress: string;
   position: Position;
 }) {
-  const { paymentAddress, signMessage } = useLaserEyes();
+  const { paymentAddress, signMessage, provider } = useLaserEyes();
   const t = useTranslations("LockLpSelector");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedPresetHours, setSelectedPresetHours] = useState<number | null>(
@@ -130,9 +130,19 @@ export default function LockLpButton({
 
       console.log("toLockBlocks", toLockBlocks);
       const message = `${poolAddress}:${toLockBlocks}`;
-      const signature = await signMessage(message, {
-        protocol: "bip322",
-      });
+      let signature = "";
+      if (provider === OKX) {
+        signature = await window.okxwallet.bitcoin.signMessage(
+          message,
+          "bip322-simple"
+        );
+
+        console.log(signature);
+      } else {
+        signature = await signMessage(message, {
+          protocol: "bip322",
+        });
+      }
       await Exchange.lockLp(paymentAddress, message, signature);
       addPopup(t("success"), PopupStatus.SUCCESS, t("lockLpSuccess"));
       setIsPopoverOpen(false);
