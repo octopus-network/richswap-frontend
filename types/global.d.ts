@@ -11,6 +11,11 @@ declare global {
             toSignInputs: ToSignInput[];
           }
         ) => Promise<string>;
+
+        signMessage: (
+          message: string,
+          type?: "ecdsa" | "bip322-simple"
+        ) => Promise<string>;
       };
     };
   }
