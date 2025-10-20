@@ -232,10 +232,10 @@ export default function LockLpButton({
                 </div>
               </div>
 
-              <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
+              <div className="text-xs hidden sm:block text-muted-foreground mt-2 pt-2 border-t">
                 {t("estimatedNote")}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs hidden sm:block text-muted-foreground">
                 {t("lockTips")}
               </div>
             </div>
