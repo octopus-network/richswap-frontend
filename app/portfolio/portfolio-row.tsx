@@ -218,7 +218,7 @@ export function PortfolioRow({ position }: { position: Position }) {
 
   return (
     <>
-      <div className="grid grid-cols-10 sm:grid-cols-12 h-[72px] items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors">
+      <div className="grid grid-cols-10 sm:grid-cols-12 items-center gap-1 sm:gap-3 md:gap-6 bg-secondary/20 hover:bg-secondary cursor-pointer px-4 py-3 transition-colors">
         <div className="col-span-3 flex items-center">
           <div className="hidden sm:block mr-3">
             <CoinIcon size="lg" coin={position.pool.coinB} />
@@ -338,7 +338,7 @@ export function PortfolioRow({ position }: { position: Position }) {
           )}
         </div>
         <div className="col-span-3">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center flex-col justify-center sm:flex-row gap-2">
             {position.lockUntil === 0 ||
             (latestBlock && latestBlock >= position.lockUntil) ? (
               <span className="text-sm text-muted-foreground">
@@ -359,8 +359,8 @@ export function PortfolioRow({ position }: { position: Position }) {
             <LockLpButton poolAddress={poolAddress} position={position} />
           </div>
         </div>
-        <div className="col-span-2 hidden md:flex">
-          <div className="flex space-x-2">
+        <div className="col-span-2">
+          <div className="flex gap-2 flex-col sm:flex-row">
             <Button
               variant="outline"
               onClick={() => setManageLiquidityModalOpen(true)}
@@ -370,7 +370,7 @@ export function PortfolioRow({ position }: { position: Position }) {
             </Button>
             {
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Button
                     size="sm"
                     onClick={onClaim}

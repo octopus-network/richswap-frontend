@@ -135,7 +135,6 @@ export default function LockLpButton({
           message,
           "bip322-simple"
         );
-        alert("Is OKX Wallet");
       } else {
         signature = await signMessage(message, {
           protocol: "bip322",
