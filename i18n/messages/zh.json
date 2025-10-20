@@ -130,7 +130,13 @@
     "retry": "重试",
     "FETCH_UTXO_PROOF_FAILED": "获取 UTXO 证明失败",
     "claimTips": "可领取：> {amount} sats",
-    "volume": "交易量(24小时)"
+    "volume": "交易量(24小时)",
+    "lpLockedUtil": "流动性已锁定至",
+    "unlockTime": "解锁时间",
+    "blocks": "区块",
+    "remain": "剩余",
+    "standard": "标准",
+    "onetime": "一次性"
   },
   "ConnectWallet": {
     "connectAWallet": "连接钱包",
@@ -183,10 +189,55 @@
     "pool": "池子",
     "balance": "余额",
     "yield": "收益",
-    "connectWallet": "连接钱包"
+    "lockTime": "锁定时间",
+    "unlockTime": "解锁时间",
+    "blocks": "区块",
+    "connectWallet": "连接钱包",
+    "remain": "剩余",
+    "unlocked": "未锁定",
+    "days": "天",
+    "hours": "小时",
+    "minutes": "分钟",
+    "actions": "操作",
+    "manage": "管理",
+    "revenue": "收益",
+    "claimRevenueSats": "提取 {amount} sats",
+    "compounded": "复合收益",
+    "claim": "提取收益",
+    "claimable": "可提取",
+    "claimableSats": "可提取的"
   },
   "SelectCoin": {
     "selectCoin": "选择代币",
     "searchPlaceholder": "输入代币 id 或名称进行搜索"
+  },
+  "LockLpSelector": {
+    "lockLp": "锁定 LP",
+    "extend": "延长",
+    "extendLock": "延长锁定",
+    "lockTime": "锁定时间",
+    "extendTime": "延长时间",
+    "lpLocked": "LP 已锁定",
+    "unlockDate": "解锁日期",
+    "lockDuration": "锁定时长",
+    "extendDuration": "延长时长",
+    "days": "天",
+    "hours": "小时",
+    "blocks": "区块",
+    "unlock": "解锁",
+    "estimatedNote": "* 基于 10 分钟平均出块时间估算。",
+    "lockTips": "* 锁定适用于您当前的 LP 位置和此池中的所有未来增加。您不能锁定部分金额。费用可领取（超过 10K sats 阈值）。在末尾自动解锁。如果确定，请继续。",
+    "presets": {
+      "10Minutes": "10 分钟",
+      "1Day": "1 天",
+      "1Week": "1 周",
+      "1Month": "1 个月",
+      "3Months": "3 个月",
+      "6Months": "6 个月",
+      "1Year": "1 年"
+    },
+    "failed": "失败",
+    "success": "成功",
+    "lockLpSuccess": "锁定 LP 成功"
   }
 }

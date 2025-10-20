@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PoolInfo, UnspentOutput } from "@/types";
+import { Position, PoolInfo, UnspentOutput } from "@/types";
 
 import { DepositForm } from "./deposit-form";
 import { DepositReview } from "@/components/deposit-review";
@@ -8,30 +8,35 @@ import { TabsContent } from "@/components/ui/tabs";
 
 export function DepositContent({
   pool,
+  position,
   onSuccess,
   setOnReview,
 }: {
   pool: PoolInfo | undefined;
+  position: Position | null | undefined;
   setOnReview: (onReview: boolean) => void;
   onSuccess: () => void;
 }) {
+
   const [coinAAmount, setCoinAAmount] = useState("");
   const [coinBAmount, setCoinBAmount] = useState("");
   const [nonce, setNonce] = useState("0");
   const [poolUtxos, setPoolUtxos] = useState<UnspentOutput[]>();
-
+  const [lockBlocks, setLockBlocks] = useState(0);
   const [showReview, setShowReview] = useState(false);
 
   const onReview = (
     coinAAmount: string,
     coinBAmount: string,
     nonce: string,
-    poolUtxos: UnspentOutput[]
+    poolUtxos: UnspentOutput[],
+    lockBlocks: number
   ) => {
     setCoinAAmount(coinAAmount);
     setCoinBAmount(coinBAmount);
     setNonce(nonce);
     setPoolUtxos(poolUtxos);
+    setLockBlocks(lockBlocks);
     setShowReview(true);
     setOnReview(true);
   };
@@ -61,13 +66,18 @@ export function DepositContent({
               coinBAmount={coinBAmount}
               onSuccess={onSuccess}
               nonce={nonce}
+              lockBlocks={lockBlocks}
               poolUtxos={poolUtxos}
               onBack={onBack}
               showCancelButton={true}
             />
           </>
         ) : (
-          <DepositForm pool={pool} onReview={onReview} />
+          <DepositForm
+            pool={pool}
+            onReview={onReview}
+            position={position}
+          />
         )}
       </motion.div>
     </TabsContent>

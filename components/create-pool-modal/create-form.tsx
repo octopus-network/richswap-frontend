@@ -14,6 +14,9 @@ import { PopupStatus, useAddPopup } from "@/store/popups";
 import { getCoinSymbol } from "@/lib/utils";
 
 import { useTranslations } from "next-intl";
+import { LockLpSelector } from "../lock-lp-selector";
+
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function CreateForm({
   coinA,
@@ -25,6 +28,7 @@ export function CreateForm({
   setCoinBAmount,
   onNextStep,
   onPoolExsists,
+  setLockBlocks,
 }: {
   coinA: Coin;
   coinB: Coin | null;
@@ -39,9 +43,11 @@ export function CreateForm({
     utxos?: UnspentOutput[]
   ) => void;
   onPoolExsists?: (pool: PoolInfo) => void;
+  setLockBlocks: (value: number) => void;
 }) {
   const { address } = useLaserEyes();
   const [isCreating, setIsCreating] = useState(false);
+  const [template, setTemplate] = useState<"standard" | "onetime">("standard");
   const coinABalance = useCoinBalance(coinA);
   const coinBBalance = useCoinBalance(coinB);
 
@@ -80,7 +86,10 @@ export function CreateForm({
     }
     try {
       setIsCreating(true);
-      const poolAddress = await Exchange.createPool(coinB.id);
+      const poolAddress = await Exchange.createPoolWithTemplate(
+        coinB.id,
+        template
+      );
 
       setIsCreating(false);
       onNextStep(poolAddress);
@@ -136,6 +145,30 @@ export function CreateForm({
         onSelectCoin={setCoinB}
         onUserInput={setCoinBAmount}
       />
+      <div className="flex items-start justify-between mt-4">
+        <LockLpSelector onLockChange={setLockBlocks} />
+        <Tabs
+          defaultValue={template}
+          onValueChange={(value) =>
+            setTemplate(value as "standard" | "onetime")
+          }
+        >
+          <TabsList className="bg-transparent">
+            <TabsTrigger
+              value="standard"
+              className="data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary"
+            >
+              {t("standard")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="onetime"
+              className="data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary"
+            >
+              {t("onetime")}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
       <div className="mt-6">
         {!address ? (
           <Button

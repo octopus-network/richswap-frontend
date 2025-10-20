@@ -8,13 +8,18 @@ const STORAGE_URL = process.env.STORAGE_URL!;
 
 export async function GET() {
   try {
-    const cache = (await axios
+    const pools = ((await axios
       .get(`${STORAGE_URL}/pool-list.json?t=${Date.now()}`)
-      .then((res) => res.data)) as PoolInfo[];
+      .then((res) => res.data)) ?? []) as PoolInfo[];
+
+    const filteredPools = pools.filter((pool) => pool.coinA.balance !== "0");
 
     return NextResponse.json({
       success: true,
-      data: cache.filter((pool) => pool.coinA.balance !== "0") ?? [],
+      data: {
+        pools: filteredPools,
+        trades: pools.reduce((acc, pool) => acc + pool.nonce, 0),
+      },
     });
   } catch (error) {
     console.log(error);

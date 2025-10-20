@@ -50,7 +50,7 @@ export function BaseModal({
             </DialogTitle>
           </DialogHeader>
         ) : null}
-        <div>{children}</div>
+        <div className="max-h-[90vh] overflow-y-auto">{children}</div>
       </DialogContent>
     </Dialog>
   );

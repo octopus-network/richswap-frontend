@@ -2,7 +2,7 @@
 
 import { usePoolList, usePortfolios } from "@/hooks/use-pools";
 import { useEffect, useState } from "react";
-import { useCoinPrices } from "@/hooks/use-prices";
+import { useBtcPrice, useCoinPrices } from "@/hooks/use-prices";
 
 import Decimal from "decimal.js";
 import { Orchestrator } from "@/lib/orchestrator";
@@ -12,7 +12,7 @@ import { useTransactions } from "@/store/transactions";
 import { limitFunction } from "p-limit";
 import { PoolInfo } from "@/types";
 import { Exchange } from "@/lib/exchange";
-import { getBtcPrice } from "@/lib/chain-api";
+
 import { BITCOIN } from "@/lib/constants";
 
 export function GlobalStateUpdater() {
@@ -23,7 +23,8 @@ export function GlobalStateUpdater() {
   const [, setPendingBtcUtxos] = usePendingBtcUtxos();
   const [, setPendingRuneUtxos] = usePendingRuneUtxos();
   const [, setPortfolios] = usePortfolios();
-  const [btcPrice, setBtcPrice] = useState<number>();
+
+  const btcPrice = useBtcPrice();
 
   const [timer, setTimer] = useState<number>();
 
@@ -33,7 +34,7 @@ export function GlobalStateUpdater() {
   useEffect(() => {
     const interval = setInterval(
       () => setTimer(new Date().getTime()),
-      30 * 1000
+      10 * 1000
     );
 
     return () => {
@@ -106,12 +107,6 @@ export function GlobalStateUpdater() {
     transactions,
     timer,
   ]);
-
-  useEffect(() => {
-    getBtcPrice().then((price) => {
-      setBtcPrice(price);
-    });
-  }, [timer]);
 
   return null;
 }

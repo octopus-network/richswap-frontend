@@ -1,4 +1,10 @@
-import { PoolInfo, Field, DepositState, UnspentOutput } from "@/types";
+import {
+  Position,
+  PoolInfo,
+  Field,
+  DepositState,
+  UnspentOutput,
+} from "@/types";
 import { CoinField } from "@/components/coin-field";
 import { Plus } from "lucide-react";
 
@@ -11,6 +17,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 import { useTranslations } from "next-intl";
+import { LockLpSelector } from "@/components/lock-lp-selector";
+import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
+import moment from "moment";
+import { useLatestBlock } from "@/hooks/use-latest-block";
 
 import {
   formatCoinAmount,
@@ -27,19 +37,23 @@ import {
 export function DepositForm({
   pool,
   onReview,
+  position,
 }: {
   pool: PoolInfo | undefined;
   onReview: (
     coinAAmount: string,
     coinBAmount: string,
     nonce: string,
-    poolUtxos: UnspentOutput[]
+    poolUtxos: UnspentOutput[],
+    lockBlocks: number
   ) => void;
+  position: Position | null | undefined;
 }) {
   const { address } = useLaserEyes();
   const t = useTranslations("Pools");
   const { onUserInput } = useDepositActionHandlers();
   const depositState = useDepositState();
+  const { data: latestBlock } = useLatestBlock();
 
   const { independentField, typedValue } = depositState;
 
@@ -54,11 +68,47 @@ export function DepositForm({
 
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
 
+  const [lockBlocks, setLockBlocks] = useState(0);
+
+  const handleLockChange = (blocks: number, date: Date | null) => {
+    setLockBlocks(blocks);
+    console.log(
+      `LP will be locked for ${blocks} blocks until ${date?.toLocaleDateString()}`
+    );
+  };
+
   useEffect(() => {
     return () => {
       onUserInput(Field.INPUT, "");
     };
   }, [onUserInput]);
+
+  const unlockRemainBlocks = useMemo(() => {
+    if (!position || !latestBlock) {
+      return undefined;
+    }
+
+    if (position.lockUntil === 0) {
+      return 0;
+    }
+
+    if (latestBlock > position.lockUntil) {
+      return 0;
+    }
+
+    return position.lockUntil - latestBlock;
+  }, [position, latestBlock]);
+
+  const unlockMoment = useMemo(() => {
+    console.log(unlockRemainBlocks);
+    if (!unlockRemainBlocks) {
+      return undefined;
+    }
+
+    const remainingMinutes = unlockRemainBlocks * BITCOIN_BLOCK_TIME_MINUTES;
+
+    return moment().add(remainingMinutes, "minutes");
+  }, [unlockRemainBlocks]);
 
   const parsedAmounts = useMemo(
     () => ({
@@ -200,6 +250,14 @@ export function DepositForm({
         value={isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT]}
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
+      <div className="flex justify-between items-start mt-4 relative">
+        <LockLpSelector onLockChange={handleLockChange} position={position} />
+        {unlockMoment && (
+          <span className="text-muted-foreground text-xs absolute right-0 top-2">
+            {t("lpLockedUtil")} ~{unlockMoment?.format("YYYY-MM-DD HH:mm")}
+          </span>
+        )}
+      </div>
       <div className="mt-6">
         {!address ? (
           <Button
@@ -228,7 +286,8 @@ export function DepositForm({
                 isEmptyPool ? inputAmount : formattedAmounts[Field.INPUT],
                 isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT],
                 deposit?.nonce ?? "0",
-                deposit?.utxos ?? []
+                deposit?.utxos ?? [],
+                lockBlocks
               )
             }
           >
