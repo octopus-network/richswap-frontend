@@ -13,7 +13,6 @@ import { MenuButton } from "./menu-button";
 import { useTranslations } from "next-intl";
 
 import { LocaleSwitcher } from "./locale-switcher";
-import Link from "next/link";
 
 export function Topbar() {
   const { address, isInitializing } = useLaserEyes();
@@ -33,10 +32,10 @@ export function Topbar() {
         />
         <span className="font-bold">RichSwap</span>
       </div>
-      <div className="flex-none hidden ml-4">
+      <div className="flex-none hidden md:flex ml-4">
         <Nav />
       </div>
-      <div className="flex-1 justify-end space-x-4 hidden items-center">
+      <div className="flex-1 justify-end space-x-4 flex items-center">
         <div className="hidden md:block">
           <LocaleSwitcher />
         </div>
@@ -55,14 +54,6 @@ export function Topbar() {
         )}
         <MenuButton />
       </div>
-      <Link
-        href="https://oc.app/community/o5uz6-dqaaa-aaaar-bhnia-cai/channel/1529837122"
-        target="_blank"
-      >
-        <Button variant="outline" className="rounded-full">
-          Support
-        </Button>
-      </Link>
     </div>
   );
 }

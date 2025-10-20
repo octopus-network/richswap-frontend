@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/popover";
 
 import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
-import { useLaserEyes } from "@omnisat/lasereyes-react";
+import { useLaserEyes, OKX } from "@omnisat/lasereyes-react";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { useLatestBlock } from "@/hooks/use-latest-block";
 
@@ -28,7 +28,7 @@ export default function LockLpButton({
   poolAddress: string;
   position: Position;
 }) {
-  const { paymentAddress, signMessage } = useLaserEyes();
+  const { paymentAddress, signMessage, provider } = useLaserEyes();
   const t = useTranslations("LockLpSelector");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedPresetHours, setSelectedPresetHours] = useState<number | null>(
@@ -89,7 +89,6 @@ export default function LockLpButton({
   }, [selectedDate, isLocked, latestBlock, position.lockUntil]);
 
   const presetOptions = [
-    { label: t("presets.1Day"), hours: 24 },
     { label: t("presets.1Week"), hours: 7 * 24 },
     { label: t("presets.1Month"), hours: 30 * 24 },
     { label: t("presets.3Months"), hours: 90 * 24 },
@@ -129,11 +128,18 @@ export default function LockLpButton({
       const toLockBlocks =
         blocks + (isLocked ? position.lockUntil - latestBlock : 0);
 
-      console.log("toLockBlocks", toLockBlocks);
       const message = `${poolAddress}:${toLockBlocks}`;
-      const signature = await signMessage(message, {
-        protocol: "bip322",
-      });
+      let signature = "";
+      if (provider === OKX) {
+        signature = await window.okxwallet.bitcoin.signMessage(
+          message,
+          "bip322-simple"
+        );
+      } else {
+        signature = await signMessage(message, {
+          protocol: "bip322",
+        });
+      }
       await Exchange.lockLp(paymentAddress, message, signature);
       addPopup(t("success"), PopupStatus.SUCCESS, t("lockLpSuccess"));
       setIsPopoverOpen(false);
@@ -233,10 +239,10 @@ export default function LockLpButton({
                 </div>
               </div>
 
-              <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
+              <div className="text-xs hidden sm:block text-muted-foreground mt-2 pt-2 border-t">
                 {t("estimatedNote")}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs hidden sm:block text-muted-foreground">
                 {t("lockTips")}
               </div>
             </div>

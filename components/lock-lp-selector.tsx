@@ -133,7 +133,6 @@ export function LockLpSelector({
   };
 
   const presetOptions = [
-    { label: t("presets.1Day"), hours: 24 },
     { label: t("presets.1Week"), hours: 7 * 24 },
     { label: t("presets.1Month"), hours: 30 * 24 },
     { label: t("presets.3Months"), hours: 90 * 24 },
@@ -228,10 +227,10 @@ export function LockLpSelector({
                 </div>
               </div>
 
-              <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
+              <div className="text-xs hidden sm:block text-muted-foreground mt-2 pt-2 border-t">
                 {t("estimatedNote")}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs hidden sm:block text-muted-foreground">
                 {t("lockTips")}
               </div>
             </div>
