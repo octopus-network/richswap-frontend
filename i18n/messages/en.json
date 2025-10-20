@@ -220,6 +220,8 @@
   "LockLpSelector": {
     "lockLp": "Lock LP",
     "extend": "Extend",
+    "extendLock": "Extend Lock",
+    "lockTime": "Lock Time",
     "extendTime": "Extend Time",
     "lpLocked": "LP Locked",
     "unlockDate": "Unlock Date",

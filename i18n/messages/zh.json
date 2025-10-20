@@ -214,6 +214,7 @@
   "LockLpSelector": {
     "lockLp": "锁定 LP",
     "extend": "延长",
+    "extendLock": "延长锁定",
     "lockTime": "锁定时间",
     "extendTime": "延长时间",
     "lpLocked": "LP 已锁定",

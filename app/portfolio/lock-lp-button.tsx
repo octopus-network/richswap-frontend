@@ -45,7 +45,7 @@ export default function LockLpButton({
   const isLocked = useMemo(
     () =>
       position.lockUntil === 0 ||
-      (latestBlock && latestBlock > position.lockUntil)
+      (latestBlock && latestBlock >= position.lockUntil)
         ? false
         : true,
     [position.lockUntil, latestBlock]

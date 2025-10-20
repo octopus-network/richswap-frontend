@@ -92,7 +92,7 @@ export function DepositForm({
       return 0;
     }
 
-    if (latestBlock >= position.lockUntil) {
+    if (latestBlock > position.lockUntil) {
       return 0;
     }
 
@@ -100,6 +100,7 @@ export function DepositForm({
   }, [position, latestBlock]);
 
   const unlockMoment = useMemo(() => {
+    console.log(unlockRemainBlocks);
     if (!unlockRemainBlocks) {
       return undefined;
     }
@@ -250,7 +251,7 @@ export function DepositForm({
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
       <div className="flex justify-between items-start mt-4 relative">
-        <LockLpSelector onLockChange={handleLockChange} className="" />
+        <LockLpSelector onLockChange={handleLockChange} position={position} />
         {unlockMoment && (
           <span className="text-muted-foreground text-xs absolute right-0 top-2">
             {t("lpLockedUtil")} ~{unlockMoment?.format("YYYY-MM-DD HH:mm")}

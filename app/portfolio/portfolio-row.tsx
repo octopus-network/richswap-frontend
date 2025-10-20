@@ -133,7 +133,7 @@ export function PortfolioRow({ position }: { position: Position }) {
       return 0;
     }
 
-    return position.lockUntil - latestBlock || 1;
+    return position.lockUntil - latestBlock;
   }, [position, latestBlock]);
 
   const unlockMoment = useMemo(() => {
@@ -340,7 +340,7 @@ export function PortfolioRow({ position }: { position: Position }) {
         <div className="col-span-3">
           <div className="flex items-center space-x-2">
             {position.lockUntil === 0 ||
-            (latestBlock && latestBlock > position.lockUntil) ? (
+            (latestBlock && latestBlock >= position.lockUntil) ? (
               <span className="text-sm text-muted-foreground">
                 {t("unlocked")}
               </span>
@@ -368,7 +368,7 @@ export function PortfolioRow({ position }: { position: Position }) {
             >
               {t("manage")}
             </Button>
-            {Number(position.lockedRevenue) > 0 && (
+            {
               <Tooltip>
                 <TooltipTrigger>
                   <Button
@@ -388,13 +388,13 @@ export function PortfolioRow({ position }: { position: Position }) {
                   <p>
                     {t("claimable")}:{" "}
                     {Number(position.lockedRevenue) < 1000
-                      ? `&gt;{" "}10000`
+                      ? `< 10000`
                       : formatNumber(position.lockedRevenue)}{" "}
                     sats
                   </p>
                 </TooltipContent>
               </Tooltip>
-            )}
+            }
           </div>
         </div>
       </div>

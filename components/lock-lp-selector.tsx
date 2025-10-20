@@ -9,62 +9,97 @@ import { cn } from "@/lib/utils";
 import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
 import { useTranslations } from "next-intl";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
+import { useLatestBlock } from "@/hooks/use-latest-block";
+import { Position } from "@/types";
 
 interface LockLpSelectorProps {
   onLockChange?: (blocks: number, date: Date | null) => void;
   disabled?: boolean;
   className?: string;
+  position: Position | undefined | null;
 }
 
 export function LockLpSelector({
   onLockChange,
-
+  position,
   className,
+  disabled,
 }: LockLpSelectorProps) {
   const t = useTranslations("LockLpSelector");
-  const [isLocked, setIsLocked] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedPresetHours, setSelectedPresetHours] = useState<
-    number | null
-  >(null);
+  const [selectedPresetHours, setSelectedPresetHours] = useState<number | null>(
+    null
+  );
   const { address } = useLaserEyes();
+  const { data: latestBlock } = useLatestBlock();
+
+  const isLocked = useMemo(
+    () =>
+      position
+        ? position.lockUntil === 0 ||
+          (latestBlock && latestBlock >= position.lockUntil)
+          ? false
+          : true
+        : false,
+    [position, latestBlock]
+  );
+
+  const remainingLockBlocks = useMemo(() => {
+    if (!isLocked || !latestBlock || !position) {
+      return 0;
+    }
+
+    return Math.max(position.lockUntil - latestBlock, 0);
+  }, [isLocked, latestBlock, position]);
+
   const lockInfo = useMemo(() => {
-    if (!selectedDate || !isLocked) {
+    if (!selectedDate) {
       return null;
     }
 
     const now = new Date();
-    const timeDiff = selectedDate.getTime() - now.getTime();
+    const extensionMs = selectedDate.getTime() - now.getTime();
 
-    if (timeDiff <= 0) {
+    if (extensionMs <= 0) {
       return null;
     }
 
-    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
-    const hoursDiff = Math.round(timeDiff / (1000 * 60 * 60));
-    const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
+    const daysDiff = Math.round(extensionMs / (1000 * 60 * 60 * 24));
+    const hoursDiff = Math.round(extensionMs / (1000 * 60 * 60));
+    const minutesDiff = Math.ceil(extensionMs / (1000 * 60));
 
-    const estimatedBlocks = Math.ceil(minutesDiff / BITCOIN_BLOCK_TIME_MINUTES);
+    const extensionBlocks = Math.ceil(minutesDiff / BITCOIN_BLOCK_TIME_MINUTES);
+
+    let unlockDate = selectedDate;
+
+    if (remainingLockBlocks > 0) {
+      const remainingMs =
+        remainingLockBlocks * BITCOIN_BLOCK_TIME_MINUTES * 60 * 1000;
+      const currentUnlockDate = new Date(now.getTime() + remainingMs);
+      unlockDate = new Date(currentUnlockDate.getTime() + extensionMs);
+    }
 
     return {
       days: daysDiff,
       hours: hoursDiff,
       minutes: minutesDiff,
-      blocks: estimatedBlocks,
-      date: selectedDate,
+      blocks: extensionBlocks,
+      date: unlockDate,
+      totalBlocks: extensionBlocks + remainingLockBlocks,
     };
-  }, [selectedDate, isLocked]);
+  }, [selectedDate, remainingLockBlocks]);
 
-  const handleLockToggle = () => {
-    const newLocked = !isLocked;
-    setIsLocked(newLocked);
+  const handleOpenToggle = () => {
+    const newOpen = !isOpen;
+    setIsOpen(newOpen);
 
-    if (!newLocked) {
+    if (!newOpen) {
       setSelectedDate(null);
       setSelectedPresetHours(null);
       onLockChange?.(0, null);
     } else if (selectedDate && lockInfo) {
-      onLockChange?.(lockInfo.blocks, selectedDate);
+      onLockChange?.(lockInfo.totalBlocks, lockInfo.date);
     }
   };
 
@@ -73,16 +108,28 @@ export function LockLpSelector({
 
     setSelectedDate(date);
 
-    if (isLocked) {
-      const now = new Date();
-      const timeDiff = date.getTime() - now.getTime();
-
-      if (timeDiff > 0) {
-        const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
-        const blocks = Math.ceil(minutesDiff / BITCOIN_BLOCK_TIME_MINUTES);
-        onLockChange?.(blocks, date);
-      }
+    if (!isOpen) {
+      return;
     }
+
+    const now = new Date();
+    const timeDiff = date.getTime() - now.getTime();
+
+    if (timeDiff <= 0) {
+      return;
+    }
+
+    const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
+    const extensionBlocks = Math.ceil(minutesDiff / BITCOIN_BLOCK_TIME_MINUTES);
+    const totalBlocks = extensionBlocks + remainingLockBlocks;
+    const remainingMs =
+      remainingLockBlocks * BITCOIN_BLOCK_TIME_MINUTES * 60 * 1000;
+    const unlockDate =
+      remainingLockBlocks > 0
+        ? new Date(now.getTime() + remainingMs + timeDiff)
+        : date;
+
+    onLockChange?.(totalBlocks, unlockDate);
   };
 
   const presetOptions = [
@@ -107,33 +154,25 @@ export function LockLpSelector({
       <div className="flex items-center space-x-2">
         <Button
           type="button"
-          variant={isLocked ? "default" : "outline"}
+          variant={isOpen ? "default" : "outline"}
           size="sm"
-          onClick={handleLockToggle}
-          disabled={!address}
+          onClick={handleOpenToggle}
+          disabled={!address || disabled}
           className={cn(
             "flex items-center space-x-2",
-            isLocked ? "border-primary" : "border-border"
+            isOpen ? "border-primary" : "border-border"
           )}
         >
-          <Lock
-            className={cn("size-4", isLocked && "text-primary-foreground")}
-          />
-          <span>{isLocked ? t("lpLocked") : t("lockLp")}</span>
+          <Lock className={cn("size-4", isOpen && "text-primary-foreground")} />
+          <span>{isLocked ? t("extendLock") : t("lockLp")}</span>
         </Button>
-
-        {isLocked && lockInfo && (
-          <div className="text-xs text-muted-foreground">
-            ~{lockInfo.blocks.toLocaleString()} {t("blocks")}
-          </div>
-        )}
       </div>
 
-      {isLocked && (
+      {isOpen && (
         <div className="space-y-3 p-3 border rounded-lg bg-secondary/20">
           <Label className="text-sm font-medium flex items-center space-x-2">
             <Calendar className="size-4" />
-            <span>{t("unlockDate")}</span>
+            <span>{isLocked ? t("extendTime") : t("lockTime")}</span>
           </Label>
 
           <div className="flex flex-wrap gap-2">
@@ -160,7 +199,9 @@ export function LockLpSelector({
             <div className="space-y-2 p-2 bg-primary/5 rounded-md border">
               <div className="flex items-center space-x-2 text-sm">
                 <Clock className="size-4 text-primary" />
-                <span className="font-medium">{t("lockDuration")}:</span>
+                <span className="font-medium">
+                  {isLocked ? t("extendDuration") : t("lockDuration")}:
+                </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
@@ -174,13 +215,15 @@ export function LockLpSelector({
                 </div>
                 <div>
                   <span className="font-medium">
-                    ~{lockInfo.blocks.toLocaleString()}
+                    {`${
+                      isLocked ? "+" : "~"
+                    }${lockInfo.blocks.toLocaleString()}`}
                   </span>{" "}
                   {t("blocks")}
                 </div>
                 <div>
                   <span className="font-medium">
-                    {moment(lockInfo.date).format("YYYY-MM-DD HH:mm")}
+                    ~{moment(lockInfo.date).format("YYYY-MM-DD HH:mm")}
                   </span>{" "}
                   {t("unlock")}
                 </div>
