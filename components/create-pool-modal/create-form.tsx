@@ -16,7 +16,7 @@ import { getCoinSymbol } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { LockLpSelector } from "../lock-lp-selector";
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function CreateForm({
   coinA,
@@ -47,7 +47,7 @@ export function CreateForm({
 }) {
   const { address } = useLaserEyes();
   const [isCreating, setIsCreating] = useState(false);
-  const [template, setTemplate] = useState<"standard" | "onetime">("standard");
+  // const [template, setTemplate] = useState<"standard" | "onetime">("standard");
   const coinABalance = useCoinBalance(coinA);
   const coinBBalance = useCoinBalance(coinB);
 
@@ -86,10 +86,12 @@ export function CreateForm({
     }
     try {
       setIsCreating(true);
-      const poolAddress = await Exchange.createPoolWithTemplate(
-        coinB.id,
-        template
-      );
+      // const poolAddress = await Exchange.createPoolWithTemplate(
+      //   coinB.id,
+      //   template
+      // );
+
+      const poolAddress = await Exchange.createPool(coinB.id);
 
       setIsCreating(false);
       onNextStep(poolAddress);
@@ -147,7 +149,7 @@ export function CreateForm({
       />
       <div className="flex items-start justify-between mt-4">
         <LockLpSelector onLockChange={setLockBlocks} />
-        <Tabs
+        {/* <Tabs
           defaultValue={template}
           onValueChange={(value) =>
             setTemplate(value as "standard" | "onetime")
@@ -167,7 +169,7 @@ export function CreateForm({
               {t("onetime")}
             </TabsTrigger>
           </TabsList>
-        </Tabs>
+        </Tabs> */}
       </div>
       <div className="mt-6">
         {!address ? (
