@@ -133,7 +133,6 @@ export function LockLpSelector({
   };
 
   const presetOptions = [
-    { label: t("presets.10Minutes"), hours: 0.1 },
     { label: t("presets.1Day"), hours: 24 },
     { label: t("presets.1Week"), hours: 7 * 24 },
     { label: t("presets.1Month"), hours: 30 * 24 },
