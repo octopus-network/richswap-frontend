@@ -16,10 +16,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
 import { useLaserEyes, OKX } from "@omnisat/lasereyes-react";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { useLatestBlock } from "@/hooks/use-latest-block";
+import { useClipboard } from "@/hooks/use-clipboard";
 
 export default function LockLpButton({
   poolAddress,
@@ -37,6 +45,10 @@ export default function LockLpButton({
   const [blocks, setBlocks] = useState(0);
   const [isLocking, setIsLocking] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  const [signature, setSignature] = useState<string | null>(null);
+  const [showSigDialog, setShowSigDialog] = useState(false);
+  const { hasCopied, onCopy } = useClipboard(signature ?? "");
 
   const { data: latestBlock } = useLatestBlock();
 
@@ -128,7 +140,6 @@ export default function LockLpButton({
       const toLockBlocks =
         blocks + (isLocked ? position.lockUntil - latestBlock : 0);
 
-      console.log("toLockBlocks", toLockBlocks);
       const message = `${poolAddress}:${toLockBlocks}`;
       let signature = "";
       if (provider === OKX) {
@@ -136,14 +147,16 @@ export default function LockLpButton({
           message,
           "bip322-simple"
         );
-
-        console.log(signature);
       } else {
         signature = await signMessage(message, {
           protocol: "bip322",
         });
       }
+      setSignature(signature);
+      setShowSigDialog(true);
+  
       await Exchange.lockLp(paymentAddress, message, signature);
+
       addPopup(t("success"), PopupStatus.SUCCESS, t("lockLpSuccess"));
       setIsPopoverOpen(false);
     } catch (error: any) {
@@ -160,106 +173,123 @@ export default function LockLpButton({
   };
 
   return (
-    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-      <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <Button
-          size="sm"
-          variant="secondary"
-          className="border border-transparent hover:border-primary hover:text-primary"
-        >
-          {isLocked ? t("extend") : t("lockLp")}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent onClick={(e) => e.stopPropagation()}>
-        <div className="space-y-3">
-          <Label className="text-sm font-medium flex items-center space-x-2">
-            <Calendar className="size-4" />
-            <span>{isLocked ? t("extendTime") : t("lockTime")}</span>
-          </Label>
+    <>
+      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="border border-transparent hover:border-primary hover:text-primary"
+          >
+            {isLocked ? t("extend") : t("lockLp")}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent onClick={(e) => e.stopPropagation()}>
+          <div className="space-y-3">
+            <Label className="text-sm font-medium flex items-center space-x-2">
+              <Calendar className="size-4" />
+              <span>{isLocked ? t("extendTime") : t("lockTime")}</span>
+            </Label>
 
-          <div className="flex flex-wrap gap-2">
-            {presetOptions.map((preset) => (
-              <Button
-                key={preset.hours}
-                type="button"
-                variant="outline"
-                size="xs"
-                onClick={() => handlePresetSelect(preset.hours)}
-                className={cn(
-                  "text-xs transition-colors",
-                  selectedPresetHours === preset.hours
-                    ? "border-primary text-primary"
-                    : "border-border"
-                )}
-              >
-                {preset.label}
-              </Button>
-            ))}
+            <div className="flex flex-wrap gap-2">
+              {presetOptions.map((preset) => (
+                <Button
+                  key={preset.hours}
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => handlePresetSelect(preset.hours)}
+                  className={cn(
+                    "text-xs transition-colors",
+                    selectedPresetHours === preset.hours
+                      ? "border-primary text-primary"
+                      : "border-border"
+                  )}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </div>
+
+            {lockInfo && (
+              <div className="space-y-2 p-2 bg-primary/5 rounded-md border">
+                <div className="flex items-center space-x-2 text-sm">
+                  <Clock className="size-4 text-primary" />
+                  <span className="font-medium">
+                    {isLocked ? t("extendDuration") : t("lockDuration")}:
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center">
+                    <div>
+                      <span className="font-medium">
+                        {isLocked
+                          ? `${lockInfo.days.toLocaleString()}`
+                          : lockInfo.days.toLocaleString()}
+                      </span>{" "}
+                      {t("days")}
+                    </div>
+                    <div>
+                      (
+                      <span className="font-medium">
+                        {isLocked
+                          ? `${lockInfo.hours.toLocaleString()}`
+                          : lockInfo.hours.toLocaleString()}
+                      </span>{" "}
+                      {t("hours")})
+                    </div>
+                  </div>
+                  <div>
+                    <span className="font-medium">
+                      {`${
+                        isLocked ? "+" : "~"
+                      }${lockInfo.blocks.toLocaleString()}`}
+                    </span>{" "}
+                    {t("blocks")}
+                  </div>
+                  <div className="col-span-2">
+                    <span className="font-medium">
+                      ~{moment(lockInfo.date).format("YYYY-MM-DD HH:mm")}
+                    </span>{" "}
+                    {t("unlock")}
+                  </div>
+                </div>
+
+                <div className="text-xs hidden sm:block text-muted-foreground mt-2 pt-2 border-t">
+                  {t("estimatedNote")}
+                </div>
+                <div className="text-xs hidden sm:block text-muted-foreground">
+                  {t("lockTips")}
+                </div>
+              </div>
+            )}
+            <Button
+              disabled={!lockInfo || isLocking}
+              className="w-full"
+              onClick={onLock}
+            >
+              {isLocking && <Loader2 className="size-4 animate-spin" />}
+              {!isLocked ? t("lockLp") : t("extend")}
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+      <Dialog open={showSigDialog} onOpenChange={setShowSigDialog}>
+        <DialogContent className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>签名</DialogTitle>
+          </DialogHeader>
+
+          <div className="rounded-md border p-3 text-sm break-all">
+            {signature}
           </div>
 
-          {lockInfo && (
-            <div className="space-y-2 p-2 bg-primary/5 rounded-md border">
-              <div className="flex items-center space-x-2 text-sm">
-                <Clock className="size-4 text-primary" />
-                <span className="font-medium">
-                  {isLocked ? t("extendDuration") : t("lockDuration")}:
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                <div className="flex items-center">
-                  <div>
-                    <span className="font-medium">
-                      {isLocked
-                        ? `${lockInfo.days.toLocaleString()}`
-                        : lockInfo.days.toLocaleString()}
-                    </span>{" "}
-                    {t("days")}
-                  </div>
-                  <div>
-                    (
-                    <span className="font-medium">
-                      {isLocked
-                        ? `${lockInfo.hours.toLocaleString()}`
-                        : lockInfo.hours.toLocaleString()}
-                    </span>{" "}
-                    {t("hours")})
-                  </div>
-                </div>
-                <div>
-                  <span className="font-medium">
-                    {`${
-                      isLocked ? "+" : "~"
-                    }${lockInfo.blocks.toLocaleString()}`}
-                  </span>{" "}
-                  {t("blocks")}
-                </div>
-                <div className="col-span-2">
-                  <span className="font-medium">
-                    ~{moment(lockInfo.date).format("YYYY-MM-DD HH:mm")}
-                  </span>{" "}
-                  {t("unlock")}
-                </div>
-              </div>
-
-              <div className="text-xs hidden sm:block text-muted-foreground mt-2 pt-2 border-t">
-                {t("estimatedNote")}
-              </div>
-              <div className="text-xs hidden sm:block text-muted-foreground">
-                {t("lockTips")}
-              </div>
-            </div>
-          )}
-          <Button
-            disabled={!lockInfo || isLocking}
-            className="w-full"
-            onClick={onLock}
-          >
-            {isLocking && <Loader2 className="size-4 animate-spin" />}
-            {!isLocked ? t("lockLp") : t("extend")}
+          <Button onClick={onCopy} className="w-full">
+            {hasCopied ? "已复制" : "复制签名"}
           </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
