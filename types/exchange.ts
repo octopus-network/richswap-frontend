@@ -83,5 +83,6 @@ export interface Position {
   userAddress: string;
   userShare: string;
   userIncomes: string;
+  lockedRevenue: string;
   lockUntil: number;
 }

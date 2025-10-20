@@ -60,7 +60,7 @@ export default function LpRow({
       </div>
 
       <div className="col-span-3">
-        {lp.lockUntil === 0 ? (
+        {lp.lockUntil === 0 || lp.lockUntil <= (latestBlock ?? 0) ? (
           <span className="text-sm text-muted-foreground">-</span>
         ) : unlockMoment === undefined ? (
           <Skeleton className="h-5 w-16" />

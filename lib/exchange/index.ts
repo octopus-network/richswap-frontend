@@ -9,6 +9,7 @@ import {
   PoolInfo,
   AddressType,
   SwapRoute,
+  Position,
 } from "@/types";
 
 import { BITCOIN, RICH_POOL } from "../constants";
@@ -43,6 +44,43 @@ export class Exchange {
       }
     });
     return poolAddress;
+  }
+
+  public static async createPoolWithTemplate(
+    coinId: string,
+    template: "onetime" | "standard" = "standard"
+  ) {
+    const poolAddress = await actor
+      .create_with_template(coinId, template)
+      .then((data: any) => {
+        if (data.Ok) {
+          return data.Ok;
+        } else {
+          throw new Error(
+            data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+          );
+        }
+      });
+    return poolAddress;
+  }
+
+  public static async lockLp(
+    address: string,
+    message: string,
+    signature: string
+  ) {
+    return await actor
+      .lock_lp(address, message, signature)
+      .then((data: any) => {
+        console.log("lock lp res", data);
+        if (data.hasOwnProperty("Ok")) {
+          return data.Ok;
+        } else {
+          throw new Error(
+            data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+          );
+        }
+      });
   }
 
   public static async getPool(
@@ -192,11 +230,14 @@ export class Exchange {
     }
   }
 
-  public static async getPosition(poolAddress: string, userAddress: string) {
+  public static async getPosition(
+    poolAddress: string,
+    userAddress: string
+  ): Promise<Position | null> {
     try {
       const [res, pool] = await Promise.all([
         actor.get_lp(poolAddress, userAddress).then((data: any) => {
-          if (data.Ok) {
+          if (data.hasOwnProperty("Ok")) {
             return data.Ok;
           } else {
             throw new Error(
@@ -211,10 +252,17 @@ export class Exchange {
         return null;
       }
 
-      const { total_share, user_incomes, user_share, lock_until } = res as {
+      const {
+        total_share,
+        user_incomes,
+        user_share,
+        locked_revenue,
+        lock_until,
+      } = res as {
         total_share: bigint;
         user_incomes: bigint;
         user_share: bigint;
+        locked_revenue: bigint;
         lock_until: number;
       };
 
@@ -249,6 +297,7 @@ export class Exchange {
         coinBAmount,
         totalShare: total_share.toString(),
         userIncomes: user_incomes.toString(),
+        lockedRevenue: locked_revenue.toString(),
         lockUntil: lock_until,
       };
     } catch (err: any) {
@@ -419,6 +468,68 @@ export class Exchange {
         errorMessage: error instanceof Error ? error.message : "Unknown Error",
       };
     }
+  }
+
+  public static async preClaimRevenue(
+    pool: PoolInfo,
+    userAddress: string
+  ): Promise<{
+    utxos: UnspentOutput[];
+    nonce: string;
+    output: string;
+  } | null> {
+    const res = await actor
+      .pre_claim_revenue(pool.address, userAddress)
+      .then((data: any) => {
+        console.log("pre claim revenue", data);
+        if (data.Ok) {
+          return data.Ok as {
+            claim_sats: bigint;
+            input: {
+              coins: [
+                {
+                  id: string;
+                  value: bigint;
+                }
+              ];
+              sats: bigint;
+              txid: string;
+              vout: number;
+            };
+            nonce: bigint;
+          };
+        } else {
+          throw new Error(
+            data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+          );
+        }
+      });
+
+    const { output } = getP2trAressAndScript(pool.key);
+
+    const rune = res.input.coins[0];
+
+    const utxo: UnspentOutput = {
+      txid: res.input.txid,
+      vout: res.input.vout,
+      satoshis: res.input.sats.toString(),
+      address: pool.address,
+      pubkey: "",
+      addressType: AddressType.P2TR,
+      scriptPk: output,
+      runes: [
+        {
+          id: rune.id,
+          amount: rune.value.toString(),
+        },
+      ],
+    };
+
+    return {
+      utxos: [utxo],
+      nonce: res.nonce.toString(),
+      output: res.claim_sats.toString(),
+    };
   }
 
   public static async preSelfDonate(): Promise<DonateQuote | undefined> {

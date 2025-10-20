@@ -73,6 +73,7 @@ export function ManageLiquidityModal({
           </div>
           <DepositContent
             pool={poolInfo}
+            position={position}
             setOnReview={setOnReview}
             onSuccess={() => {
               setOpen(false);

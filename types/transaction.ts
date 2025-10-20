@@ -22,6 +22,7 @@ export enum TransactionType {
   WITHDRAW_LIQUIDITY,
   DONATE,
   CLAIM_PROTOCOL_FEE_AND_DONATE,
+  CLAIM_REVENUE,
 }
 
 export interface TransactionInfo {
