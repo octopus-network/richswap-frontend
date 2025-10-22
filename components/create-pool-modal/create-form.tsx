@@ -86,12 +86,10 @@ export function CreateForm({
     }
     try {
       setIsCreating(true);
-      // const poolAddress = await Exchange.createPoolWithTemplate(
-      //   coinB.id,
-      //   template
-      // );
-
-      const poolAddress = await Exchange.createPool(coinB.id);
+      const poolAddress = await Exchange.createPoolWithTemplate(
+        coinB.id,
+        template
+      );
 
       setIsCreating(false);
       onNextStep(poolAddress);
