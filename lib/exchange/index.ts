@@ -51,7 +51,9 @@ export class Exchange {
     template: "onetime" | "standard" = "standard"
   ) {
     const poolAddress = await actor
-      .create_with_template(coinId, template)
+      .create_with_template(coinId, {
+        [template]: null,
+      })
       .then((data: any) => {
         if (data.Ok) {
           return data.Ok;
