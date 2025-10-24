@@ -50,6 +50,7 @@ export type RawBtcUtxo = {
   satoshis: string;
   confirmations: bigint;
   height: bigint;
+  mempool?: boolean;
   runes: {
     rune_id: string;
     amount: string;
