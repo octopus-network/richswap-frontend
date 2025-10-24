@@ -30,9 +30,30 @@ export class Maestro {
         };
         data: RawBtcUtxo[];
       }>(
-        `/addresses/${address}/utxos?filter_dust=true&filter_dust_threshold=547&exclude_metaprotocols=true&order=asc&count=100${cursor ? `&cursor=${cursor}` : ""}`
+        `/addresses/${address}/utxos?filter_dust=true&filter_dust_threshold=547&exclude_metaprotocols=true&order=asc&count=100${
+          cursor ? `&cursor=${cursor}` : ""
+        }`
       )
       .then((res) => res.data);
+
+    return res;
+  }
+
+  async utxosByAddressMempoolAware(address: string, cursor?: string | null) {
+    const res = await this.axios
+      .get<{
+        next_cursor: string | null;
+        last_updated: {
+          block_hash: string;
+          block_height: bigint;
+        };
+        data: RawBtcUtxo[];
+      }>(
+        `/mempool/addresses/${address}/utxos?filter_dust=true&filter_dust_threshold=547&order=asc&count=100${cursor ? `&cursor=${cursor}` : ""}`
+      )
+      .then((res) => res.data);
+
+    console.log("utxosByAddressMempoolAware", res);
 
     return res;
   }

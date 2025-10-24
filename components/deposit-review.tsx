@@ -44,6 +44,7 @@ export function DepositReview({
   coinAAmount,
   coinBAmount,
   poolAddress,
+  poolTemplate = "standard",
   poolUtxos,
   onSuccess,
   onBack,
@@ -55,6 +56,7 @@ export function DepositReview({
   coinB: Coin | null;
   coinAAmount: string;
   poolAddress: string;
+  poolTemplate: "standard" | "onetime";
   poolUtxos?: UnspentOutput[];
   coinBAmount: string;
   onSuccess: () => void;
@@ -270,7 +272,10 @@ export function DepositReview({
               pool_utxo_received: poolReceiveUtxos,
               output_coins: outputCoins,
               pool_address: poolAddress,
-              action_params: lockBlocks.toString(),
+              action_params:
+                poolTemplate === "onetime"
+                  ? "4294967295"
+                  : lockBlocks.toString(),
               nonce: BigInt(nonce),
             },
           ],

@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     const data = [];
 
     do {
-      const res = await maestro.utxosByAddress(address, cursor);
+      const res = await maestro.utxosByAddressMempoolAware(address, cursor);
       data.push(...res.data);
       cursor = res.next_cursor;
     } while (cursor !== null);
