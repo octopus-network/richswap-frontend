@@ -56,7 +56,7 @@ export function DepositReview({
   coinB: Coin | null;
   coinAAmount: string;
   poolAddress: string;
-  poolTemplate: "standard" | "onetime";
+  poolTemplate?: "standard" | "onetime";
   poolUtxos?: UnspentOutput[];
   coinBAmount: string;
   onSuccess: () => void;
