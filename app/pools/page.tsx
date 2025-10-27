@@ -7,6 +7,7 @@ import {
   usePoolsTrades,
   usePoolsTvl,
   usePoolsVolume,
+  usePools7DApr,
 } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCoinPrice } from "@/hooks/use-prices";
@@ -28,7 +29,7 @@ import { useTranslations } from "next-intl";
 import Decimal from "decimal.js";
 import { Button } from "@/components/ui/button";
 
-type SortField = "tvl" | "fee" | "volume" | "yield" | "default";
+type SortField = "tvl" | "fee" | "volume" | "yield" | "default" | "apr";
 type SortDirection = "asc" | "desc";
 
 export default function Pools() {
@@ -38,6 +39,9 @@ export default function Pools() {
   const poolsFee = usePoolsFee();
   const btcPrice = useCoinPrice(BITCOIN.id);
   const poolsVolume = usePoolsVolume();
+
+  const pools7DApr = usePools7DApr();
+
   const t = useTranslations("Pools");
 
   const [sortField, setSortField] = useState<SortField>("default");
@@ -87,19 +91,23 @@ export default function Pools() {
           bValue =
             poolsVolume?.find((p) => p.pool_address === b.address)?.volume ?? 0;
           break;
-        case "yield":
-          const aTvl = poolsTvl[a.key] ?? 0;
-          const bTvl = poolsTvl[b.key] ?? 0;
-          const aFee = poolsFee[a.key] ?? 0;
-          const bFee = poolsFee[b.key] ?? 0;
-          aValue = aTvl === 0 ? 0 : (aFee * 100) / aTvl;
-          bValue = bTvl === 0 ? 0 : (bFee * 100) / bTvl;
+        case "apr":
+          aValue = pools7DApr[a.key] ?? 0;
+          bValue = pools7DApr[b.key] ?? 0;
           break;
       }
 
       return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
     });
-  }, [poolList, sortField, sortDirection, poolsTvl, poolsFee, poolsVolume]);
+  }, [
+    poolList,
+    sortField,
+    sortDirection,
+    poolsTvl,
+    pools7DApr,
+    poolsFee,
+    poolsVolume,
+  ]);
 
   const totalPoolsTvl = useMemo(
     () => Object.values(poolsTvl).reduce((total, curr) => total + curr, 0),
@@ -372,10 +380,10 @@ export default function Pools() {
                 variant="ghost"
                 size="sm"
                 className="h-auto p-0 text-muted-foreground hover:text-foreground font-normal"
-                onClick={() => handleSort("yield")}
+                onClick={() => handleSort("apr")}
               >
-                <span>{t("yieldTvl")}</span>
-                <SortIcon field="yield" />
+                <span>{t("apr")}</span>
+                <SortIcon field="apr" />
               </Button>
             </div>
 

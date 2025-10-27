@@ -64,6 +64,7 @@
     "trades": "Trades",
     "createPool": "Create Pool",
     "yieldTvl": "Yield/TVL",
+    "apr": "APR(7d)",
     "bitcoin": "Bitcoin",
     "rune": "Rune",
     "selectRune": "Select Rune",

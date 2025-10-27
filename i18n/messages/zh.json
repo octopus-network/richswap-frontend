@@ -65,6 +65,7 @@
     "trades": "交易数",
     "createPool": "创建资金池",
     "yieldTvl": "收益/TVL",
+    "apr": "收益率(7d)",
     "bitcoin": "比特币",
     "rune": "符文",
     "selectRune": "选择符文",
