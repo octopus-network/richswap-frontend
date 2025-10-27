@@ -106,7 +106,7 @@ export function usePools7DApr() {
       tvl = (tvl * Math.pow(10, 8)) / btcPrice;
 
       const lpFee = Math.round(
-        (volume7d.find((v) => v.pool_address === address)?.volume ?? 0) * 0.003
+        (volume7d.find((v) => v.pool_address === address)?.volume ?? 0) * 0.009
       );
 
       const donateVolume =
