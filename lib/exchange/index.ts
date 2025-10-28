@@ -151,6 +151,8 @@ export class Exchange {
       coinADonation: attributes.total_btc_donation.toString(),
       coinBDonation: attributes.total_rune_donation.toString(),
       protocolRevenue: attributes.protocol_revenue.toString(),
+      lpFeeRate: attributes.lp_fee_rate,
+      protocolFeeRate: attributes.protocol_fee_rate,
       utxos: [
         {
           txid: utxo.txid,
@@ -228,6 +230,8 @@ export class Exchange {
         coinADonation: attributes.total_btc_donation.toString(),
         coinBDonation: attributes.total_rune_donation.toString(),
         protocolRevenue: attributes.protocol_revenue.toString(),
+        lpFeeRate: attributes.lp_fee_rate,
+        protocolFeeRate: attributes.protocol_fee_rate,
       };
     }
   }

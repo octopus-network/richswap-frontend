@@ -69,6 +69,8 @@ export type PoolInfo = {
   coinADonation: string;
   coinBDonation: string;
   lpFee: string;
+  lpFeeRate: number;
+  protocolFeeRate: number;
   protocolRevenue: string;
   utxos?: UnspentOutput[];
 };

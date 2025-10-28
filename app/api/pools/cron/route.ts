@@ -166,6 +166,8 @@ export async function GET() {
           : "0",
         coinADonation: attributesJson.total_btc_donation.toString(),
         coinBDonation: attributesJson.total_rune_donation.toString(),
+        lpFeeRate: attributesJson.lp_fee_rate,
+        protocolFeeRate: attributesJson.protocol_fee_rate,
       });
     }
 
