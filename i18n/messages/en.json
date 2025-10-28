@@ -54,7 +54,8 @@
     "cancel": "Cancel",
     "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
     "marketCap": "Market Cap",
-    "tvl": "TVL"
+    "tvl": "TVL",
+    "fee": "Fee"
   },
   "Pools": {
     "pool": "Pool",

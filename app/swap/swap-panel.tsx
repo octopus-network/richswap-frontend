@@ -229,6 +229,30 @@ export function SwapPanel({
     return impacts;
   }, [swap, btcPrice]);
 
+  const fee = useMemo(() => {
+    if (!swap?.routes?.length || !btcPrice) {
+      return undefined;
+    }
+    const [route0, route1] = swap.routes;
+
+    let fee =
+      ((route0.pool.lpFeeRate + route0.pool.protocolFeeRate) *
+        Number(route0.outputAmount)) /
+      1000000;
+
+    if (route1) {
+      fee +=
+        ((route1.pool.lpFeeRate + route1.pool.protocolFeeRate) *
+          Number(route1.outputAmount)) /
+        1000000;
+    }
+
+    return {
+      fee: (fee * btcPrice) / Math.pow(10, 8),
+      reeInSats: fee,
+    };
+  }, [swap, btcPrice]);
+
   return (
     <>
       <div className="mt-4">
@@ -380,6 +404,18 @@ export function SwapPanel({
                 </div>
               )}
             </>
+          )}
+          {fee && (
+            <div className="justify-between flex">
+              <span className="text-muted-foreground">{t("fee")}</span>
+              <div className="flex flex-col items-end">
+                <span>{formatNumber(fee.reeInSats, true)} sats</span>
+                <span className="text-muted-foreground">
+                  {" "}
+                  ${formatNumber(fee.fee)}
+                </span>
+              </div>
+            </div>
           )}
           {swap?.routes?.length ? (
             <div className="justify-between flex">

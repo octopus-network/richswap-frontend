@@ -69,6 +69,11 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
     [poolVolumeInSats, btcPrice]
   );
 
+  const poolFeeRate = useMemo(
+    () => (pool.lpFeeRate + pool.protocolFeeRate) / 10000,
+    [pool]
+  );
+
   return (
     <>
       <Link href={`/pools/${poolAddress}`}>
@@ -79,8 +84,11 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
             </div>
             <div className="hidden sm:inline-flex flex-col space-y-1 w-full group">
               <div className="flex w-full items-center space-x-1">
-                <span className="font-semibold text-sm truncate max-w-[85%]">
+                <span className="font-semibold text-sm truncate max-w-[70%]">
                   {pool.name}
+                </span>
+                <span className="max-w-[25%] text-xs px-1 py-0.5 border border-primary/30 rounded-md text-primary">
+                  {poolFeeRate.toFixed(2)}%
                 </span>
               </div>
               <span className="text-xs text-muted-foreground truncate">
