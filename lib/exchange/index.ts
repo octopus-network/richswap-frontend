@@ -771,6 +771,8 @@ export class Exchange {
 
     const route = {
       pool,
+      inputCoin,
+      outputCoin,
       inputAmount,
       outputAmount: output.value.toString(),
       poolUtxos: [utxo],

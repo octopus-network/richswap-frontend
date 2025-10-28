@@ -14,6 +14,8 @@ export type SwapRoute = {
   pool: PoolInfo;
   nonce: string;
   poolUtxos: UnspentOutput[];
+  inputCoin: Coin;
+  outputCoin: Coin;
   inputAmount: string;
   outputAmount: string;
   runePriceInSats: number;
