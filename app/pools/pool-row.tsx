@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/utils";
 
 import { useCoinPrice } from "@/hooks/use-prices";
-import Circle from "react-circle";
 
 import { CoinIcon } from "@/components/coin-icon";
 import { BITCOIN } from "@/lib/constants";
@@ -174,16 +173,6 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
                     <span>
                       {Number(poolApr) === 0 ? "-" : `${poolApr.toFixed(2)}%`}
                     </span>
-                    {Number(poolApr) !== 0 && (
-                      <Circle
-                        progress={Number(poolApr)}
-                        size="18"
-                        lineWidth="60"
-                        progressColor="#f6d75a"
-                        bgColor="#4c9aff"
-                        showPercentage={false}
-                      />
-                    )}
                   </>
                 ) : (
                   "-"
