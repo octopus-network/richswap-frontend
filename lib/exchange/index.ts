@@ -51,7 +51,9 @@ export class Exchange {
     template: "onetime" | "standard" = "standard"
   ) {
     const poolAddress = await actor
-      .create_with_template(coinId, template)
+      .create_with_template(coinId, {
+        [template]: null,
+      })
       .then((data: any) => {
         if (data.Ok) {
           return data.Ok;
@@ -149,6 +151,8 @@ export class Exchange {
       coinADonation: attributes.total_btc_donation.toString(),
       coinBDonation: attributes.total_rune_donation.toString(),
       protocolRevenue: attributes.protocol_revenue.toString(),
+      lpFeeRate: attributes.lp_fee_rate,
+      protocolFeeRate: attributes.protocol_fee_rate,
       utxos: [
         {
           txid: utxo.txid,
@@ -226,6 +230,8 @@ export class Exchange {
         coinADonation: attributes.total_btc_donation.toString(),
         coinBDonation: attributes.total_rune_donation.toString(),
         protocolRevenue: attributes.protocol_revenue.toString(),
+        lpFeeRate: attributes.lp_fee_rate,
+        protocolFeeRate: attributes.protocol_fee_rate,
       };
     }
   }
@@ -765,6 +771,8 @@ export class Exchange {
 
     const route = {
       pool,
+      inputCoin,
+      outputCoin,
       inputAmount,
       outputAmount: output.value.toString(),
       poolUtxos: [utxo],

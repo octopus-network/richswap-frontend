@@ -55,7 +55,8 @@
     "retry": "重试",
     "FETCH_UTXO_PROOF_FAILED": "获取 UTXO 证明失败",
     "marketCap": "市值",
-    "tvl": "总锁仓价值 (TVL)"
+    "tvl": "总锁仓价值 (TVL)",
+    "fee": "手续费"
   },
   "Pools": {
     "pool": "池子",
@@ -65,6 +66,7 @@
     "trades": "交易数",
     "createPool": "创建资金池",
     "yieldTvl": "收益/TVL",
+    "apr": "收益率(7d)",
     "bitcoin": "比特币",
     "rune": "符文",
     "selectRune": "选择符文",
@@ -129,7 +131,7 @@
     "failed": "失败",
     "retry": "重试",
     "FETCH_UTXO_PROOF_FAILED": "获取 UTXO 证明失败",
-    "claimTips": "可领取：> {amount} sats",
+    "claimTips": "可领取：< {amount} sats",
     "volume": "交易量(24小时)",
     "lpLockedUtil": "流动性已锁定至",
     "unlockTime": "解锁时间",

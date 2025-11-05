@@ -54,7 +54,8 @@
     "cancel": "Cancel",
     "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
     "marketCap": "Market Cap",
-    "tvl": "TVL"
+    "tvl": "TVL",
+    "fee": "Fee"
   },
   "Pools": {
     "pool": "Pool",
@@ -64,6 +65,7 @@
     "trades": "Trades",
     "createPool": "Create Pool",
     "yieldTvl": "Yield/TVL",
+    "apr": "APR(7d)",
     "bitcoin": "Bitcoin",
     "rune": "Rune",
     "selectRune": "Select Rune",
@@ -129,7 +131,7 @@
     "claimAndDonateSuccess": "Extract and donate success",
     "retry": "Retry",
     "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
-    "claimTips": "Extractable: > {amount} sats",
+    "claimTips": "Extractable: < {amount} sats",
     "volume": "Volume(24h)",
     "lpLockedUtil": "Liquidity locked until",
     "unlockTime": "Unlock Time",

@@ -23,26 +23,26 @@ export async function GET(req: NextRequest) {
     const data = [];
 
     do {
-      const res = await maestro.utxosByAddress(address, cursor);
+      const res = await maestro.utxosByAddressMempoolAware(address, cursor);
       data.push(...res.data);
       cursor = res.next_cursor;
     } while (cursor !== null);
 
-    console.log("res", data);
-
     const addressType = getAddressType(address);
 
-    const utxos = data.map((utxo) => ({
-      pubkey,
-      addressType,
-      txid: utxo.txid,
-      vout: utxo.vout,
-      satoshis: utxo.satoshis.toString(),
-      scriptPk: utxo.script_pubkey,
-      address,
-      height: utxo.height,
-      runes: [],
-    }));
+    const utxos = data
+      .filter((utxo) => utxo.mempool === false)
+      .map((utxo) => ({
+        pubkey,
+        addressType,
+        txid: utxo.txid,
+        vout: utxo.vout,
+        satoshis: utxo.satoshis.toString(),
+        scriptPk: utxo.script_pubkey,
+        address,
+        height: utxo.height,
+        runes: [],
+      }));
 
     return NextResponse.json({
       success: true,

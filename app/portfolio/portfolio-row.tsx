@@ -87,7 +87,10 @@ export function PortfolioRow({ position }: { position: Position }) {
   );
 
   const positionYield = useMemo(
-    () => (position ? position.userIncomes : undefined),
+    () =>
+      position
+        ? Number(position.userIncomes) - Number(position.lockedRevenue)
+        : undefined,
     [position]
   );
 
