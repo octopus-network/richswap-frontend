@@ -14,6 +14,7 @@ import { PopupStatus, useAddPopup } from "@/store/popups";
 import { getCoinSymbol } from "@/lib/utils";
 
 import { useTranslations } from "next-intl";
+import { LockLpSelector } from "../lock-lp-selector";
 
 export function CreateForm({
   coinA,
@@ -25,6 +26,7 @@ export function CreateForm({
   setCoinBAmount,
   onNextStep,
   onPoolExsists,
+  setLockBlocks,
 }: {
   coinA: Coin;
   coinB: Coin | null;
@@ -144,7 +146,9 @@ export function CreateForm({
         onSelectCoin={setCoinB}
         onUserInput={setCoinBAmount}
       />
-
+      <div className="flex items-start justify-between mt-4">
+        <LockLpSelector onLockChange={setLockBlocks} />
+      </div>
       <div className="mt-6">
         {!address ? (
           <Button
