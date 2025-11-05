@@ -131,7 +131,7 @@
     "failed": "失败",
     "retry": "重试",
     "FETCH_UTXO_PROOF_FAILED": "获取 UTXO 证明失败",
-    "claimTips": "可领取：> {amount} sats",
+    "claimTips": "可领取：< {amount} sats",
     "volume": "交易量(24小时)",
     "lpLockedUtil": "流动性已锁定至",
     "unlockTime": "解锁时间",
