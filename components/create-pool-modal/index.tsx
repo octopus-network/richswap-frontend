@@ -25,6 +25,9 @@ export function CreatePoolModal({
   const [poolUtxos, setPoolUtxos] = useState<UnspentOutput[]>([]);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [lockBlocks, setLockBlocks] = useState(0);
+  const [poolTemplate, setPoolTemplate] = useState<"standard" | "onetime">(
+    "standard"
+  );
 
   useEffect(() => {
     if (!open) {
@@ -35,6 +38,7 @@ export function CreatePoolModal({
 
   const onNextStep = (
     address: string,
+    template: "standard" | "onetime",
     nonce = BigInt(0),
     utxos: UnspentOutput[] = []
   ) => {
@@ -42,6 +46,7 @@ export function CreatePoolModal({
     setShowReview(true);
     setNonce(nonce);
     setPoolUtxos(utxos);
+    setPoolTemplate(template);
   };
 
   const onPoolExists = (pool: PoolInfo) => {
@@ -70,6 +75,7 @@ export function CreatePoolModal({
                 coinA={coinA}
                 coinB={coinB}
                 poolAddress={poolAddress}
+                poolTemplate={poolTemplate}
                 poolUtxos={poolUtxos}
                 coinAAmount={coinAAmount}
                 coinBAmount={coinBAmount}

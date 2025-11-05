@@ -2,12 +2,11 @@ import { PoolInfo } from "@/types";
 
 import { useMemo } from "react";
 import { ChevronRight } from "lucide-react";
-import { usePoolFee, usePoolTvl } from "@/hooks/use-pools";
+import { usePoolApr, usePoolFee, usePoolTvl } from "@/hooks/use-pools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/utils";
 
 import { useCoinPrice } from "@/hooks/use-prices";
-import Circle from "react-circle";
 
 import { CoinIcon } from "@/components/coin-icon";
 import { BITCOIN } from "@/lib/constants";
@@ -16,21 +15,22 @@ import { usePoolVolume } from "@/hooks/use-pools";
 
 export function PoolRow({ pool }: { pool: PoolInfo }) {
   const poolTvl = usePoolTvl(pool.key);
+  const poolApr = usePoolApr(pool.key);
   const poolFee = usePoolFee(pool.key);
 
   const poolVolumeInSats = usePoolVolume(pool.address);
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
-  const yieldTvl = useMemo(
-    () =>
-      poolTvl === 0
-        ? 0
-        : poolTvl !== undefined && poolFee !== undefined
-        ? ((poolFee * 100) / poolTvl).toFixed(2)
-        : undefined,
-    [poolTvl, poolFee]
-  );
+  // const yieldTvl = useMemo(
+  //   () =>
+  //     poolTvl === 0
+  //       ? 0
+  //       : poolTvl !== undefined && poolFee !== undefined
+  //       ? ((poolFee * 100) / poolTvl).toFixed(2)
+  //       : undefined,
+  //   [poolTvl, poolFee]
+  // );
 
   const poolTvlInBtc = useMemo(
     () =>
@@ -68,6 +68,11 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
     [poolVolumeInSats, btcPrice]
   );
 
+  const poolFeeRate = useMemo(
+    () => (pool.lpFeeRate + pool.protocolFeeRate) / 10000,
+    [pool]
+  );
+
   return (
     <>
       <Link href={`/pools/${poolAddress}`}>
@@ -78,8 +83,11 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
             </div>
             <div className="hidden sm:inline-flex flex-col space-y-1 w-full group">
               <div className="flex w-full items-center space-x-1">
-                <span className="font-semibold text-sm truncate max-w-[85%]">
+                <span className="font-semibold text-sm truncate max-w-[70%]">
                   {pool.name}
+                </span>
+                <span className="max-w-[25%] text-xs px-1 py-0.5 border border-primary/30 rounded-md text-primary">
+                  {poolFeeRate.toFixed(2)}%
                 </span>
               </div>
               <span className="text-xs text-muted-foreground truncate">
@@ -156,23 +164,15 @@ export function PoolRow({ pool }: { pool: PoolInfo }) {
             )}
           </div>
           <div className="col-span-2 hidden md:flex">
-            {yieldTvl === undefined ? (
+            {poolApr === undefined ? (
               <Skeleton className="h-5 w-20" />
             ) : (
               <div className="flex gap-2 items-center">
-                {yieldTvl ? (
+                {poolApr ? (
                   <>
-                    <span>{Number(yieldTvl) === 0 ? "-" : `${yieldTvl}%`}</span>
-                    {Number(yieldTvl) !== 0 && (
-                      <Circle
-                        progress={Number(yieldTvl)}
-                        size="18"
-                        lineWidth="60"
-                        progressColor="#f6d75a"
-                        bgColor="#4c9aff"
-                        showPercentage={false}
-                      />
-                    )}
+                    <span>
+                      {Number(poolApr) === 0 ? "-" : `${poolApr.toFixed(2)}%`}
+                    </span>
                   </>
                 ) : (
                   "-"

@@ -68,6 +68,58 @@ export function usePoolsTvl() {
   return tvls;
 }
 
+export function usePools7DApr() {
+  const poolList = usePoolList();
+  const btcPrice = useCoinPrice(BITCOIN.id);
+  const poolsTvl = usePoolsTvl();
+
+  const { data: volume7d } = useSWR("/api/pools/volume/7d", (url: string) =>
+    axios
+      .get<{
+        data: { pool_address: string; pool_name: string; volume: number }[];
+      }>(url)
+      .then((res) => res.data.data)
+  );
+
+  const { data: donateVolume7d } = useSWR(
+    "/api/pools/donate-volume/7d",
+    (url: string) =>
+      axios
+        .get<{
+          data: { pool_address: string; pool_name: string; volume: number }[];
+        }>(url)
+        .then((res) => res.data.data)
+  );
+
+  const aprs = useMemo(() => {
+    const tmpObj: Record<string, number> = {};
+    if (!volume7d || !donateVolume7d || !poolsTvl) {
+      return tmpObj;
+    }
+    poolList.forEach(({ address, key }) => {
+      let tvl = poolsTvl[key];
+      if (tvl === 0) {
+        tmpObj[key] = 0;
+        return;
+      }
+
+      tvl = (tvl * Math.pow(10, 8)) / btcPrice;
+
+      const lpFee = Math.round(
+        (volume7d.find((v) => v.pool_address === address)?.volume ?? 0) * 0.009
+      );
+
+      const donateVolume =
+        donateVolume7d.find((v) => v.pool_address === address)?.volume ?? 0;
+
+      tmpObj[key] = ((lpFee + donateVolume) / tvl / 7) * 365 * 100;
+    });
+    return tmpObj;
+  }, [volume7d, donateVolume7d, poolList, poolsTvl, btcPrice]);
+
+  return aprs;
+}
+
 export function usePoolsTrades() {
   const { data } = useSWR(
     "/api/pools",
@@ -113,6 +165,12 @@ export function usePoolTvl(poolKey: string | undefined) {
   const tvls = usePoolsTvl();
 
   return useMemo(() => (poolKey ? tvls[poolKey] : undefined), [poolKey, tvls]);
+}
+
+export function usePoolApr(poolKey: string | undefined) {
+  const aprs = usePools7DApr();
+
+  return useMemo(() => (poolKey ? aprs[poolKey] : undefined), [poolKey, aprs]);
 }
 
 export function usePoolFee(poolKey: string | undefined) {
