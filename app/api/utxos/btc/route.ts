@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
       data: utxos,
     });
   } catch (error) {
+    console.log(error);
     return NextResponse.json({
       error:
         error instanceof Error
