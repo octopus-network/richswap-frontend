@@ -15,7 +15,8 @@ import { ExternalLink } from "lucide-react";
 import { usePoolTvl, usePoolFee } from "@/hooks/use-pools";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { BITCOIN, RUNESCAN_URL, RICH_POOL } from "@/lib/constants";
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 import {
   Tooltip,
@@ -343,6 +344,24 @@ export default function Pool() {
                         <span>{poolInfo.name}</span>
                         <ExternalLink className="text-muted-foreground size-3 group-hover:text-foreground" />
                       </Link>
+                    </div>
+                  ) : (
+                    <Skeleton className="h-6 w-24" />
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("template")}</span>
+                  {poolInfo ? (
+                    <div className="flex items-center gap-1">
+                      <Badge
+                        className={cn(
+                          poolInfo.template === "Onetime"
+                            ? "bg-red-500/10 text-red-500"
+                            : "bg-primary/10 text-primary"
+                        )}
+                      >
+                        {poolInfo.template}
+                      </Badge>
                     </div>
                   ) : (
                     <Skeleton className="h-6 w-24" />
