@@ -168,6 +168,7 @@ export async function GET() {
         coinBDonation: attributesJson.total_rune_donation.toString(),
         lpFeeRate: attributesJson.lp_fee_rate,
         protocolFeeRate: attributesJson.protocol_fee_rate,
+        template: attributesJson.template,
       });
     }
 
