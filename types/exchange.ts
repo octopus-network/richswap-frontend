@@ -75,6 +75,7 @@ export type PoolInfo = {
   protocolFeeRate: number;
   protocolRevenue: string;
   utxos?: UnspentOutput[];
+  template: "Standard" | "Onetime";
 };
 
 export interface Position {

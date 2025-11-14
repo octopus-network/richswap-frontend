@@ -172,6 +172,7 @@ export class Exchange {
             : [],
         },
       ],
+      template: attributes.template,
     };
   }
 
@@ -232,6 +233,7 @@ export class Exchange {
         protocolRevenue: attributes.protocol_revenue.toString(),
         lpFeeRate: attributes.lp_fee_rate,
         protocolFeeRate: attributes.protocol_fee_rate,
+        template: attributes.template,
       };
     }
   }

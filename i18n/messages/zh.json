@@ -138,7 +138,8 @@
     "blocks": "区块",
     "remain": "剩余",
     "standard": "标准",
-    "onetime": "一次性"
+    "onetime": "一次性",
+    "template": "模板"
   },
   "ConnectWallet": {
     "connectAWallet": "连接钱包",

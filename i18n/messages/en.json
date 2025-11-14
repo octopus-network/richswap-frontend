@@ -138,7 +138,8 @@
     "blocks": "Blocks",
     "remain": "Remain",
     "standard": "Standard",
-    "onetime": "Onetime"
+    "onetime": "Onetime",
+    "template": "Template"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
