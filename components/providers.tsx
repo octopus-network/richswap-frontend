@@ -9,7 +9,7 @@ import {
   EXCHANGE_CANISTER_ID,
   MAESTRO_API_KEY,
 } from "@/lib/constants";
-import { Network, ReeProvider } from "@omnity/ree-client-ts-sdk";
+import { Network, ReeProvider } from "@omnity/ree-client-ts-sdk/react";
 import { idlFactory } from "@/lib/dids/richswap.did";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";

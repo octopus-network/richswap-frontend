@@ -198,6 +198,7 @@
     "connectWallet": "连接钱包",
     "remain": "剩余",
     "unlocked": "未锁定",
+    "permanentlyLocked": "永久锁定",
     "days": "天",
     "hours": "小时",
     "minutes": "分钟",

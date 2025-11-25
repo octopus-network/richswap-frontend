@@ -122,7 +122,6 @@ export function DonateReview({
       !coinAAmount ||
       !coinBAmount ||
       !btcUtxos ||
-      !runeUtxos?.length ||
       !poolUtxos ||
       step !== 0
     ) {
@@ -200,7 +199,6 @@ export function DonateReview({
           toSignInputs,
           autoFinalized: false,
         });
-        console.log(signedPsbtHex);
       } else {
         const psbtBase64 = psbt.toBase64();
         const res = await signPsbt(psbtBase64);
