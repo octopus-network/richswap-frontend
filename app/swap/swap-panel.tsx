@@ -21,9 +21,17 @@ import {
   useDerivedSwapInfo,
 } from "@/store/swap/hooks";
 
-import { cn, formatCoinAmount, formatNumber, getCoinSymbol } from "@/lib/utils";
+import { usePoolList } from "@/hooks/use-pools";
+import {
+  cn,
+  ellipseMiddle,
+  formatCoinAmount,
+  formatNumber,
+  getCoinSymbol,
+} from "@/lib/utils";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN } from "@/lib/constants";
+import Link from "next/link";
 
 export function SwapPanel({
   onRuneChange,
@@ -120,6 +128,22 @@ export function SwapPanel({
     ],
     [formattedAmounts]
   );
+
+  const poolList = usePoolList();
+
+  const pools = useMemo(() => {
+    if (!coinA || !coinB) {
+      return [];
+    }
+    return (
+      coinA.id !== BITCOIN.id
+        ? [
+            poolList.find((pool) => pool.coinB.id === coinA.id),
+            poolList.find((pool) => pool.coinB.id === coinB.id),
+          ]
+        : [poolList.find((pool) => pool.coinB.id === coinB.id)]
+    ).filter((p) => !!p);
+  }, [coinA, coinB, poolList]);
 
   const coinAFiatValue = useMemo(
     () => coinAAmount * coinAPrice,
@@ -414,8 +438,8 @@ export function SwapPanel({
           {fee && (
             <div className="justify-between flex">
               <span className="text-muted-foreground">
-                {t("fee")}{" "}
-                ({fee.feeRates.map((fr) => `${fr / 10000}%`).join("+")})
+                {t("fee")} (
+                {fee.feeRates.map((fr) => `${fr / 10000}%`).join("+")})
               </span>
               <div className="flex flex-col items-end">
                 <span>{formatNumber(fee.reeInSats, true)} sats</span>
@@ -437,6 +461,28 @@ export function SwapPanel({
                 }
                 %
               </span>
+            </div>
+          ) : null}
+
+          {pools?.length ? (
+            <div className="justify-between flex">
+              <span className="text-muted-foreground">{t("involvedPools")}</span>
+              <div className="flex flex-col gap-1">
+                {pools.map((pool) => (
+                  <Link
+                    href={`/pools/${pool.address}`}
+                    key={pool.address}
+                    className="hover:underline"
+                  >
+                    <div className="flex justify-end">
+                      <span>{pool.name}</span>
+                      <span className="text-xs text-muted-foreground ml-0.5">
+                        (...{ellipseMiddle(pool.address).split("...")[1]})
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           ) : null}
         </div>

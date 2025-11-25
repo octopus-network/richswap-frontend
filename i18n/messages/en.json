@@ -55,7 +55,8 @@
     "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
     "marketCap": "Market Cap",
     "tvl": "TVL",
-    "fee": "Fee"
+    "fee": "Fee",
+    "involvedPools": "Involved Pools"
   },
   "Pools": {
     "pool": "Pool",
@@ -199,6 +200,7 @@
     "connectWallet": "Connect Wallet",
     "remain": "Remain",
     "unlocked": "Unlocked",
+    "permanentlyLocked": "Permanently Locked",
     "days": "d",
     "hours": "h",
     "minutes": "m",

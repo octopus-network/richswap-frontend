@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
 import { WALLETS } from "@/lib/constants/wallet";
 import { useEffect } from "react";
-import { useRee } from "@omnity/ree-client-ts-sdk";
+import { useRee } from "@omnity/ree-client-ts-sdk/react";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
 
 export function ConnectWalletModal() {

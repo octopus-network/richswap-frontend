@@ -3,6 +3,8 @@ import { gql, GraphQLClient } from "graphql-request";
 import { ENVIRONMENT } from "@/lib/constants";
 export const dynamic = "force-dynamic";
 
+// const reeIndexerUrl = process.env.NEXT_PUBLIC_REE_INDEXER_URL!;
+
 function resolutionToMinutes(res: string) {
   const map: Record<string, number> = {
     "1": 1,
@@ -54,6 +56,8 @@ export async function GET(req: NextRequest) {
           close
           volume
           timestamp
+          tx_lp_revenue
+          tx_protocol_revenue
         }
       }
     `;
@@ -73,6 +77,8 @@ export async function GET(req: NextRequest) {
         close: string;
         volume: number;
         timestamp: number;
+        tx_lp_revenue: number;
+        tx_protocol_revenue: number;
       }[];
     };
 
@@ -90,6 +96,8 @@ export async function GET(req: NextRequest) {
       low: number;
       close: number;
       volume: number;
+      lpRevenue: number;
+      protocolRevenue: number;
     }[] = [];
 
     const intervalMinutes = resolutionToMinutes(resolution);
@@ -102,6 +110,8 @@ export async function GET(req: NextRequest) {
         low: Number(d.low),
         close: Number(d.close),
         volume: Number(d.volume),
+        lpRevenue: Number(d.tx_lp_revenue || 0),
+        protocolRevenue: Number(d.tx_protocol_revenue || 0),
       }));
     } else {
       const intervalSeconds = intervalMinutes * 60;
@@ -115,6 +125,8 @@ export async function GET(req: NextRequest) {
           low: number;
           close: number;
           volume: number;
+          lpRevenue: number;
+          protocolRevenue: number;
           firstTimestamp: number;
           lastTimestamp: number;
           dataPoints: Array<{
@@ -124,13 +136,24 @@ export async function GET(req: NextRequest) {
             low: string;
             close: string;
             volume: number;
+            lpRevenue: number;
+            protocolRevenue: number;
           }>;
         }
       >();
 
       let bucketCount = 0;
       for (const item of items) {
-        const { timestamp, open, high, low, close, volume } = item;
+        const {
+          timestamp,
+          open,
+          high,
+          low,
+          close,
+          volume,
+          tx_lp_revenue,
+          tx_protocol_revenue,
+        } = item;
 
         const bucket =
           Math.floor(timestamp / intervalSeconds) * intervalSeconds;
@@ -147,14 +170,36 @@ export async function GET(req: NextRequest) {
             low: Number(low),
             close: Number(close),
             volume: Number(volume),
+            lpRevenue: Number(tx_lp_revenue || 0),
+            protocolRevenue: Number(tx_protocol_revenue || 0),
             firstTimestamp: timestamp,
             lastTimestamp: timestamp,
-            dataPoints: [{ timestamp, open, high, low, close, volume }],
+            dataPoints: [
+              {
+                timestamp,
+                open,
+                high,
+                low,
+                close,
+                volume,
+                lpRevenue: tx_lp_revenue || 0,
+                protocolRevenue: tx_protocol_revenue || 0,
+              },
+            ],
           });
         } else {
           const g = grouped.get(bucket)!;
 
-          g.dataPoints.push({ timestamp, open, high, low, close, volume });
+          g.dataPoints.push({
+            timestamp,
+            open,
+            high,
+            low,
+            close,
+            volume,
+            lpRevenue: tx_lp_revenue || 0,
+            protocolRevenue: tx_protocol_revenue || 0,
+          });
 
           g.dataPoints.sort((a, b) => a.timestamp - b.timestamp);
 
@@ -166,6 +211,14 @@ export async function GET(req: NextRequest) {
           g.high = Math.max(...g.dataPoints.map((p) => Number(p.high)));
           g.low = Math.min(...g.dataPoints.map((p) => Number(p.low)));
           g.volume = g.dataPoints.reduce((sum, p) => sum + Number(p.volume), 0);
+          g.lpRevenue = g.dataPoints.reduce(
+            (sum, p) => sum + Number(p.lpRevenue),
+            0
+          );
+          g.protocolRevenue = g.dataPoints.reduce(
+            (sum, p) => sum + Number(p.protocolRevenue),
+            0
+          );
           g.firstTimestamp = firstPoint.timestamp;
           g.lastTimestamp = lastPoint.timestamp;
         }
@@ -179,6 +232,8 @@ export async function GET(req: NextRequest) {
           low: item.low,
           close: item.close,
           volume: item.volume,
+          lpRevenue: item.lpRevenue,
+          protocolRevenue: item.protocolRevenue,
         }))
         .sort((a, b) => a.time - b.time);
     }
