@@ -30,3 +30,5 @@ export const CLAIMABLE_PROTOCOL_FEE_THRESHOLD =
   NETWORK === "mainnet" ? 10_000 : 546;
 
 export const BITCOIN_BLOCK_TIME_MINUTES = 10;
+
+export const PERMANENT_LOCK_BLOCKS = 4294967295;

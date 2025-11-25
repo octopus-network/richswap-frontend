@@ -21,12 +21,13 @@ import {
   BITCOIN,
   RUNESCAN_URL,
   BITCOIN_BLOCK_TIME_MINUTES,
+  PERMANENT_LOCK_BLOCKS,
 } from "@/lib/constants";
 import { useTranslations } from "next-intl";
 import LockLpButton from "./lock-lp-button";
 import { Button } from "@/components/ui/button";
 import { Exchange } from "@/lib/exchange";
-import { useRee } from "@omnity/ree-client-ts-sdk";
+import { useRee } from "@omnity/ree-client-ts-sdk/react";
 import { useAddPopup, PopupStatus } from "@/store/popups";
 import { useAddTransaction } from "@/store/transactions";
 import { TransactionStatus, TransactionType } from "@/types";
@@ -50,6 +51,8 @@ export function PortfolioRow({ position }: { position: Position }) {
   const { signPsbt, paymentAddress } = useLaserEyes();
 
   const { createTransaction } = useRee();
+
+  console.log("position", position);
 
   useEffect(() => {}, [position]);
 
@@ -101,7 +104,7 @@ export function PortfolioRow({ position }: { position: Position }) {
 
   const positionYieldValue = useMemo(
     () =>
-      positionYield && btcPrice
+      positionYield !== undefined && btcPrice !== undefined
         ? new Decimal(positionYield)
             .mul(btcPrice)
             .div(Math.pow(10, 8))
@@ -341,9 +344,13 @@ export function PortfolioRow({ position }: { position: Position }) {
           )}
         </div>
         <div className="col-span-3">
-          <div className="flex items-center flex-col justify-center sm:flex-row gap-2">
-            {position.lockUntil === 0 ||
-            (latestBlock && latestBlock >= position.lockUntil) ? (
+          <div className="flex items-center flex-col sm:flex-row gap-2">
+            {position.lockUntil === PERMANENT_LOCK_BLOCKS ? (
+              <span className="text-sm text-muted-foreground">
+                {t("permanentlyLocked")}
+              </span>
+            ) : position.lockUntil === 0 ||
+              (latestBlock && latestBlock >= position.lockUntil) ? (
               <span className="text-sm text-muted-foreground">
                 {t("unlocked")}
               </span>
@@ -359,7 +366,9 @@ export function PortfolioRow({ position }: { position: Position }) {
                 </span>
               </div>
             )}
-            <LockLpButton poolAddress={poolAddress} position={position} />
+            {position.lockUntil !== PERMANENT_LOCK_BLOCKS && (
+              <LockLpButton poolAddress={poolAddress} position={position} />
+            )}
           </div>
         </div>
         <div className="col-span-2">
@@ -378,7 +387,7 @@ export function PortfolioRow({ position }: { position: Position }) {
                     size="sm"
                     onClick={onClaim}
                     disabled={
-                      isClaiming || Number(position.lockedRevenue) < 1000
+                      isClaiming || Number(position.lockedRevenue) < 10000
                     }
                   >
                     {isClaiming ? (

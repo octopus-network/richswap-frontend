@@ -29,7 +29,7 @@ import { useTranslations } from "next-intl";
 import { formatCoinAmount, getCoinSymbol } from "@/lib/utils";
 import { ManageLiquidityPanel } from "./manage-liquidity-panel";
 import Decimal from "decimal.js";
-import { useRee } from "@omnity/ree-client-ts-sdk";
+import { useRee } from "@omnity/ree-client-ts-sdk/react";
 
 import { TransactionStatus, TransactionType, DonateState } from "@/types";
 import { PopupStatus, useAddPopup } from "@/store/popups";

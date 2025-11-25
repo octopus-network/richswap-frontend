@@ -73,10 +73,10 @@ export function usePools7DApr() {
   const btcPrice = useCoinPrice(BITCOIN.id);
   const poolsTvl = usePoolsTvl();
 
-  const { data: volume7d } = useSWR("/api/pools/volume/7d", (url: string) =>
+  const { data: lpFee7d } = useSWR("/api/pools/lp-fee/7d", (url: string) =>
     axios
       .get<{
-        data: { pool_address: string; pool_name: string; volume: number }[];
+        data: { token: string; lp_fee: number; protocol_fee: number }[];
       }>(url)
       .then((res) => res.data.data)
   );
@@ -93,10 +93,10 @@ export function usePools7DApr() {
 
   const aprs = useMemo(() => {
     const tmpObj: Record<string, number> = {};
-    if (!volume7d || !donateVolume7d || !poolsTvl) {
+    if (!lpFee7d || !donateVolume7d || !poolsTvl) {
       return tmpObj;
     }
-    poolList.forEach(({ address, key }) => {
+    poolList.forEach(({ address, key, coinB }) => {
       let tvl = poolsTvl[key];
       if (tvl === 0) {
         tmpObj[key] = 0;
@@ -105,9 +105,7 @@ export function usePools7DApr() {
 
       tvl = (tvl * Math.pow(10, 8)) / btcPrice;
 
-      const lpFee = Math.round(
-        (volume7d.find((v) => v.pool_address === address)?.volume ?? 0) * 0.009
-      );
+      const lpFee = lpFee7d.find((v) => v.token === coinB.name)?.lp_fee ?? 0;
 
       const donateVolume =
         donateVolume7d.find((v) => v.pool_address === address)?.volume ?? 0;
@@ -115,7 +113,7 @@ export function usePools7DApr() {
       tmpObj[key] = ((lpFee + donateVolume) / tvl / 7) * 365 * 100;
     });
     return tmpObj;
-  }, [volume7d, donateVolume7d, poolList, poolsTvl, btcPrice]);
+  }, [lpFee7d, donateVolume7d, poolList, poolsTvl, btcPrice]);
 
   return aprs;
 }

@@ -29,11 +29,11 @@ export function AccountSheetContent() {
         <div className="px-4 py-3 rounded-sm flex items-center justify-between">
           <div className="flex items-center">
             <Image
-              alt={WALLETS[provider]?.name ?? ""}
+              alt={provider ? WALLETS[provider]?.name ?? "" : ""}
               width={64}
               height={64}
               className="size-7 rounded-full"
-              src={WALLETS[provider]?.icon ?? ""}
+              src={provider ? WALLETS[provider]?.icon ?? "" : ""}
             />
             <div className="flex flex-col justify-start ml-2">
               <span className="font-semibold">
