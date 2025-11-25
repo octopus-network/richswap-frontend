@@ -382,7 +382,7 @@ export function PortfolioRow({ position }: { position: Position }) {
             </Button>
             {
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <Button
                     size="sm"
                     onClick={onClaim}
