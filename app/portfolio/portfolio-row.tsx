@@ -52,8 +52,6 @@ export function PortfolioRow({ position }: { position: Position }) {
 
   const { createTransaction } = useRee();
 
-  console.log("position", position);
-
   useEffect(() => {}, [position]);
 
   const positionPercentage = useMemo(
@@ -174,15 +172,7 @@ export function PortfolioRow({ position }: { position: Position }) {
         poolAddress: poolAddress,
         poolUtxos: preClaimRes.utxos,
         actionParams: paymentAddress,
-        inputCoins: [
-          {
-            from: poolAddress,
-            coin: {
-              id: BITCOIN.id,
-              value: BigInt(preClaimRes.output),
-            },
-          },
-        ],
+        inputCoins: [],
         outputCoins: [
           {
             to: paymentAddress,
