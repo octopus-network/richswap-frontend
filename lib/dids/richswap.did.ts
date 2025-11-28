@@ -80,6 +80,7 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     user_share: IDL.Nat,
     locked_revenue: IDL.Nat64,
     user_incomes: IDL.Nat64,
+    locked_revenue_claimed: IDL.Nat64,
     lock_until: IDL.Nat32,
   });
   const Result_4 = IDL.Variant({

@@ -264,12 +264,14 @@ export class Exchange {
         total_share,
         user_incomes,
         user_share,
+        locked_revenue_claimed,
         locked_revenue,
         lock_until,
       } = res as {
         total_share: bigint;
         user_incomes: bigint;
         user_share: bigint;
+        locked_revenue_claimed: bigint;
         locked_revenue: bigint;
         lock_until: number;
       };
@@ -305,6 +307,7 @@ export class Exchange {
         coinBAmount,
         totalShare: total_share.toString(),
         userIncomes: user_incomes.toString(),
+        lockedRevenueClaimed: locked_revenue_claimed.toString(),
         lockedRevenue: locked_revenue.toString(),
         lockUntil: lock_until,
       };
