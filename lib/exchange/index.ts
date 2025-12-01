@@ -764,8 +764,6 @@ export class Exchange {
       )
       .toNumber();
 
-    console.log("output", output);
-
     if (inputCoinIsBitcoin) {
       if (Number(formatCoinAmount(inputAmount, BITCOIN)) < 0.0001) {
         throw new Error("Too small funds");

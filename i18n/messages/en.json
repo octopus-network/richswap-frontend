@@ -216,7 +216,8 @@
     "compounded": "Compounded",
     "claim": "Claim",
     "claimable": "Claimable",
-    "claimableSats": "Claimable"
+    "claimableSats": "Claimable",
+    "claimed": "Claimed"
   },
   "SelectCoin": {
     "selectCoin": "Select Coin",

@@ -210,7 +210,8 @@
     "compounded": "复合收益",
     "claim": "提取收益",
     "claimable": "可提取",
-    "claimableSats": "可提取的"
+    "claimableSats": "可提取的",
+    "claimed": "已提取"
   },
   "SelectCoin": {
     "selectCoin": "选择代币",

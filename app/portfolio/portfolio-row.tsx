@@ -337,6 +337,11 @@ export function PortfolioRow({ position }: { position: Position }) {
                   {": "}
                   {formatNumber(position.lockedRevenue, true)} sats
                 </p>
+                <p>
+                  {t("claimed")}
+                  {": "}
+                  {formatNumber(position.lockedRevenueClaimed, true)} sats
+                </p>
               </TooltipContent>
             </Tooltip>
           ) : (
