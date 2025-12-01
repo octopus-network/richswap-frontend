@@ -87,7 +87,7 @@ export function PortfolioRow({ position }: { position: Position }) {
     [btcPrice, positionValue]
   );
 
-  const positionYield = useMemo(
+  const compounded = useMemo(
     () =>
       position
         ? Number(position.userIncomes) -
@@ -95,6 +95,14 @@ export function PortfolioRow({ position }: { position: Position }) {
           Number(position.lockedRevenueClaimed)
         : undefined,
     [position]
+  );
+
+  const positionYield = useMemo(
+    () =>
+      position && compounded !== undefined
+        ? compounded + Number(position.lockedRevenue)
+        : undefined,
+    [position, compounded]
   );
 
   // const positionRevenue = useMemo(
@@ -322,12 +330,12 @@ export function PortfolioRow({ position }: { position: Position }) {
                 <p>
                   {t("compounded")}
                   {": "}
-                  {formatNumber(Number(positionYield)).split(".")[0]} sats
+                  {formatNumber(compounded, true)} sats
                 </p>
                 <p>
                   {t("claimableSats")}
                   {": "}
-                  {formatNumber(position.lockedRevenue).split(".")[0]} sats
+                  {formatNumber(position.lockedRevenue, true)} sats
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -393,7 +401,7 @@ export function PortfolioRow({ position }: { position: Position }) {
                     {t("claimable")}:{" "}
                     {Number(position.lockedRevenue) < 10000
                       ? `< 10000`
-                      : formatNumber(position.lockedRevenue)}{" "}
+                      : formatNumber(position.lockedRevenue, true)}{" "}
                     sats
                   </p>
                 </TooltipContent>
