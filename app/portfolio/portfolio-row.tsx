@@ -100,7 +100,9 @@ export function PortfolioRow({ position }: { position: Position }) {
   const positionYield = useMemo(
     () =>
       position && compounded !== undefined
-        ? compounded + Number(position.lockedRevenue)
+        ? compounded +
+          Number(position.lockedRevenue) +
+          Number(position.lockedRevenueClaimed)
         : undefined,
     [position, compounded]
   );
