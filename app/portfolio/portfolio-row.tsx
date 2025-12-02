@@ -52,8 +52,6 @@ export function PortfolioRow({ position }: { position: Position }) {
 
   const { createTransaction } = useRee();
 
-  console.log("position", position);
-
   useEffect(() => {}, [position]);
 
   const positionPercentage = useMemo(
@@ -89,12 +87,24 @@ export function PortfolioRow({ position }: { position: Position }) {
     [btcPrice, positionValue]
   );
 
-  const positionYield = useMemo(
+  const compounded = useMemo(
     () =>
       position
-        ? Number(position.userIncomes) - Number(position.lockedRevenue)
+        ? Number(position.userIncomes) -
+          Number(position.lockedRevenue) -
+          Number(position.lockedRevenueClaimed)
         : undefined,
     [position]
+  );
+
+  const positionYield = useMemo(
+    () =>
+      position && compounded !== undefined
+        ? compounded +
+          Number(position.lockedRevenue) +
+          Number(position.lockedRevenueClaimed)
+        : undefined,
+    [position, compounded]
   );
 
   // const positionRevenue = useMemo(
@@ -172,15 +182,7 @@ export function PortfolioRow({ position }: { position: Position }) {
         poolAddress: poolAddress,
         poolUtxos: preClaimRes.utxos,
         actionParams: paymentAddress,
-        inputCoins: [
-          {
-            from: poolAddress,
-            coin: {
-              id: BITCOIN.id,
-              value: BigInt(preClaimRes.output),
-            },
-          },
-        ],
+        inputCoins: [],
         outputCoins: [
           {
             to: paymentAddress,
@@ -330,12 +332,17 @@ export function PortfolioRow({ position }: { position: Position }) {
                 <p>
                   {t("compounded")}
                   {": "}
-                  {formatNumber(Number(positionYield)).split(".")[0]} sats
+                  {formatNumber(compounded, true)} sats
                 </p>
                 <p>
                   {t("claimableSats")}
                   {": "}
-                  {formatNumber(position.lockedRevenue).split(".")[0]} sats
+                  {formatNumber(position.lockedRevenue, true)} sats
+                </p>
+                <p>
+                  {t("claimed")}
+                  {": "}
+                  {formatNumber(position.lockedRevenueClaimed, true)} sats
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -382,7 +389,7 @@ export function PortfolioRow({ position }: { position: Position }) {
             </Button>
             {
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <Button
                     size="sm"
                     onClick={onClaim}
@@ -401,7 +408,7 @@ export function PortfolioRow({ position }: { position: Position }) {
                     {t("claimable")}:{" "}
                     {Number(position.lockedRevenue) < 10000
                       ? `< 10000`
-                      : formatNumber(position.lockedRevenue)}{" "}
+                      : formatNumber(position.lockedRevenue, true)}{" "}
                     sats
                   </p>
                 </TooltipContent>

@@ -3,7 +3,7 @@ import { gql, GraphQLClient } from "graphql-request";
 import { ENVIRONMENT } from "@/lib/constants";
 export const dynamic = "force-dynamic";
 
-// const reeIndexerUrl = process.env.NEXT_PUBLIC_REE_INDEXER_URL!;
+const reeIndexerUrl = process.env.NEXT_PUBLIC_REE_INDEXER_URL!;
 
 function resolutionToMinutes(res: string) {
   const map: Record<string, number> = {
@@ -27,16 +27,13 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const client = new GraphQLClient(
-      "https://ree-hasura-mainnet.omnity.network/v1/graphql",
-      {
-        fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
-          fetch(url as string, {
-            ...options,
-            cache: "no-store",
-          }),
-      }
-    );
+    const client = new GraphQLClient(reeIndexerUrl, {
+      fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
+        fetch(url as string, {
+          ...options,
+          cache: "no-store",
+        }),
+    });
 
     const klineTableName =
       ENVIRONMENT === "staging" ? "k_line_minutes_staging" : "k_line_minutes";
