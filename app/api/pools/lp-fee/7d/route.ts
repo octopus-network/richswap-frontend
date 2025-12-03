@@ -2,20 +2,19 @@ import { NextResponse } from "next/server";
 import { gql, GraphQLClient } from "graphql-request";
 import { ENVIRONMENT } from "@/lib/constants";
 
+const reeIndexerUrl = process.env.NEXT_PUBLIC_REE_INDEXER_URL!;
+
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const client = new GraphQLClient(
-      "https://ree-hasura-mainnet.omnity.network/v1/graphql",
-      {
-        fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
-          fetch(url as string, {
-            ...options,
-            cache: "no-store",
-          }),
-      }
-    );
+    const client = new GraphQLClient(reeIndexerUrl, {
+      fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
+        fetch(url as string, {
+          ...options,
+          cache: "no-store",
+        }),
+    });
 
     const klineTableName =
       ENVIRONMENT === "staging" ? "k_line_minutes_staging" : "k_line_minutes";
@@ -54,25 +53,22 @@ export async function GET() {
     };
 
     // Aggregate by token (pool)
-    const aggregated = (raw ?? []).reduce(
-      (acc, item) => {
-        const { token, tx_lp_revenue, tx_protocol_revenue } = item;
+    const aggregated = (raw ?? []).reduce((acc, item) => {
+      const { token, tx_lp_revenue, tx_protocol_revenue } = item;
 
-        if (!acc[token]) {
-          acc[token] = {
-            token,
-            lp_fee: 0,
-            protocol_fee: 0,
-          };
-        }
+      if (!acc[token]) {
+        acc[token] = {
+          token,
+          lp_fee: 0,
+          protocol_fee: 0,
+        };
+      }
 
-        acc[token].lp_fee += Number(tx_lp_revenue || 0);
-        acc[token].protocol_fee += Number(tx_protocol_revenue || 0);
+      acc[token].lp_fee += Number(tx_lp_revenue || 0);
+      acc[token].protocol_fee += Number(tx_protocol_revenue || 0);
 
-        return acc;
-      },
-      {} as Record<string, { token: string; lp_fee: number; protocol_fee: number }>
-    );
+      return acc;
+    }, {} as Record<string, { token: string; lp_fee: number; protocol_fee: number }>);
 
     const result = Object.values(aggregated);
 
