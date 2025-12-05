@@ -3,6 +3,8 @@ import { gql, GraphQLClient } from "graphql-request";
 
 export const dynamic = "force-dynamic";
 
+const reeIndexerUrl = process.env.NEXT_PUBLIC_REE_INDEXER_URL!;
+
 export async function GET(req: NextRequest) {
   try {
     const rune = req.nextUrl.searchParams.get("rune");
@@ -11,16 +13,13 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing rune parameter");
     }
 
-    const client = new GraphQLClient(
-      "https://ree-hasura-mainnet.omnity.network/v1/graphql",
-      {
-        fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
-          fetch(url as string, {
-            ...options,
-            cache: "no-store",
-          }),
-      }
-    );
+    const client = new GraphQLClient(reeIndexerUrl, {
+      fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
+        fetch(url as string, {
+          ...options,
+          cache: "no-store",
+        }),
+    });
 
     const now = Math.floor(Date.now() / 1000);
     const oneDayAgo = now - 24 * 60 * 60;
