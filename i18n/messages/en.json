@@ -140,7 +140,8 @@
     "remain": "Remain",
     "standard": "Standard",
     "onetime": "Onetime",
-    "template": "Template"
+    "template": "Template",
+    "permanentlyLocked": "Permanently Locked"
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",

@@ -18,7 +18,10 @@ import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 import { useTranslations } from "next-intl";
 import { LockLpSelector } from "@/components/lock-lp-selector";
-import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
+import {
+  BITCOIN_BLOCK_TIME_MINUTES,
+  PERMANENT_LOCK_BLOCKS,
+} from "@/lib/constants";
 import moment from "moment";
 import { useLatestBlock } from "@/hooks/use-latest-block";
 
@@ -250,13 +253,20 @@ export function DepositForm({
         value={isEmptyPool ? outputAmount : formattedAmounts[Field.OUTPUT]}
         className="border-border px-3 pt-1 pb-2 !shadow-none bg-transparent"
       />
-      <div className="flex justify-between items-start mt-4 relative">
-        <LockLpSelector onLockChange={handleLockChange} position={position} />
-        {unlockMoment && (
-          <span className="text-muted-foreground text-xs absolute right-0 top-2">
-            {t("lpLockedUtil")} ~{unlockMoment?.format("YYYY-MM-DD HH:mm")}
-          </span>
-        )}
+      <div className="flex justify-between items-start mt-4 relative min-h-6">
+        {position?.lockUntil !== PERMANENT_LOCK_BLOCKS ? (
+          <LockLpSelector onLockChange={handleLockChange} position={position} />
+        ) : null}
+        {unlockMoment &&
+          (position?.lockUntil === PERMANENT_LOCK_BLOCKS ? (
+            <span className="text-muted-foreground text-xs absolute right-0 top-2">
+              {t("permanentlyLocked")}
+            </span>
+          ) : (
+            <span className="text-muted-foreground text-xs absolute right-0 top-2">
+              {t("lpLockedUtil")} ~{unlockMoment?.format("YYYY-MM-DD HH:mm")}
+            </span>
+          ))}
       </div>
       <div className="mt-6">
         {!address ? (

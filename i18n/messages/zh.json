@@ -140,7 +140,8 @@
     "remain": "剩余",
     "standard": "标准",
     "onetime": "一次性",
-    "template": "模板"
+    "template": "模板",
+    "permanentlyLocked": "永久锁定"
   },
   "ConnectWallet": {
     "connectAWallet": "连接钱包",

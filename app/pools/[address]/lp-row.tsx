@@ -4,7 +4,10 @@ import { ExternalLink } from "lucide-react";
 import Circle from "react-circle";
 import { ellipseMiddle } from "@/lib/utils";
 import { useMemo } from "react";
-import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
+import {
+  BITCOIN_BLOCK_TIME_MINUTES,
+  PERMANENT_LOCK_BLOCKS,
+} from "@/lib/constants";
 import moment from "moment";
 import { useLatestBlock } from "@/hooks/use-latest-block";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -64,6 +67,12 @@ export default function LpRow({
           <span className="text-sm text-muted-foreground">-</span>
         ) : unlockMoment === undefined ? (
           <Skeleton className="h-5 w-16" />
+        ) : lp.lockUntil === PERMANENT_LOCK_BLOCKS ? (
+          <div>
+            <span className="text-sm text-muted-foreground">
+              {t("permanentlyLocked")}
+            </span>
+          </div>
         ) : (
           <div className="flex flex-col">
             <span className="text-sm">

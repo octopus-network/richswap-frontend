@@ -1,10 +1,36 @@
 import { useMemo } from "react";
 import { BITCOIN } from "@/lib/constants";
 
-import { Coin } from "@/types";
+import { Coin, UnspentOutput } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
+import { formatCoinAmount } from "@/lib/utils";
+import { useWalletBtcUtxos } from "./use-utxos";
+
+function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
+  const isBitcoin = coin.id === BITCOIN.id;
+  const filteredUtxos = utxos.filter((utxo) =>
+    isBitcoin
+      ? !utxo.runes.length
+      : utxo.runes.findIndex((rune) => rune.id === coin.id) >= 0
+  );
+
+  if (!filteredUtxos.length) {
+    return "0";
+  }
+
+  let amount = BigInt(0);
+  for (let i = 0; i < filteredUtxos.length; i++) {
+    const utxo = filteredUtxos[i];
+
+    amount += isBitcoin
+      ? BigInt(utxo.satoshis)
+      : BigInt(utxo.runes.find((rune) => rune.id === coin.id)?.amount ?? 0);
+  }
+
+  return formatCoinAmount(amount.toString(), coin);
+}
 
 export function useBalances(address: string | undefined) {
   return useQuery({
@@ -40,12 +66,9 @@ export function useRefetchBalances() {
 }
 
 export function useBtcBalance() {
-  const { paymentAddress } = useLaserEyes();
+  const btcUtxos = useWalletBtcUtxos();
 
-  const { data: paymentAddressBalances } = useBalances(paymentAddress);
-  return paymentAddressBalances
-    ? paymentAddressBalances[BITCOIN.id] ?? "0"
-    : undefined;
+  return useMemo(() => getBalanceByUtxos(BITCOIN, btcUtxos ?? []), [btcUtxos]);
 }
 
 export function useRuneBalances() {
