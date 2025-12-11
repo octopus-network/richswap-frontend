@@ -13,7 +13,10 @@ import { WithdrawReviewModal } from "./withdraw-review-modal";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useTranslations } from "next-intl";
 import { useLatestBlock } from "@/hooks/use-latest-block";
-import { BITCOIN_BLOCK_TIME_MINUTES } from "@/lib/constants";
+import {
+  BITCOIN_BLOCK_TIME_MINUTES,
+  PERMANENT_LOCK_BLOCKS,
+} from "@/lib/constants";
 import moment from "moment";
 
 export function WithdrawForm({
@@ -159,10 +162,14 @@ export function WithdrawForm({
                 />
                 <span>{withdrawPercentage}%</span>
               </div>
-              {unlockRemainBlocks && unlockRemainBlocks > 0 ? (
+              {position.lockUntil === PERMANENT_LOCK_BLOCKS ? (
                 <div className="text-sm text-destructive flex items-center">
-                  <Info className="mr-1 size-3" /> {t("lpLockedUtil")}{" "}
-                  ~{unlockMoment?.format("YYYY-MM-DD HH:mm")}
+                  <Info className="mr-1 size-3" /> {t("permanentlyLocked")}
+                </div>
+              ) : unlockRemainBlocks && unlockRemainBlocks > 0 ? (
+                <div className="text-sm text-destructive flex items-center">
+                  <Info className="mr-1 size-3" /> {t("lpLockedUtil")} ~
+                  {unlockMoment?.format("YYYY-MM-DD HH:mm")}
                 </div>
               ) : null}
             </div>

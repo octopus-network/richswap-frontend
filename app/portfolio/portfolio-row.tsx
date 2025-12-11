@@ -90,9 +90,7 @@ export function PortfolioRow({ position }: { position: Position }) {
   const compounded = useMemo(
     () =>
       position
-        ? Number(position.userIncomes) -
-          Number(position.lockedRevenue) -
-          Number(position.lockedRevenueClaimed)
+        ? Number(position.userIncomes) - Number(position.lockedRevenue)
         : undefined,
     [position]
   );
