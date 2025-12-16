@@ -1,0 +1,13 @@
+diff --git a/node_modules/@omnisat/lasereyes-react/dist/index.js b/node_modules/@omnisat/lasereyes-react/dist/index.js
+index 1cb2dc3..a5cadf7 100644
+--- a/node_modules/@omnisat/lasereyes-react/dist/index.js
++++ b/node_modules/@omnisat/lasereyes-react/dist/index.js
+@@ -81,7 +81,7 @@ let fW = (e, t, r, n) => (e.events = e.events || {}, e.events[r + Ug] || (e.even
+   i.splice(o, 1), i.length || (delete e.events[r], e.events[r + Ug](), delete e.events[r + Ug]);
+ }), hW = 1e3, FB = (e, t) => fW(e, (n) => {
+   let i = t(n);
+-  i && e.events[rh].push(i);
++  i && (e.events[rh] = e.events[rh] || [], e.events[rh].push(i));
+ }, lW, (n) => {
+   let i = e.listen;
+   e.listen = (...a) => (!e.lc && !e.active && (e.active = !0, n()), i(...a));
