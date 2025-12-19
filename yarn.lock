@@ -824,10 +824,10 @@
     nanostores "^0.11.3"
     vite-plugin-ssr "^0.4.142"
 
-"@omnity/ree-client-ts-sdk@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@omnity/ree-client-ts-sdk/-/ree-client-ts-sdk-0.6.1.tgz#5bea8ce09c545f7045f07ad11ab74c3aa6ec88fb"
-  integrity sha512-Zhw9gMpepKhJDsw7OY0cbzC0Tz4oO5Xw/YXiJrMLUnQhknHPsvAvC85Q9mznCFovQseYeI770ntIpt5wiejJ2g==
+"@omnity/ree-client-ts-sdk@^0.6.2":
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/@omnity/ree-client-ts-sdk/-/ree-client-ts-sdk-0.6.2.tgz#0faa16cb7e577257f98fbadf78b3277da9b94e09"
+  integrity sha512-zIaDwycjA8tFsXJJ4bwbq+YmwjGDSLuXs+0vAswC0RWL12H2ikz6nmxvL81erhuhLJcMAWKfNn59LoHUnIv3RA==
   dependencies:
     "@bitcoinerlab/secp256k1" "^1.2.0"
     "@dfinity/agent" "^3.2.0"
@@ -837,7 +837,6 @@
     decimal.js "^10.6.0"
     graphql "^16.11.0"
     graphql-request "^7.2.0"
-    patch-package "^8.0.1"
     runelib "^1.0.7"
 
 "@orangecrypto/orange-connect@^1.2.2":
