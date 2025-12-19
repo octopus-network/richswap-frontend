@@ -169,6 +169,7 @@ export async function GET() {
         lpFeeRate: attributesJson.lp_fee_rate,
         protocolFeeRate: attributesJson.protocol_fee_rate,
         template: attributesJson.template,
+        paused: attributesJson.paused ?? false,
       });
     }
 

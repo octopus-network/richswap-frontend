@@ -74,6 +74,7 @@ export type PoolInfo = {
   lpFeeRate: number;
   protocolFeeRate: number;
   protocolRevenue: string;
+  paused: boolean;
   utxos?: UnspentOutput[];
   template: "Standard" | "Onetime";
 };
