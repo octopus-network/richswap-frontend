@@ -824,10 +824,10 @@
     nanostores "^0.11.3"
     vite-plugin-ssr "^0.4.142"
 
-"@omnity/ree-client-ts-sdk@^0.5.9":
-  version "0.5.9"
-  resolved "https://registry.yarnpkg.com/@omnity/ree-client-ts-sdk/-/ree-client-ts-sdk-0.5.9.tgz#01d4eb1572715edca49a2d217333ac42b71eb3b6"
-  integrity sha512-nzOy3XxYKzxZS0GsaTQQQ8FBhLZBnFqhHRz7LQL38Ugm2fkBC8ziL71geE3/FuO8RMp40z3fc2fyRJOfMUd6EA==
+"@omnity/ree-client-ts-sdk@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@omnity/ree-client-ts-sdk/-/ree-client-ts-sdk-0.6.0.tgz#aa43ff1a4b69d877ca60d554b4c696a5325fc1b9"
+  integrity sha512-YlX9ai3zrRJKridKavo7gyDlXcGvDZbwVKzSGnuIzDHq43flLSYjPcSwAxCH/Wr6A5sal0gdp9PIL1PpB+Hmqw==
   dependencies:
     "@bitcoinerlab/secp256k1" "^1.2.0"
     "@dfinity/agent" "^3.2.0"
@@ -6477,6 +6477,7 @@ stop-iteration-iterator@^1.1.0:
     internal-slot "^1.1.0"
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0:
+  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
