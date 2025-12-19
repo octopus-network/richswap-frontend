@@ -1,7 +1,7 @@
 "use client";
 
 import { RefreshCcw, ChartLine, ExternalLink } from "lucide-react";
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useMemo } from "react";
 import { SwapPanel } from "./swap-panel";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
@@ -16,6 +16,7 @@ import Link from "next/link";
 import { RUNESCAN_URL } from "@/lib/constants";
 import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { usePoolList } from "@/hooks/use-pools";
 
 function Overview({
   rune,
@@ -114,6 +115,8 @@ export default function SwapPage() {
   const klineChartOpen = useKlineChartOpen();
   const toggleKlineChartOpen = useToggleKlineChartOpen();
 
+  const poolList = usePoolList();
+
   const [rune, setRune] = useState<Coin>();
   const [chartLoading, setChartLoading] = useState(true);
 
@@ -128,6 +131,10 @@ export default function SwapPage() {
     }
   }, [rune?.name]);
 
+  const poolInfo = useMemo(() => {
+    return poolList.find((pool) => pool.coinB.id === rune?.id);
+  }, [poolList, rune?.id]);
+
   return (
     <Suspense>
       <div className="lg:pt-12 w-full flex flex-col items-center">
@@ -139,15 +146,23 @@ export default function SwapPage() {
             >
               <Overview rune={rune} priceData={priceData} />
               <div className="h-[260px] lg:h-[420px] relative">
-                {chartLoading && (
+                {(chartLoading || !poolInfo) && (
                   <div className="absolute inset-0 bg-secondary items-center justify-center flex">
                     <Loader2 className="size-6 text-muted-foreground animate-spin" />
                   </div>
                 )}
-                <KlineChart
-                  rune={rune?.name || ""}
-                  onLoadingChange={setChartLoading}
-                />
+                {poolInfo?.paused ? (
+                  <div className="absolute inset-0 bg-secondary items-center justify-center flex">
+                    <span className="text-muted-foreground">
+                      {t("marketOpeningSoon")}
+                    </span>
+                  </div>
+                ) : (
+                  <KlineChart
+                    rune={rune?.name || ""}
+                    onLoadingChange={setChartLoading}
+                  />
+                )}
               </div>
             </div>
           )}
