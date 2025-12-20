@@ -1,0 +1,64 @@
+diff --git a/node_modules/runelib/dist/runestones.js b/node_modules/runelib/dist/runestones.js
+index 11888bd..5930682 100644
+--- a/node_modules/runelib/dist/runestones.js
++++ b/node_modules/runelib/dist/runestones.js
+@@ -219,22 +219,22 @@ class Runestone {
+         let pushNum;
+         if (msgBuff.length < 0x4c) {
+             pushNum = Buffer.alloc(1);
+-            pushNum.writeUint8(msgBuff.length);
++            pushNum.writeUInt8(msgBuff.length);
+         }
+         else if (msgBuff.length < 0x100) {
+             pushNum = Buffer.alloc(2);
+-            pushNum.writeUint8(0x4c);
+-            pushNum.writeUint8(msgBuff.length);
++            pushNum.writeUInt8(0x4c);
++            pushNum.writeUInt8(msgBuff.length);
+         }
+         else if (msgBuff.length < 0x10000) {
+             pushNum = Buffer.alloc(3);
+-            pushNum.writeUint8(0x4d);
+-            pushNum.writeUint16LE(msgBuff.length);
++            pushNum.writeUInt8(0x4d);
++            pushNum.writeUInt16LE(msgBuff.length);
+         }
+         else if (msgBuff.length < 0x100000000) {
+             pushNum = Buffer.alloc(5);
+-            pushNum.writeUint8(0x4e);
+-            pushNum.writeUint32LE(msgBuff.length);
++            pushNum.writeUInt8(0x4e);
++            pushNum.writeUInt32LE(msgBuff.length);
+         }
+         else {
+             throw new Error("runestone too big!");
+@@ -643,7 +643,7 @@ class EtchInscription {
+                 const val = ls[i + 1];
+                 if (typeof val == 'number') {
+                     const buff = Buffer.alloc(1);
+-                    buff.writeUint8(val);
++                    buff.writeUInt8(val);
+                     fields.set(tag, buff);
+                 }
+                 else {
+diff --git a/node_modules/runelib/dist/utils.js b/node_modules/runelib/dist/utils.js
+index 4d70a9e..1ff1e1e 100644
+--- a/node_modules/runelib/dist/utils.js
++++ b/node_modules/runelib/dist/utils.js
+@@ -60,14 +60,14 @@ function toPushData(data) {
+         // OP_PUSHDATA2
+         res.push(Buffer.from('4d', 'hex'));
+         const dLenBuff = Buffer.alloc(2);
+-        dLenBuff.writeUint16LE(dLen);
++        dLenBuff.writeUInt16LE(dLen);
+         res.push(dLenBuff);
+     }
+     else {
+         // OP_PUSHDATA4
+         res.push(Buffer.from('4e', 'hex'));
+         const dLenBuff = Buffer.alloc(4);
+-        dLenBuff.writeUint32LE(dLen);
++        dLenBuff.writeUInt32LE(dLen);
+         res.push(dLenBuff);
+     }
+     res.push(data);

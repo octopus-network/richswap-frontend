@@ -62,12 +62,13 @@ export async function GET(req: NextRequest) {
     const fromTs = Number(from) * 1e9;
     const toTs = Number(to) * 1e9;
 
-    const { [klineTableName]: raw } = (await client.request(query, {
+    const response = (await client.request(query, {
       token: rune,
       fromTs: fromTs.toString(),
       toTs: toTs.toString(),
-    })) as {
-      [klineTableName]: {
+    })) as Record<
+      string,
+      {
         high: string;
         low: string;
         open: string;
@@ -76,8 +77,10 @@ export async function GET(req: NextRequest) {
         timestamp: number;
         tx_lp_revenue: number;
         tx_protocol_revenue: number;
-      }[];
-    };
+      }[]
+    >;
+
+    const raw = response[klineTableName] ?? [];
 
     const items = (raw ?? []).map((d) => ({
       ...d,
