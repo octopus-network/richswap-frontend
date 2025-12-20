@@ -27,6 +27,7 @@ export type SwapQuote = {
   state: SwapState;
   errorMessage?: string;
   routes?: SwapRoute[];
+  refetch?: () => void;
 };
 
 export enum DepositState {

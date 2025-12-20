@@ -287,7 +287,7 @@ export function SwapPanel({
     return pools.some((p) => p.paused);
   }, [pools]);
 
-  console.log("pools", pools);
+  console.log("swap", swap);
 
   return (
     <>
