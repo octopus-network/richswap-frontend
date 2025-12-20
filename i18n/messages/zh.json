@@ -57,9 +57,16 @@
     "marketCap": "市值",
     "tvl": "总锁仓价值 (TVL)",
     "fee": "手续费",
+    "error": "错误",
     "involvedPools": "资金池",
     "marketOpeningSoon": "即将开启",
-    "poolPaused": "交易即将开启"
+    "poolPaused": "交易即将开启",
+    "refreshQuote": "刷新报价",
+    "checkLater": "稍后再试",
+    "refreshQuoteErrorTitle": "价格已更新",
+    "checkLaterErrorTitle": "交易拥堵",
+    "refreshQuoteErrorDescription": "另一个用户刚刚交易，改变了池子的状态。请刷新以获取最新的报价。",
+    "checkLaterErrorDescription": "池子拥堵，请等待下个比特币区块后重试 (~10 分钟)。"
   },
   "Pools": {
     "pool": "池子",
@@ -248,5 +255,11 @@
     "failed": "失败",
     "success": "成功",
     "lockLpSuccess": "锁定 LP 成功"
+  },
+  "Footer": {
+    "fluent": "流畅",
+    "busy": "繁忙",
+    "congested": "拥堵",
+    "pendingTransactions": "等待中的交易"
   }
 }

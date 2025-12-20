@@ -29,7 +29,7 @@ export type IntentionSet = {
 };
 
 export type InvokeArgs = {
-  initiator_utxo_proof: number[],
+  initiator_utxo_proof: number[];
   intention_set: IntentionSet;
   psbt_hex: string;
   client_info?: [string];
@@ -61,4 +61,5 @@ export type OrchestratorStatus = {
     update_time: string;
     medium: bigint;
   };
+  pending_tx_count: bigint;
 };

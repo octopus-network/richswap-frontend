@@ -56,9 +56,16 @@
     "marketCap": "Market Cap",
     "tvl": "TVL",
     "fee": "Fee",
+    "error": "Error",
     "involvedPools": "Involved Pools",
     "marketOpeningSoon": "Market Opening Soon",
-    "poolPaused": "Trading opens soon"
+    "poolPaused": "Trading opens soon",
+    "refreshQuote": "Refresh Quote",
+    "checkLater": "Check Later",
+    "refreshQuoteErrorTitle": "Price Updated",
+    "checkLaterErrorTitle": "Mempool Limit",
+    "refreshQuoteErrorDescription": "Another user just traded, changing the pool state. Please refresh for the latest quote.",
+    "checkLaterErrorDescription": "Pool is congested. Please wait for the next Bitcoin block (~10 mins)."
   },
   "Pools": {
     "pool": "Pool",
@@ -254,5 +261,11 @@
     "failed": "Failed",
     "success": "Success",
     "lockLpSuccess": "Lock LP success"
+  },
+  "Footer": {
+    "fluent": "Fluent",
+    "busy": "Busy",
+    "congested": "Congested",
+    "pendingTransactions": "Pending Transactions"
   }
 }
