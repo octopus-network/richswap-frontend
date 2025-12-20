@@ -57,6 +57,7 @@ export function useDebouncedSwap(
           setSwapQuote({
             state: SwapState.VALID,
             routes: [route],
+            refetch: () => quote(),
           });
         } else {
           const route1 = await Exchange.getSwapRoute(
@@ -74,6 +75,7 @@ export function useDebouncedSwap(
           setSwapQuote({
             state: SwapState.VALID,
             routes: [route1, route2],
+            refetch: () => quote(),
           });
         }
       } catch (err: any) {
@@ -81,6 +83,7 @@ export function useDebouncedSwap(
         setSwapQuote({
           state: SwapState.INVALID,
           errorMessage: err.message,
+          refetch: () => quote(),
         });
       }
     };

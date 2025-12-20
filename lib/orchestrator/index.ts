@@ -90,6 +90,11 @@ export class Orchestrator {
     return Number(res.mempool_tx_fee_rate.medium);
   }
 
+  static async getPendingTxCount() {
+    const res = (await actor.get_status()) as OrchestratorStatus;
+    return Number(res.pending_tx_count);
+  }
+
   static async getEstimateMinTxFee(args: EstimateMinTxFeeArgs) {
     const res = (await actor.estimate_min_tx_fee(args)) as { Ok: bigint };
     return BigInt(res.Ok);

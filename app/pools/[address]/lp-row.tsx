@@ -54,7 +54,7 @@ export default function LpRow({
       <div className="col-span-4">
         <Link
           href={`${RUNESCAN_URL}/address/${lp.address}`}
-          className="group hover:underline inline-flex items-center"
+          className="group hover:underline inline-flex items-center break-all"
           target="_blank"
         >
           <span>{ellipseMiddle(lp.address, 14)}</span>
