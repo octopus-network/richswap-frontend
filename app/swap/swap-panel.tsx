@@ -283,6 +283,12 @@ export function SwapPanel({
     };
   }, [swap, btcPrice]);
 
+  const poolPaused = useMemo(() => {
+    return pools.some((p) => p.paused);
+  }, [pools]);
+
+  console.log("pools", pools);
+
   return (
     <>
       <div className="mt-4">
@@ -349,10 +355,13 @@ export function SwapPanel({
                 swap.state === SwapState.INVALID ||
                 swap.state === SwapState.LOADING ||
                 insufficientBalance ||
-                !formattedAmounts[Field.OUTPUT]
+                !formattedAmounts[Field.OUTPUT] ||
+                poolPaused
               }
             >
-              {insufficientBalance
+              {poolPaused
+                ? t("poolPaused")
+                : insufficientBalance
                 ? t("insufficientBalance")
                 : !coinA
                 ? t("selectCoinA")
@@ -466,7 +475,9 @@ export function SwapPanel({
 
           {pools?.length ? (
             <div className="justify-between flex">
-              <span className="text-muted-foreground">{t("involvedPools")}</span>
+              <span className="text-muted-foreground">
+                {t("involvedPools")}
+              </span>
               <div className="flex flex-col gap-1">
                 {pools.map((pool) => (
                   <Link

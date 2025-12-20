@@ -153,6 +153,7 @@ export class Exchange {
       protocolRevenue: attributes.protocol_revenue.toString(),
       lpFeeRate: attributes.lp_fee_rate,
       protocolFeeRate: attributes.protocol_fee_rate,
+      paused: attributes.paused ?? false,
       utxos: [
         {
           txid: utxo.txid,
@@ -234,6 +235,7 @@ export class Exchange {
         lpFeeRate: attributes.lp_fee_rate,
         protocolFeeRate: attributes.protocol_fee_rate,
         template: attributes.template,
+        paused: attributes.paused ?? false,
       };
     }
   }

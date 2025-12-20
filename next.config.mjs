@@ -15,6 +15,16 @@ const nextConfig = {
     ],
   },
   transpilePackages: ["geist"],
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Add Buffer polyfill for browser environment
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        buffer: require.resolve("buffer/"),
+      };
+    }
+    return config;
+  },
 };
 
 export default withNextIntl(nextConfig);

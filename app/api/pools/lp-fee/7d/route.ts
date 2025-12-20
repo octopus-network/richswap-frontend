@@ -41,16 +41,19 @@ export async function GET() {
       }
     `;
 
-    const { [klineTableName]: raw } = (await client.request(query, {
+    const response = (await client.request(query, {
       fromTs,
       toTs,
-    })) as {
-      [klineTableName]: {
+    })) as Record<
+      string,
+      {
         token: string;
         tx_lp_revenue: number;
         tx_protocol_revenue: number;
-      }[];
-    };
+      }[]
+    >;
+
+    const raw = response[klineTableName] ?? [];
 
     // Aggregate by token (pool)
     const aggregated = (raw ?? []).reduce((acc, item) => {

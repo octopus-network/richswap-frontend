@@ -56,7 +56,9 @@
     "marketCap": "Market Cap",
     "tvl": "TVL",
     "fee": "Fee",
-    "involvedPools": "Involved Pools"
+    "involvedPools": "Involved Pools",
+    "marketOpeningSoon": "Market Opening Soon",
+    "poolPaused": "Trading opens soon"
   },
   "Pools": {
     "pool": "Pool",

@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useLaserEyes } from "@omnisat/lasereyes-react";
 import { formatCoinAmount } from "@/lib/utils";
-import { useWalletBtcUtxos } from "./use-utxos";
+import { useWalletBtcUtxos, useWalletRuneUtxos } from "./use-utxos";
 
 function getBalanceByUtxos(coin: Coin, utxos: UnspentOutput[]): string {
   const isBitcoin = coin.id === BITCOIN.id;
@@ -80,17 +80,18 @@ export function useRuneBalances() {
 
 export function useCoinBalance(coin: Coin | null | undefined) {
   const btcBalance = useBtcBalance();
-  const runeBalances = useRuneBalances();
+
+  const runeUtxos = useWalletRuneUtxos(coin?.runeId);
 
   return useMemo(
     () =>
       coin
         ? coin.id === BITCOIN.id
           ? btcBalance
-          : runeBalances
-          ? runeBalances[coin.id] ?? "0"
+          : runeUtxos
+          ? getBalanceByUtxos(coin, runeUtxos)
           : undefined
         : undefined,
-    [btcBalance, runeBalances, coin]
+    [btcBalance, coin, runeUtxos]
   );
 }

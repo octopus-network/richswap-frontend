@@ -57,7 +57,9 @@
     "marketCap": "市值",
     "tvl": "总锁仓价值 (TVL)",
     "fee": "手续费",
-    "involvedPools": "资金池"
+    "involvedPools": "资金池",
+    "marketOpeningSoon": "即将开启",
+    "poolPaused": "交易即将开启"
   },
   "Pools": {
     "pool": "池子",
