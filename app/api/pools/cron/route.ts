@@ -44,7 +44,7 @@ const query = gql`
 `;
 
 const runesQuery = gql`
-  query GetRunes($ids: [String!]) {
+  query GetRunes($ids: [String!]) @cached {
     runes(where: { rune_id: { _in: $ids }, reorg: { _eq: false } }) {
       rune_id
       symbol

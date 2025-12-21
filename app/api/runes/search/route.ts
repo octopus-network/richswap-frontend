@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const RUNES_INDEXER_URL = process.env.NEXT_PUBLIC_RUNES_INDEXER_URL!;
 
 const runesQuery = gql`
-  query GetRunes($keyword: String!, $regex: String!) {
+  query GetRunes($keyword: String!, $regex: String!) @cached {
     runes(
       where: {
         _or: [
