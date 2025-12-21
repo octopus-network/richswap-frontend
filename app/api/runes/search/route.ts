@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { gql, GraphQLClient } from "graphql-request";
 
+// Cache for 5 minutes on CDN, revalidate in background
+export const revalidate = 300;
+
 const RUNES_INDEXER_URL = process.env.NEXT_PUBLIC_RUNES_INDEXER_URL!;
 
 const runesQuery = gql`
@@ -12,6 +15,7 @@ const runesQuery = gql`
           { spaced_rune: { _iregex: $regex } }
           { rune_id: { _eq: $keyword } }
         ]
+        reorg: { _eq: false }
       }
       limit: 50
     ) {
@@ -33,13 +37,7 @@ export async function GET(req: NextRequest) {
       throw new Error("Missing parameter(s)");
     }
 
-    const runesClient = new GraphQLClient(RUNES_INDEXER_URL, {
-      fetch: (url: RequestInfo | URL, options: RequestInit | undefined) =>
-        fetch(url as string, {
-          ...options,
-          cache: "no-store",
-        }),
-    });
+    const runesClient = new GraphQLClient(RUNES_INDEXER_URL);
 
     const pattern = keyword
       .split("")
@@ -64,7 +62,7 @@ export async function GET(req: NextRequest) {
       }[];
     };
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: runes?.length
         ? runes.map(
@@ -79,6 +77,14 @@ export async function GET(req: NextRequest) {
           )
         : [],
     });
+
+    // Cache for 5 minutes in browser and CDN
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=300, stale-while-revalidate=600"
+    );
+
+    return response;
   } catch (error) {
     return NextResponse.json({
       error:
