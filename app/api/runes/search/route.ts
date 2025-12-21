@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { gql, GraphQLClient } from "graphql-request";
 
-export const dynamic = "force-dynamic";
-
 const RUNES_INDEXER_URL = process.env.NEXT_PUBLIC_RUNES_INDEXER_URL!;
 
 const runesQuery = gql`
@@ -13,8 +11,8 @@ const runesQuery = gql`
         _or: [
           { spaced_rune: { _iregex: $regex } }
           { rune_id: { _eq: $keyword } }
-        ] 
-      }, 
+        ]
+      }
       limit: 50
     ) {
       rune_id
