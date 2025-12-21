@@ -283,11 +283,10 @@ export function SwapPanel({
     };
   }, [swap, btcPrice]);
 
-  const poolPaused = useMemo(() => {
-    return pools.some((p) => p.paused);
-  }, [pools]);
-
-  console.log("swap", swap);
+  // const poolPaused = useMemo(() => {
+  //   return pools.some((p) => p.paused);
+  // }, [pools]);
+  const poolPaused = useMemo(() => false, []);
 
   return (
     <>

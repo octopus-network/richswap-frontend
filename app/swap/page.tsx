@@ -151,7 +151,7 @@ export default function SwapPage() {
                     <Loader2 className="size-6 text-muted-foreground animate-spin" />
                   </div>
                 )}
-                {poolInfo?.paused ? (
+                {/* {poolInfo?.paused ? (
                   <div className="absolute inset-0 bg-secondary items-center justify-center flex">
                     <span className="text-muted-foreground">
                       {t("marketOpeningSoon")}
@@ -162,7 +162,11 @@ export default function SwapPage() {
                     rune={rune?.name || ""}
                     onLoadingChange={setChartLoading}
                   />
-                )}
+                )} */}
+                <KlineChart
+                  rune={rune?.name || ""}
+                  onLoadingChange={setChartLoading}
+                />
               </div>
             </div>
           )}
