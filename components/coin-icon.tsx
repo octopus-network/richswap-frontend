@@ -14,7 +14,6 @@ export function CoinIcon({
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
 }) {
-  console.log("CoinIcon", coin);
   return (
     <Avatar
       className={cn(
