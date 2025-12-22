@@ -107,7 +107,7 @@ export function SwapPanel({
 
     const [symbolA, symbolB] = [
       searchParams.get("coinA") ?? "BTC",
-      searchParams.get("coinB") ?? "ZZZZZZZ",
+      searchParams.get("coinB") ?? "HOPE•YOU•GET•RICH",
     ];
 
     const [_coinA, _coinB] = [
