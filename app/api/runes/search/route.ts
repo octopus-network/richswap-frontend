@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { gql, GraphQLClient } from "graphql-request";
+import { COIN_LIST } from "@/lib/constants";
 
 // Cache for 5 minutes on CDN, revalidate in background
 export const revalidate = 300;
@@ -35,6 +36,17 @@ export async function GET(req: NextRequest) {
   try {
     if (!keyword) {
       throw new Error("Missing parameter(s)");
+    }
+
+    const coin = COIN_LIST.find(
+      (c) => c.id === keyword || c.runeId === keyword
+    );
+
+    if (coin) {
+      return NextResponse.json({
+        success: true,
+        data: [coin],
+      });
     }
 
     const runesClient = new GraphQLClient(RUNES_INDEXER_URL);
