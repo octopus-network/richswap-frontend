@@ -34,6 +34,7 @@ import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN } from "@/lib/constants";
 import Link from "next/link";
 import TxQueue from "@/components/tx-queue";
+import { Orchestrator } from "@/lib/orchestrator";
 
 export function SwapPanel({
   onRuneChange,
@@ -53,6 +54,7 @@ export function SwapPanel({
     useSwapActionHandlers();
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [pendingTxCount, setPendingTxCount] = useState(0);
 
   const swapState = useSwapState();
 
@@ -66,8 +68,6 @@ export function SwapPanel({
   } = swapState;
 
   const { swap, parsedAmount } = useDerivedSwapInfo();
-
-  console.log("swap", swap);
 
   const parsedAmounts = useMemo(
     () => ({
@@ -298,16 +298,42 @@ export function SwapPanel({
     swap?.refetch?.();
   };
 
-  const maxPendingTxCount = useMemo(() => {
+  const realTimePendingTxCount = useMemo(() => {
     return Math.max(...(swap?.routes?.map((r) => r.poolPendingTxCount) ?? [0]));
   }, [swap]);
+
+  useEffect(() => {
+    if (coinA?.id === BITCOIN.id || coinB?.id === BITCOIN.id) {
+      const pool = poolList.find(
+        (p) => p.coinB.id === (coinA?.id === BITCOIN.id ? coinB?.id : coinA?.id)
+      );
+      if (pool?.address) {
+        Orchestrator.getPendingTxCountOfPool(pool.address).then(
+          setPendingTxCount
+        );
+      }
+    } else {
+      const pool1 = poolList.find((p) => p.coinB.id === coinA?.id);
+      const pool2 = poolList.find((p) => p.coinB.id === coinB?.id);
+      Promise.all([
+        pool1?.address
+          ? Orchestrator.getPendingTxCountOfPool(pool1.address)
+          : 0,
+        pool2?.address
+          ? Orchestrator.getPendingTxCountOfPool(pool2.address)
+          : 0,
+      ]).then(([count1, count2]) => {
+        setPendingTxCount(Math.max(count1, count2));
+      });
+    }
+  }, [coinA, coinB, poolList]);
 
   return (
     <>
       <div className="flex justify-between items-center">
         <span className="text-2xl font-semibold">{t("swap")}</span>
         <div className="flex items-center gap-2">
-          <TxQueue txCount={maxPendingTxCount} />
+          <TxQueue txCount={realTimePendingTxCount || pendingTxCount} />
           <Button
             size="icon"
             className={cn(

@@ -28,7 +28,9 @@ export function KlineChart({
           setIsScriptReady(true);
         }}
       />
-      {isScriptReady && <ChartContainer symbol={rune} onLoadingChange={onLoadingChange} />}
+      {isScriptReady && (
+        <ChartContainer symbol={rune} onLoadingChange={onLoadingChange} />
+      )}
     </>
   );
 }
