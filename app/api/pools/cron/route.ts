@@ -4,6 +4,7 @@ import { UNKNOWN_COIN, BITCOIN, EXCHANGE_ID } from "@/lib/constants";
 import { PoolInfo } from "@/types";
 import { put } from "@vercel/blob";
 
+import { COIN_LIST } from "@/lib/constants";
 import { gql, GraphQLClient } from "graphql-request";
 
 export const dynamic = "force-dynamic";
@@ -133,8 +134,10 @@ export async function GET() {
 
       const attributesJson = attributes ? JSON.parse(attributes) : {};
 
-      let coinB = UNKNOWN_COIN;
-      if (coinBRes) {
+      let coinB =
+        COIN_LIST.find((c) => c.runeId === coinId || c.id === coinId) ??
+        UNKNOWN_COIN;
+      if (coinB === UNKNOWN_COIN && coinBRes) {
         const { spaced_rune, symbol, divisibility, etching, rune_id } =
           coinBRes;
 
