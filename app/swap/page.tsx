@@ -14,7 +14,7 @@ import { useKlineChartOpen } from "@/store/user/hooks";
 import { RunePriceData, useRunePrice } from "@/hooks/use-rune-price";
 import Link from "next/link";
 import { RUNESCAN_URL } from "@/lib/constants";
-import { Loader2 } from "lucide-react";
+
 import { Separator } from "@/components/ui/separator";
 import { usePoolList } from "@/hooks/use-pools";
 
@@ -114,7 +114,7 @@ export default function SwapPage() {
   const poolList = usePoolList();
 
   const [rune, setRune] = useState<Coin>();
-  const [chartLoading, setChartLoading] = useState(true);
+  const [, setChartLoading] = useState(true);
 
   const klineChartOpen = useKlineChartOpen();
 
@@ -133,6 +133,8 @@ export default function SwapPage() {
     return poolList.find((pool) => pool.coinB.id === rune?.id);
   }, [poolList, rune?.id]);
 
+  const t = useTranslations("Swap");
+
   return (
     <Suspense>
       <div className="lg:pt-12 w-full flex flex-col items-center">
@@ -144,12 +146,12 @@ export default function SwapPage() {
             >
               <Overview rune={rune} priceData={priceData} />
               <div className="h-[260px] lg:h-[420px] relative">
-                {(chartLoading || !poolInfo) && (
+                {/* {(chartLoading || !poolInfo) && (
                   <div className="absolute inset-0 bg-secondary items-center justify-center flex">
                     <Loader2 className="size-6 text-muted-foreground animate-spin" />
                   </div>
-                )}
-                {/* {poolInfo?.paused ? (
+                )} */}
+                {poolInfo?.paused ? (
                   <div className="absolute inset-0 bg-secondary items-center justify-center flex">
                     <span className="text-muted-foreground">
                       {t("marketOpeningSoon")}
@@ -160,11 +162,7 @@ export default function SwapPage() {
                     rune={rune?.name || ""}
                     onLoadingChange={setChartLoading}
                   />
-                )} */}
-                <KlineChart
-                  rune={rune?.name || ""}
-                  onLoadingChange={setChartLoading}
-                />
+                )}
               </div>
             </div>
           )}

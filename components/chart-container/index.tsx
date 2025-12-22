@@ -258,5 +258,9 @@ export const ChartContainer = ({
     // eslint-disable-next-line
   }, [symbol, datafeed]);
 
-  return <div ref={chartContainerRef} className="w-full h-full" />;
+  return (
+    <>
+      <div ref={chartContainerRef} className="w-full h-full" />
+    </>
+  );
 };
