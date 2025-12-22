@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, Clock, RefreshCcw } from "lucide-react";
 import {
   Coin,
   TransactionStatus,
@@ -334,14 +334,60 @@ export function DepositReview({
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
+  const refreshQuoteError = useMemo(() => {
+    return (
+      errorMessage?.indexOf("404:") > -1 ||
+      (errorMessage?.indexOf("599:") > -1 &&
+        (errorMessage?.indexOf("Executing") > -1 ||
+          errorMessage?.indexOf("pool state expired") > -1))
+    );
+  }, [errorMessage]);
+
+  const checkLaterError = useMemo(() => {
+    return errorMessage?.indexOf("409:007") > -1;
+  }, [errorMessage]);
+
+  const fetchUtxoProofFailedError = useMemo(() => {
+    return errorMessage === "FETCH_UTXO_PROOF_FAILED";
+  }, [errorMessage]);
+
+  const onRefreshQuote = () => {
+    setErrorMessage("");
+    onBack();
+  };
+
+  const onCheckLater = () => {
+    setErrorMessage("");
+    onBack();
+  };
+
   return errorMessage ? (
-    <div className="mt-4 flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <div className="p-4 border rounded-lg flex flex-col items-center">
-        <TriangleAlert className="size-12 text-destructive" />
-        <div className="break-all mt-2 text-sm">{t(errorMessage)}</div>
+        {refreshQuoteError ? (
+          <RefreshCcw className="size-8 text-muted-foreground" />
+        ) : checkLaterError ? (
+          <Clock className="size-8 text-muted-foreground" />
+        ) : (
+          <TriangleAlert className="size-12 text-destructive" />
+        )}
+        <div className="mt-2 font-semibold">
+          {refreshQuoteError
+            ? t("refreshQuoteErrorTitle")
+            : checkLaterError
+            ? t("checkLaterErrorTitle")
+            : t("error")}
+        </div>
+        <div className="break-all mt-2 text-sm text-center">
+          {refreshQuoteError
+            ? t("refreshQuoteErrorDescription")
+            : checkLaterError
+            ? t("checkLaterErrorDescription")
+            : t(errorMessage)}
+        </div>
       </div>
 
-      {errorMessage === "FETCH_UTXO_PROOF_FAILED" ? (
+      {fetchUtxoProofFailedError ? (
         <>
           <Button
             onClick={() => {
@@ -356,6 +402,24 @@ export function DepositReview({
             {t("cancel")}
           </Button>
         </>
+      ) : refreshQuoteError ? (
+        <Button
+          onClick={onRefreshQuote}
+          variant="secondary"
+          size="lg"
+          className="text-primary"
+        >
+          {t("refreshQuote")}
+        </Button>
+      ) : checkLaterError ? (
+        <Button
+          onClick={onCheckLater}
+          variant="secondary"
+          size="lg"
+          className="text-primary"
+        >
+          {t("checkLater")}
+        </Button>
       ) : (
         <Button
           onClick={onBack}

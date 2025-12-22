@@ -21,6 +21,7 @@ export type SwapRoute = {
   runePriceInSats: number;
   priceImpact: number;
   poolPriceImpact?: number;
+  poolPendingTxCount: number;
 };
 
 export type SwapQuote = {
