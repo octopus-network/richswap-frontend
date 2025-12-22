@@ -5,7 +5,11 @@
   "Common": {
     "half": "Half",
     "max": "Max",
-    "selectCoin": "Select Coin"
+    "selectCoin": "Select Coin",
+    "fluent": "Fluent",
+    "busy": "Busy",
+    "congested": "Congested",
+    "pendingTransactions": "Pending Transactions"
   },
   "Topbar": {
     "swap": "Swap",
@@ -150,7 +154,13 @@
     "standard": "Standard",
     "onetime": "Onetime",
     "template": "Template",
-    "permanentlyLocked": "Permanently Locked"
+    "permanentlyLocked": "Permanently Locked",
+    "refreshQuote": "Refresh Quote",
+    "checkLater": "Check Later",
+    "refreshQuoteErrorTitle": "Price Updated",
+    "checkLaterErrorTitle": "Mempool Limit",
+    "refreshQuoteErrorDescription": "Another user just traded, changing the pool state. Please refresh for the latest quote.",
+    "checkLaterErrorDescription": "Pool is congested. Please wait for the next Bitcoin block (~10 mins)."
   },
   "ConnectWallet": {
     "connectAWallet": "Connect a Wallet",
@@ -261,11 +271,5 @@
     "failed": "Failed",
     "success": "Success",
     "lockLpSuccess": "Lock LP success"
-  },
-  "Footer": {
-    "fluent": "Fluent",
-    "busy": "Busy",
-    "congested": "Congested",
-    "pendingTransactions": "Pending Transactions"
   }
 }

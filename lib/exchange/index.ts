@@ -21,6 +21,7 @@ import {
   addressToScriptPk,
 } from "../utils";
 import Decimal from "decimal.js";
+import { Orchestrator } from "../orchestrator";
 
 export class Exchange {
   static coins: Coin[] = [];
@@ -697,21 +698,25 @@ export class Exchange {
       throw new Error("No Pool");
     }
 
-    const { output, input, nonce, price_impact } = await actor
-      .pre_swap(pool.address, {
-        id: inputCoin.id,
-        value: BigInt(inputAmount),
-      })
-      .then((data: any) => {
-        console.log("data", data);
-        if (data.Ok) {
-          return data.Ok;
-        } else {
-          throw new Error(
-            data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
-          );
-        }
-      });
+    const [poolPendingTxCount, { output, input, nonce, price_impact }] =
+      await Promise.all([
+        Orchestrator.getPendingTxCountOfPool(pool.address),
+        actor
+          .pre_swap(pool.address, {
+            id: inputCoin.id,
+            value: BigInt(inputAmount),
+          })
+          .then((data: any) => {
+            console.log("data", data);
+            if (data.Ok) {
+              return data.Ok;
+            } else {
+              throw new Error(
+                data.Err ? Object.keys(data.Err)[0] : "Unknown Error"
+              );
+            }
+          }),
+      ]);
 
     const { txid, vout, sats, coins } = input;
 
@@ -787,6 +792,7 @@ export class Exchange {
       runePriceInSats,
       priceImpact: inputCoinIsBitcoin ? priceImpact : -priceImpact,
       poolPriceImpact: price_impact / 100,
+      poolPendingTxCount,
     };
 
     return route;

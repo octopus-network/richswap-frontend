@@ -1,16 +1,16 @@
 "use client";
 
-import { RefreshCcw, ChartLine, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Suspense, useState, useEffect, useMemo } from "react";
 import { SwapPanel } from "./swap-panel";
-import { Button } from "@/components/ui/button";
+
 import { useTranslations } from "next-intl";
 import { cn, formatNumber } from "@/lib/utils";
 import { KlineChart } from "./kline-chart";
 import { Coin } from "@/types";
 import { CoinIcon } from "@/components/coin-icon";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useKlineChartOpen, useToggleKlineChartOpen } from "@/store/user/hooks";
+import { useKlineChartOpen } from "@/store/user/hooks";
 import { RunePriceData, useRunePrice } from "@/hooks/use-rune-price";
 import Link from "next/link";
 import { RUNESCAN_URL } from "@/lib/constants";
@@ -111,14 +111,12 @@ function Overview({
 }
 
 export default function SwapPage() {
-  const t = useTranslations("Swap");
-  const klineChartOpen = useKlineChartOpen();
-  const toggleKlineChartOpen = useToggleKlineChartOpen();
-
   const poolList = usePoolList();
 
   const [rune, setRune] = useState<Coin>();
   const [chartLoading, setChartLoading] = useState(true);
+
+  const klineChartOpen = useKlineChartOpen();
 
   const { priceData } = useRunePrice(rune?.name || null, {
     refreshInterval: 30000,
@@ -171,31 +169,6 @@ export default function SwapPage() {
             </div>
           )}
           <div className="max-w-lg w-full">
-            <div className="flex justify-between items-center">
-              <span className="text-2xl font-semibold">{t("swap")}</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="icon"
-                  className={cn(
-                    "rounded-full size-8 text-muted-foreground border border-transparent",
-                    klineChartOpen
-                      ? "border-primary text-primary"
-                      : "hover:text-primary"
-                  )}
-                  variant="secondary"
-                  onClick={() => toggleKlineChartOpen()}
-                >
-                  <ChartLine className="size-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  className="rounded-full size-8 text-muted-foreground hover:text-foreground"
-                  variant="secondary"
-                >
-                  <RefreshCcw className={cn("size-4")} />
-                </Button>
-              </div>
-            </div>
             <SwapPanel onRuneChange={setRune} />
           </div>
         </div>

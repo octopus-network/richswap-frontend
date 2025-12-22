@@ -2,7 +2,7 @@
 
 import { CoinField } from "@/components/coin-field";
 import { Button } from "@/components/ui/button";
-import { ArrowDownUp } from "lucide-react";
+import { ArrowDownUp, ChartLine, RefreshCcw } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { Field, Coin, SwapState } from "@/types";
 import { ReviewModal } from "./review-modal";
@@ -14,6 +14,7 @@ import { useCoinPrice } from "@/hooks/use-prices";
 import Decimal from "decimal.js";
 import { useTranslations } from "next-intl";
 import { connectWalletModalOpenAtom } from "@/store/connect-wallet-modal-open";
+import { useKlineChartOpen, useToggleKlineChartOpen } from "@/store/user/hooks";
 
 import {
   useSwapActionHandlers,
@@ -32,6 +33,7 @@ import {
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { BITCOIN } from "@/lib/constants";
 import Link from "next/link";
+import TxQueue from "@/components/tx-queue";
 
 export function SwapPanel({
   onRuneChange,
@@ -40,6 +42,9 @@ export function SwapPanel({
 }) {
   const { address } = useLaserEyes();
   const searchParams = useSearchParams();
+
+  const klineChartOpen = useKlineChartOpen();
+  const toggleKlineChartOpen = useToggleKlineChartOpen();
 
   const t = useTranslations("Swap");
   const updateConnectWalletModalOpen = useSetAtom(connectWalletModalOpenAtom);
@@ -61,6 +66,8 @@ export function SwapPanel({
   } = swapState;
 
   const { swap, parsedAmount } = useDerivedSwapInfo();
+
+  console.log("swap", swap);
 
   const parsedAmounts = useMemo(
     () => ({
@@ -283,13 +290,48 @@ export function SwapPanel({
     };
   }, [swap, btcPrice]);
 
-  // const poolPaused = useMemo(() => {
-  //   return pools.some((p) => p.paused);
-  // }, [pools]);
-  const poolPaused = useMemo(() => false, []);
+  const poolPaused = useMemo(() => {
+    return pools.some((p) => p.paused);
+  }, [pools]);
+
+  const onRefreshQuote = () => {
+    swap?.refetch?.();
+  };
+
+  const maxPendingTxCount = useMemo(() => {
+    return Math.max(...(swap?.routes?.map((r) => r.poolPendingTxCount) ?? [0]));
+  }, [swap]);
 
   return (
     <>
+      <div className="flex justify-between items-center">
+        <span className="text-2xl font-semibold">{t("swap")}</span>
+        <div className="flex items-center gap-2">
+          <TxQueue txCount={maxPendingTxCount} />
+          <Button
+            size="icon"
+            className={cn(
+              "rounded-full size-8 text-muted-foreground border border-transparent",
+              klineChartOpen
+                ? "border-primary text-primary"
+                : "hover:text-primary"
+            )}
+            variant="secondary"
+            onClick={() => toggleKlineChartOpen()}
+          >
+            <ChartLine className="size-4" />
+          </Button>
+          <Button
+            size="icon"
+            className="rounded-full size-8 text-muted-foreground hover:text-foreground"
+            variant="secondary"
+            onClick={onRefreshQuote}
+            disabled={!swap?.refetch || swap.state === SwapState.LOADING}
+          >
+            <RefreshCcw className={cn("size-4")} />
+          </Button>
+        </div>
+      </div>
       <div className="mt-4">
         <CoinField
           label={t("youAreSelling")}
