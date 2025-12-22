@@ -25,97 +25,54 @@ export async function GET(req: NextRequest) {
     const oneDayAgo = now - 24 * 60 * 60;
 
     const query = gql`
-      query GetRunePrice($token: String!, $fromTs: bigint!, $toTs: bigint!) {
-        k_line_minutes(
-          where: {
-            token: { _eq: $token }
-            timestamp: { _gte: $fromTs, _lte: $toTs }
-          }
+      query GetRunePrice(
+        $token: String!
+        $nowTs: bigint!
+        $oneDayAgoTs: bigint!
+      ) {
+        current: k_line_minutes(
+          where: { token: { _eq: $token }, timestamp: { _lte: $nowTs } }
           order_by: { timestamp: desc }
-          limit: 2
+          limit: 1
         ) {
           close
           timestamp
           market_cap
           tvl
         }
+
+        day_ago: k_line_minutes(
+          where: { token: { _eq: $token }, timestamp: { _lte: $oneDayAgoTs } }
+          order_by: { timestamp: desc }
+          limit: 1
+        ) {
+          close
+          timestamp
+        }
       }
     `;
 
-    const fromTs = (oneDayAgo * 1e9).toString();
-    const toTs = (now * 1e9).toString();
+    const nowTs = (now * 1e9).toString();
+    const oneDayAgoTs = (oneDayAgo * 1e9).toString();
 
-    const { k_line_minutes: raw } = (await client.request(query, {
+    const result = (await client.request(query, {
       token: rune,
-      fromTs,
-      toTs,
+      nowTs,
+      oneDayAgoTs,
     })) as {
-      k_line_minutes: {
+      current: {
         close: string;
         timestamp: number;
         market_cap: number;
         tvl: number;
       }[];
+      day_ago: {
+        close: string;
+        timestamp: number;
+      }[];
     };
 
-    if (!raw || raw.length === 0) {
-      const thirtyDaysAgo = now - 30 * 24 * 60 * 60;
-      const fallbackQuery = gql`
-        query FallbackPrice($token: String!, $fromTs: bigint!, $toTs: bigint!) {
-          k_line_minutes(
-            where: {
-              token: { _eq: $token }
-              timestamp: { _gte: $fromTs, _lte: $toTs }
-            }
-            order_by: { timestamp: desc }
-            limit: 1
-          ) {
-            close
-            timestamp
-            tvl
-            market_cap
-          }
-        }
-      `;
-
-      try {
-        const fallbackResult = (await client.request(fallbackQuery, {
-          token: rune,
-          fromTs: (thirtyDaysAgo * 1e9).toString(),
-          toTs: (now * 1e9).toString(),
-        })) as {
-          k_line_minutes: {
-            close: string;
-            timestamp: number;
-            market_cap: number;
-            tvl: number;
-          }[];
-        };
-
-        if (fallbackResult.k_line_minutes?.length > 0) {
-          const latestPrice = Number(fallbackResult.k_line_minutes[0].close);
-          const market_cap = fallbackResult.k_line_minutes[0].market_cap;
-          const tvl = fallbackResult.k_line_minutes[0].tvl;
-          return NextResponse.json({
-            success: true,
-            data: {
-              price: latestPrice,
-              market_cap,
-              tvl,
-              change: 0,
-              hasData: true,
-              dataPoints: 1,
-              timestamp: Math.floor(
-                Number(fallbackResult.k_line_minutes[0].timestamp) / 1e9
-              ),
-              fallback: true,
-            },
-          });
-        }
-      } catch (fallbackError) {
-        console.error("[RunePrice] Fallback query failed:", fallbackError);
-      }
-
+    if (!result.current || result.current.length === 0) {
       return NextResponse.json({
         success: true,
         data: {
@@ -128,14 +85,12 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const sortedData = raw.sort(
-      (a, b) => Number(b.timestamp) - Number(a.timestamp)
-    );
-    const currentPrice = Number(sortedData[0].close);
+    const currentData = result.current[0];
+    const currentPrice = Number(currentData.close);
 
     let change = 0;
-    if (sortedData.length >= 2) {
-      const price24hAgo = Number(sortedData[1].close);
+    if (result.day_ago && result.day_ago.length > 0) {
+      const price24hAgo = Number(result.day_ago[0].close);
       if (price24hAgo > 0) {
         change = ((currentPrice - price24hAgo) / price24hAgo) * 100;
       }
@@ -145,12 +100,11 @@ export async function GET(req: NextRequest) {
       success: true,
       data: {
         price: currentPrice,
-        market_cap: sortedData[0].market_cap,
-        tvl: sortedData[0].tvl,
+        market_cap: currentData.market_cap,
+        tvl: currentData.tvl,
         change: change,
         hasData: true,
-        dataPoints: raw.length,
-        timestamp: Math.floor(Number(sortedData[0].timestamp) / 1e9),
+        timestamp: Math.floor(Number(currentData.timestamp) / 1e9),
       },
     });
   } catch (error) {

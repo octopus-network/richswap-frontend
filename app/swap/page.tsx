@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import { Suspense, useState, useEffect, useMemo } from "react";
 import { SwapPanel } from "./swap-panel";
 
@@ -114,7 +114,7 @@ export default function SwapPage() {
   const poolList = usePoolList();
 
   const [rune, setRune] = useState<Coin>();
-  const [, setChartLoading] = useState(true);
+  const [chartLoading, setChartLoading] = useState(true);
 
   const klineChartOpen = useKlineChartOpen();
 
@@ -146,11 +146,11 @@ export default function SwapPage() {
             >
               <Overview rune={rune} priceData={priceData} />
               <div className="h-[260px] lg:h-[420px] relative">
-                {/* {(chartLoading || !poolInfo) && (
+                {(chartLoading || !poolInfo) && (
                   <div className="absolute inset-0 bg-secondary items-center justify-center flex">
                     <Loader2 className="size-6 text-muted-foreground animate-spin" />
                   </div>
-                )} */}
+                )}
                 {poolInfo?.paused ? (
                   <div className="absolute inset-0 bg-secondary items-center justify-center flex">
                     <span className="text-muted-foreground">
