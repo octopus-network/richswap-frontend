@@ -5,9 +5,18 @@ import { useCoinBalance } from "@/hooks/use-balance";
 import { useDefaultCoins } from "@/hooks/use-coins";
 import { CoinIcon } from "../coin-icon";
 import { formatNumber, cn, getCoinSymbol, getCoinName } from "@/lib/utils";
+import { useCoinPrice } from "@/hooks/use-prices";
+import { useMemo } from "react";
 
 function CoinRow({ coin }: { coin: Coin }) {
   const balance = useCoinBalance(coin);
+
+  const price = useCoinPrice(coin?.id);
+
+  const fiatValue = useMemo(
+    () => (balance && price ? Number(balance) * price : undefined),
+    [balance, price]
+  );
 
   return !balance || Number(balance) === 0 ? null : (
     <div
@@ -26,7 +35,9 @@ function CoinRow({ coin }: { coin: Coin }) {
       </div>
       <div className="flex flex-col items-end">
         <span className="text-sm">{balance ? formatNumber(balance) : "-"}</span>
-        <span className="text-xs text-muted-foreground">-</span>
+        <span className="text-xs text-muted-foreground">
+          {fiatValue ? "$" + formatNumber(fiatValue) : "-"}
+        </span>
       </div>
     </div>
   );

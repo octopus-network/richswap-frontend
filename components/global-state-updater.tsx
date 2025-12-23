@@ -27,6 +27,7 @@ export function GlobalStateUpdater() {
   const btcPrice = useBtcPrice();
 
   const [timer, setTimer] = useState<number>();
+  const [lpTimer, setLpTimer] = useState<number>();
 
   const transactions = useTransactions();
   const poolList = usePoolList();
@@ -34,11 +35,17 @@ export function GlobalStateUpdater() {
   useEffect(() => {
     const interval = setInterval(
       () => setTimer(new Date().getTime()),
-      10 * 1000
+      20 * 1000
+    );
+
+    const lpInterval = setInterval(
+      () => setLpTimer(new Date().getTime()),
+      60 * 1000
     );
 
     return () => {
       clearInterval(interval);
+      clearInterval(lpInterval);
     };
   }, []);
 
@@ -89,7 +96,7 @@ export function GlobalStateUpdater() {
         poolList.map((pool) => limitGetPosition(pool, paymentAddress))
       ).then((positions) => setPortfolios(positions.filter((p) => !!p)));
     }
-  }, [paymentAddress, poolList, transactions, setPortfolios, timer]);
+  }, [paymentAddress, poolList, transactions, setPortfolios, lpTimer]);
 
   useEffect(() => {
     if (paymentAddress && paymentPublicKey) {

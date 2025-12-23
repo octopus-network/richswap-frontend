@@ -37,13 +37,13 @@ export function AccountSheetContent() {
             />
             <div className="flex flex-col justify-start ml-2">
               <span className="font-semibold">
-                {ellipseMiddle(address, 10)}
+                {ellipseMiddle(paymentAddress, 10)}
               </span>
               {paymentAddress !== address ? (
                 <div className="flex text-xs text-muted-foreground items-center">
-                  <span>{t("payment")}:</span>
+                  <span>{t("runes")}:</span>
                   <span className="ml-2">
-                    {ellipseMiddle(paymentAddress, 6)}
+                    {ellipseMiddle(address, 6)}
                   </span>
                   <Button
                     size="icon"

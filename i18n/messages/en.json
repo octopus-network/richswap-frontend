@@ -196,7 +196,8 @@
     "claimRevenueDescription": "Claim {amount} sats from {poolName} pool",
     "disconnect": "Disconnect",
     "extractFee": "Extract Fee",
-    "payment": "Payment"
+    "payment": "Payment",
+    "runes": "Runes"
   },
   "Transaction": {
     "transactionConfirmed": "Transaction Confirmed",
