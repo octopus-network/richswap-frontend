@@ -9,7 +9,7 @@ import { AccountSheetContent } from "./account-sheet-content";
 import { usePendingTransactions } from "@/store/transactions";
 
 export function AccountButton() {
-  const { address, provider } = useLaserEyes();
+  const { paymentAddress, provider } = useLaserEyes();
 
   const pendingTransactions = usePendingTransactions();
 
@@ -29,7 +29,7 @@ export function AccountButton() {
               src={WALLETS[provider]?.icon ?? ""}
             />
           )}
-          <span>{ellipseMiddle(address)}</span>
+          <span>{ellipseMiddle(paymentAddress)}</span>
           <ChevronDown className="text-muted-foreground size-4" />
           {pendingTransactions.length > 0 && (
             <div className="absolute size-2 rounded-full bg-primary/60 left-0 top-0">
