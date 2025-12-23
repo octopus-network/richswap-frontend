@@ -107,10 +107,9 @@ export class Orchestrator {
     address: string,
     utxos: UnspentOutput[]
   ): Promise<UnspentOutput[]> {
-    const usedOutpoints = (await actor.get_used_outpoints([address])) as [
-      string,
-      string
-    ][];
+    const usedOutpoints = (await actor
+      .get_used_outpoints([address])
+      .catch(() => [])) as [string, string][];
     return utxos.filter(
       ({ txid, vout }) =>
         usedOutpoints.findIndex(
