@@ -13,8 +13,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useKlineChartOpen } from "@/store/user/hooks";
 import { RunePriceData, useRunePrice } from "@/hooks/use-rune-price";
 import Link from "next/link";
-import { RUNESCAN_URL } from "@/lib/constants";
+import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
 
+import { useCoinPrice } from "@/hooks/use-prices";
 import { Separator } from "@/components/ui/separator";
 import { usePoolList } from "@/hooks/use-pools";
 
@@ -26,6 +27,10 @@ function Overview({
   priceData: RunePriceData | null;
 }) {
   const t = useTranslations("Swap");
+  const btcPrice = useCoinPrice(BITCOIN.id);
+
+  console.log("btcPrice", btcPrice);
+
   return (
     <div>
       <div className="px-2 py-1.5 flex justify-between items-center">
@@ -88,21 +93,31 @@ function Overview({
             {t("marketCap")}
           </span>
           {priceData && priceData.hasData ? (
-            <span className="text-sm font-semibold">
-              {formatNumber(priceData.market_cap / 1e8)} ₿
-            </span>
+            <div className="flex items-center space-x-1">
+              <span className="text-sm font-semibold">
+                {formatNumber(priceData.market_cap / 1e8)} ₿
+              </span>
+              <span className="text-xs text-muted-foreground">
+                (${formatNumber((priceData.market_cap * btcPrice) / 1e8)})
+              </span>
+            </div>
           ) : (
-            <Skeleton className="h-4 w-12 bg-slate-50/20" />
+            <Skeleton className="h-4 w-20 bg-slate-50/20" />
           )}
         </div>
         <div className="flex-col flex">
           <span className="text-xs text-muted-foreground">{t("tvl")}</span>
           {priceData && priceData.hasData ? (
-            <span className="text-sm font-semibold">
-              {formatNumber(priceData.tvl / 1e8)} ₿
-            </span>
+            <div className="flex items-center space-x-1">
+              <span className="text-sm font-semibold">
+                {formatNumber(priceData.tvl / 1e8)} ₿
+              </span>
+              <span className="text-xs text-muted-foreground">
+                (${formatNumber((priceData.tvl * btcPrice) / 1e8)})
+              </span>
+            </div>
           ) : (
-            <Skeleton className="h-4 w-12 bg-slate-50/20" />
+            <Skeleton className="h-4 w-20 bg-slate-50/20" />
           )}
         </div>
       </div>
@@ -119,7 +134,7 @@ export default function SwapPage() {
   const klineChartOpen = useKlineChartOpen();
 
   const { priceData } = useRunePrice(rune?.name || null, {
-    refreshInterval: 30000,
+    refreshInterval: 60 * 1000,
     enabled: klineChartOpen && !!rune?.name,
   });
 
