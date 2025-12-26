@@ -24,6 +24,23 @@ const configurationData: DatafeedConfiguration = {
   supports_time: true,
 };
 
+type KlineBar = {
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  time: number;
+};
+
+type KlineResponse = {
+  data: {
+    bars: KlineBar[];
+    price: number;
+    change: number;
+  };
+};
+
 export const ChartContainer = ({
   symbol,
   onLoadingChange,
@@ -40,6 +57,49 @@ export const ChartContainer = ({
   const datafeed: IBasicDataFeed = useMemo(
     () => {
       const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const subscribers = new Map<
+        string,
+        {
+          timerId: ReturnType<typeof setInterval>;
+          lastBarTime: number;
+          isPolling: boolean;
+        }
+      >();
+
+      const resolutionToMinutes = (res: string) => {
+        if (res === "1D") {
+          return 1440;
+        }
+        if (res === "1W") {
+          return 10080;
+        }
+        if (/^\d+$/.test(res)) {
+          return Number(res);
+        }
+        const hoursMatch = res.match(/^(\d+)H$/);
+        if (hoursMatch) {
+          return Number(hoursMatch[1]) * 60;
+        }
+        return 15;
+      };
+
+      // const pollingIntervalMsForResolution = (res: string) => {
+      //   const minutes = resolutionToMinutes(res);
+      //   if (minutes >= 1440) {
+      //     return 5 * 60 * 1000;
+      //   }
+      //   if (minutes >= 240) {
+      //     return 2 * 60 * 1000;
+      //   }
+      //   return 60 * 1000;
+      // };
+
+      const fetchBars = async (apiUrl: string) => {
+        const { data } = await axios
+          .get<KlineResponse>(apiUrl)
+          .then((res) => res.data);
+        return data.bars;
+      };
 
       return {
         onReady: (callback) => {
@@ -89,25 +149,10 @@ export const ChartContainer = ({
               apiUrl = `/api/kline?rune=${symbolInfo.name}&resolution=${resolution}&from=${from}&to=${to}`;
             }
 
-            const { data } = await axios
-              .get<{
-                data: {
-                  bars: {
-                    open: number;
-                    high: number;
-                    low: number;
-                    close: number;
-                    volume: number;
-                    time: number;
-                  }[];
-                  price: number;
-                  change: number;
-                };
-              }>(apiUrl)
-              .then((res) => res.data);
+            const bars = await fetchBars(apiUrl);
 
-            if (data.bars.length > 0) {
-              const times = data.bars.map((d) => d.time);
+            if (bars.length > 0) {
+              const times = bars.map((d) => d.time);
               const min = Math.min(...times);
               const max = Math.max(...times);
 
@@ -126,18 +171,16 @@ export const ChartContainer = ({
             }
 
             const meta: any = {
-              noData: data.bars.length === 0,
+              noData: bars.length === 0,
             };
 
-            if (firstDataRequest && data.bars.length > 0) {
-              const earliestTime = Math.min(
-                ...data.bars.map((bar) => bar.time)
-              );
+            if (firstDataRequest && bars.length > 0) {
+              const earliestTime = Math.min(...bars.map((bar) => bar.time));
 
               meta.nextTime = earliestTime;
             }
 
-            onHistoryCallback(data.bars, meta);
+            onHistoryCallback(bars, meta);
           } catch (e) {
             if (e instanceof Error) {
               console.warn("[getBars]: Get error", e);
@@ -145,8 +188,79 @@ export const ChartContainer = ({
             }
           }
         },
-        subscribeBars: async () => {},
-        unsubscribeBars: async () => {},
+        subscribeBars: async (
+          symbolInfo,
+          resolution,
+          onRealtimeCallback,
+          subscriberUID
+        ) => {
+          const existing = subscribers.get(subscriberUID);
+          if (existing) {
+            clearInterval(existing.timerId);
+            subscribers.delete(subscriberUID);
+          }
+
+          const intervalMinutes = resolutionToMinutes(resolution);
+          const intervalSeconds = intervalMinutes * 60;
+          // const pollingIntervalMs = pollingIntervalMsForResolution(resolution);
+          const pollingIntervalMs = 60 * 1000;
+
+          const subscription = {
+            timerId: 0 as unknown as ReturnType<typeof setInterval>,
+            lastBarTime: latestTimeRef.current,
+            isPolling: false,
+          };
+
+          const poll = async () => {
+            if (subscription.isPolling) {
+              return;
+            }
+            subscription.isPolling = true;
+            try {
+              const now = Math.floor(Date.now() / 1000);
+              const lastBarSeconds =
+                subscription.lastBarTime > 0
+                  ? Math.floor(subscription.lastBarTime / 1000)
+                  : now - intervalSeconds * 2;
+              const from = Math.max(0, lastBarSeconds - intervalSeconds * 2);
+              const apiUrl = `/api/kline?rune=${symbolInfo.name}&resolution=${resolution}&from=${from}&to=${now}`;
+
+              const bars = await fetchBars(apiUrl);
+              if (bars.length === 0) {
+                return;
+              }
+
+              const lastBar = bars[bars.length - 1];
+              if (lastBar.time < subscription.lastBarTime) {
+                return;
+              }
+
+              subscription.lastBarTime = lastBar.time;
+              latestTimeRef.current = Math.max(
+                latestTimeRef.current,
+                lastBar.time
+              );
+              onRealtimeCallback(lastBar);
+            } catch (e) {
+              if (e instanceof Error) {
+                console.warn("[subscribeBars]: Poll error", e);
+              }
+            } finally {
+              subscription.isPolling = false;
+            }
+          };
+
+          subscription.timerId = setInterval(poll, pollingIntervalMs);
+          subscribers.set(subscriberUID, subscription);
+          void poll();
+        },
+        unsubscribeBars: async (subscriberUID) => {
+          const subscription = subscribers.get(subscriberUID);
+          if (subscription) {
+            clearInterval(subscription.timerId);
+            subscribers.delete(subscriberUID);
+          }
+        },
       };
     },
     [symbol] // eslint-disable-line react-hooks/exhaustive-deps
