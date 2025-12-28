@@ -18,6 +18,8 @@ import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
 import { useCoinPrice } from "@/hooks/use-prices";
 import { Separator } from "@/components/ui/separator";
 import { usePoolList } from "@/hooks/use-pools";
+import TradingActivity from "./trading-activity";
+import { useHolders } from "@/hooks/use-holders";
 
 function Overview({
   rune,
@@ -29,7 +31,10 @@ function Overview({
   const t = useTranslations("Swap");
   const btcPrice = useCoinPrice(BITCOIN.id);
 
-  console.log("btcPrice", btcPrice);
+  const { data: holders } = useHolders({
+    runeId: rune?.id,
+    refreshInterval: 60 * 1000,
+  });
 
   return (
     <div>
@@ -61,7 +66,7 @@ function Overview({
         </div>
       </div>
       <Separator className="bg-slate-50/5" />
-      <div className="px-2 py-1.5 h-12 flex space-x-6 items-start">
+      <div className="px-2 py-1.5 flex space-x-6 items-start">
         {priceData && priceData.hasData ? (
           <div className="flex-col flex">
             <span className="text-sm font-semibold">
@@ -93,7 +98,7 @@ function Overview({
             {t("marketCap")}
           </span>
           {priceData && priceData.hasData ? (
-            <div className="flex items-center space-x-1">
+            <div className="flex sm:items-center space-x-1 flex-col sm:flex-row">
               <span className="text-sm font-semibold">
                 {formatNumber(priceData.market_cap / 1e8)} ₿
               </span>
@@ -108,13 +113,31 @@ function Overview({
         <div className="flex-col flex">
           <span className="text-xs text-muted-foreground">{t("tvl")}</span>
           {priceData && priceData.hasData ? (
-            <div className="flex items-center space-x-1">
+            <div className="flex sm:items-center space-x-1 flex-col sm:flex-row">
               <span className="text-sm font-semibold">
                 {formatNumber(priceData.tvl / 1e8)} ₿
               </span>
               <span className="text-xs text-muted-foreground">
                 (${formatNumber((priceData.tvl * btcPrice) / 1e8)})
               </span>
+            </div>
+          ) : (
+            <Skeleton className="h-4 w-20 bg-slate-50/20" />
+          )}
+        </div>
+        <div className="flex-col flex">
+          <span className="text-xs text-muted-foreground">{t("holders")}</span>
+          {holders ? (
+            <div className="flex sm:items-center gap-2 flex-col sm:flex-row">
+              <span className="text-sm font-semibold">{holders}</span>
+              <Link
+                target="_blank"
+                className="inline-flex items-center text-muted-foreground underline hover:text-foreground"
+                href={`${RUNESCAN_URL}/runes/${rune?.name}?tab=Holder&page=1`}
+              >
+                <span className="text-xs">View on Explorer</span>
+                <ExternalLink className="size-3 ml-1" />
+              </Link>
             </div>
           ) : (
             <Skeleton className="h-4 w-20 bg-slate-50/20" />
@@ -153,35 +176,41 @@ export default function SwapPage() {
   return (
     <Suspense>
       <div className="lg:pt-12 w-full flex flex-col items-center">
-        <div className="w-full flex flex-col lg:flex-row justify-center items-center lg:items-start max-w-7xl gap-6">
+        <div className="w-full flex flex-col-reverse lg:flex-row justify-center items-center lg:items-start max-w-7xl gap-6">
           {klineChartOpen && (
-            <div
-              key="chart"
-              className="flex-1 w-full max-w-lg lg:max-w-full overflow-hidden bg-secondary/60 rounded-xl fle flex-col"
-            >
-              <Overview rune={rune} priceData={priceData} />
-              <div className="h-[260px] lg:h-[420px] relative">
-                {(chartLoading || !poolInfo) && (
-                  <div className="absolute inset-0 bg-secondary items-center justify-center flex">
-                    <Loader2 className="size-6 text-muted-foreground animate-spin" />
-                  </div>
-                )}
-                {poolInfo?.paused ? (
-                  <div className="absolute inset-0 bg-secondary items-center justify-center flex">
-                    <span className="text-muted-foreground">
-                      {t("marketOpeningSoon")}
-                    </span>
-                  </div>
-                ) : (
-                  <KlineChart
-                    rune={rune?.name || ""}
-                    onLoadingChange={setChartLoading}
-                  />
-                )}
+            <div className="flex-1 flex flex-col w-full max-w-lg lg:max-w-full gap-6">
+              <div
+                key="chart"
+                className="bg-secondary/60 rounded-xl flex flex-col"
+              >
+                <Overview rune={rune} priceData={priceData} />
+                <div className="h-[260px] lg:h-[420px] relative">
+                  {(chartLoading || !poolInfo) && (
+                    <div className="absolute inset-0 bg-secondary items-center justify-center flex">
+                      <Loader2 className="size-6 text-muted-foreground animate-spin" />
+                    </div>
+                  )}
+                  {poolInfo?.paused ? (
+                    <div className="absolute inset-0 bg-secondary items-center justify-center flex">
+                      <span className="text-muted-foreground">
+                        {t("marketOpeningSoon")}
+                      </span>
+                    </div>
+                  ) : (
+                    <KlineChart
+                      rune={rune?.name || ""}
+                      onLoadingChange={setChartLoading}
+                    />
+                  )}
+                </div>
               </div>
+              <TradingActivity
+                rune={rune?.name || ""}
+                poolAddress={poolInfo?.address || ""}
+              />
             </div>
           )}
-          <div className="max-w-lg w-full">
+          <div className="max-w-[480px] w-full">
             <SwapPanel onRuneChange={setRune} />
           </div>
         </div>
