@@ -34,7 +34,7 @@ import { useRee } from "@omnity/ree-client-ts-sdk/react";
 import { TransactionStatus, TransactionType, DonateState } from "@/types";
 import { PopupStatus, useAddPopup } from "@/store/popups";
 import { useAddTransaction } from "@/store/transactions";
-import LpRow from "./lp-row";
+import LpRow from "@/components/lp-row";
 
 export default function Pool() {
   const t = useTranslations("Pools");
