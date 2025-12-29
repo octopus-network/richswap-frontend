@@ -21,7 +21,7 @@ export function Topbar() {
   const t = useTranslations("Topbar");
 
   return (
-    <div className="flex justify-between items-cetner sm:px-4 px-3 py-2 border-b">
+    <div className="sticky top-0 z-50 bg-background flex justify-between items-cetner sm:px-4 px-3 py-2 border-b">
       <div className="items-center flex space-x-3 justify-start">
         <Image
           src="/static/logo.png"
