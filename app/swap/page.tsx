@@ -94,8 +94,11 @@ function Overview({
         )}
 
         <div className="flex-col flex">
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground hidden sm:inline">
             {t("marketCap")}
+          </span>
+          <span className="text-xs text-muted-foreground sm:hidden">
+            {t("mc")}
           </span>
           {priceData && priceData.hasData ? (
             <div className="flex sm:items-center space-x-1 flex-col sm:flex-row">
@@ -128,14 +131,16 @@ function Overview({
         <div className="flex-col flex">
           <span className="text-xs text-muted-foreground">{t("holders")}</span>
           {holders ? (
-            <div className="flex sm:items-center gap-2 flex-col sm:flex-row">
+            <div className="flex sm:items-center gap-1 flex-col sm:flex-row">
               <span className="text-sm font-semibold">{holders}</span>
               <Link
                 target="_blank"
                 className="inline-flex items-center text-muted-foreground underline hover:text-foreground"
                 href={`${RUNESCAN_URL}/runes/${rune?.name}?tab=Holder&page=1`}
               >
-                <span className="text-xs">View on Explorer</span>
+                <span className="text-xs hidden sm:inline">
+                  View on Explorer
+                </span>
                 <ExternalLink className="size-3 ml-1" />
               </Link>
             </div>
