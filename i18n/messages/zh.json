@@ -59,6 +59,7 @@
     "retry": "重试",
     "FETCH_UTXO_PROOF_FAILED": "获取 UTXO 证明失败",
     "marketCap": "市值",
+    "mc": "市值",
     "tvl": "总锁仓价值 (TVL)",
     "fee": "手续费",
     "error": "错误",

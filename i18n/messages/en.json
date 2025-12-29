@@ -58,6 +58,7 @@
     "cancel": "Cancel",
     "FETCH_UTXO_PROOF_FAILED": "Fetch UTXO proof failed",
     "marketCap": "Market Cap",
+    "mc": "MC",
     "tvl": "TVL",
     "fee": "Fee",
     "error": "Error",
