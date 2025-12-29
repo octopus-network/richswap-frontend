@@ -11,7 +11,7 @@ export default function Page() {
             check our
           </span>
           <Link
-            href="https://x.com/RichSwap_REE/status/1980091999610171893"
+            href="https://x.com/OmnityBTCdApps/status/2005457140488827252?s=20"
             target="_blank"
             className="text-foreground inline-flex text-lg ml-2"
           >
