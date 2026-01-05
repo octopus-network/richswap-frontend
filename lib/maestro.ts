@@ -49,11 +49,13 @@ export class Maestro {
         };
         data: RawBtcUtxo[];
       }>(
-        `/mempool/addresses/${address}/utxos?filter_dust=true&exclude_metaprotocols=true&filter_dust_threshold=330&order=asc&count=100${
+        `/mempool/addresses/${address}/utxos?filter_dust=true&exclude_metaprotocols=true&filter_dust_threshold=547&order=asc&count=100${
           cursor ? `&cursor=${cursor}` : ""
         }`
       )
       .then((res) => res.data);
+
+    console.log("utxos by address mempool aware", res);
 
     return res;
   }
@@ -118,6 +120,8 @@ export class Maestro {
         }`
       )
       .then((res) => res.data);
+
+    console.log("rune utxos response", response);
 
     return response;
   }
