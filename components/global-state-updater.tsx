@@ -90,7 +90,7 @@ export function GlobalStateUpdater() {
       const limitGetPosition = limitFunction(
         async (pool: PoolInfo, address: string) =>
           Exchange.getPosition(pool.address, address),
-        { concurrency: 2 }
+        { concurrency: 8 }
       );
       Promise.all(
         poolList.map((pool) => limitGetPosition(pool, paymentAddress))
