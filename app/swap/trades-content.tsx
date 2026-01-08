@@ -12,6 +12,8 @@ import {
   ExternalLink,
   ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import { BITCOIN, RUNESCAN_URL } from "@/lib/constants";
@@ -165,8 +167,14 @@ function TradeRow({
 
   const btcPrice = useCoinPrice(BITCOIN.id);
 
+  const runePriceInSats = new Decimal(btcAmount).div(formattedRuneAmount).toNumber();
+  const runePrice = useMemo(
+    () => (runePriceInSats * btcPrice) / Math.pow(10, 8),
+    [runePriceInSats, btcPrice]
+  );
+
   return (
-    <div className="grid grid-cols-4 sm:grid-cols-5 py-2 items-center text-sm hover:bg-secondary/30 gap-3">
+    <div className="grid grid-cols-4 sm:grid-cols-6 py-2 items-center text-sm hover:bg-secondary/30 gap-3">
       <div className="flex items-center gap-1">
         {type === "buy" ? (
           <>
@@ -180,11 +188,17 @@ function TradeRow({
           </>
         )}
       </div>
+      <div className="flex-col flex">
+        <span>{formatNumber(runePriceInSats)} sats</span>
+        <span className="text-muted-foreground text-xs">
+          ${formatNumber(runePrice)}
+        </span>
+      </div>
       <div className="justify-end items-center flex">
         <span className="text-md">{formatNumber(formattedRuneAmount)}</span>
         {rune && <CoinIcon coin={rune} className="size-4 ml-1" />}
       </div>
-      <div className="text-right flex-col flex">
+      <div className="text-right flex-col hidden sm:flex">
         <span>{formatNumber(formattedBtcAmount)} ₿</span>
         <span className="text-muted-foreground text-xs">
           ${formatNumber(formattedBtcAmount * btcPrice)}
@@ -211,9 +225,12 @@ function TradeRow({
   );
 }
 
+const PAGE_SIZE = 20;
+
 export default function TradesContent({ rune }: { rune: string }) {
   const [sortBy, setSortBy] = useState<SortField>("time");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [page, setPage] = useState(0);
 
   const poolList = usePoolList();
 
@@ -229,8 +246,11 @@ export default function TradesContent({ rune }: { rune: string }) {
     poolAddress: pool?.address,
     sortBy: sortBy === "amount" ? "value" : "time",
     sortOrder,
-    limit: 20,
+    limit: PAGE_SIZE,
+    offset: page * PAGE_SIZE,
   });
+
+  const totalPages = data?.total ? Math.ceil(data.total / PAGE_SIZE) : 0;
 
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -245,8 +265,9 @@ export default function TradesContent({ rune }: { rune: string }) {
 
   return (
     <TabsContent value="trades" className="px-4 pb-4">
-      <div className="grid grid-cols-4 sm:grid-cols-5 py-2 text-sm border-b border-border/50">
+      <div className="grid grid-cols-4 sm:grid-cols-6 py-2 text-sm border-b border-border/50">
         <span className="text-muted-foreground">{t("type")}</span>
+        <span className="text-muted-foreground">{t("price")}</span>
         <SortHeader
           label={t("amount")}
           field="amount"
@@ -255,7 +276,9 @@ export default function TradesContent({ rune }: { rune: string }) {
           onSort={handleSort}
           className="justify-end"
         />
-        <span className="text-muted-foreground text-right">{t("value")}</span>
+        <span className="text-muted-foreground text-right hidden sm:inline">
+          {t("value")}
+        </span>
         <SortHeader
           label={t("time")}
           field="time"
@@ -280,15 +303,38 @@ export default function TradesContent({ rune }: { rune: string }) {
           {t("noTrades")}
         </div>
       ) : (
-        <div className="flex flex-col">
-          {data.intentions.map((trade) => (
-            <TradeRow
-              key={`${trade.invoke_args_tx_id}-${trade.step_index}`}
-              trade={trade}
-              rune={runeCoin}
-            />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col">
+            {data.intentions.map((trade) => (
+              <TradeRow
+                key={`${trade.invoke_args_tx_id}-${trade.step_index}`}
+                trade={trade}
+                rune={runeCoin}
+              />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-4 pb-2">
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="p-1 rounded hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="size-5" />
+              </button>
+              <span className="text-sm text-muted-foreground">
+                {page + 1} / {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page >= totalPages - 1}
+                className="p-1 rounded hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="size-5" />
+              </button>
+            </div>
+          )}
+        </>
       )}
     </TabsContent>
   );

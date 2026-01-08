@@ -7,6 +7,7 @@ import TradesContent from "./trades-content";
 import { motion } from "framer-motion";
 import MyTradesContent from "./my-trades-content";
 import LiquidityPool from "./liquidity-pool";
+import { useLaserEyes } from "@omnisat/lasereyes-react";
 
 export default function TradingActivity({
   rune,
@@ -18,6 +19,7 @@ export default function TradingActivity({
   const [open, setOpen] = useState(true);
   const t = useTranslations("Swap");
   const [tab, setTab] = useState<string>("trades");
+  const { address } = useLaserEyes();
   return (
     <div className="bg-secondary/60 rounded-xl flex flex-col">
       <div className="px-4 py-3 flex justify-between items-center">
@@ -37,7 +39,10 @@ export default function TradingActivity({
       {open && (
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="bg-transparent border-b w-full space-x-4 justify-start h-auto p-0 px-4">
-            {["trades", "myTrades", "liquidityPool"].map((item) => (
+            {(address
+              ? ["trades", "myTrades", "liquidityPool"]
+              : ["trades", "liquidityPool"]
+            ).map((item) => (
               <TabsTrigger
                 key={item}
                 value={item}

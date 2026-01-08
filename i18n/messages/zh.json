@@ -84,7 +84,8 @@
     "value": "价值",
     "time": "时间",
     "status": "状态",
-    "holders": "持有者"
+    "holders": "持有者",
+    "viewOnExplorer": "在区块浏览器查看"
   },
   "Pools": {
     "pool": "池子",
@@ -210,7 +211,8 @@
     "claimAndDonateDescription": "领取 {amount} sats 并捐赠到 {poolName} 池",
     "disconnect": "断开连接",
     "extractFee": "提取手续费",
-    "payment": "支付地址"
+    "payment": "支付地址",
+    "runes": "符文地址"
   },
   "Transaction": {
     "transactionConfirmed": "交易已确认",

@@ -107,6 +107,8 @@ export function usePools7DApr() {
 
       const lpFee = lpFee7d.find((v) => v.token === coinB.name)?.lp_fee ?? 0;
 
+      console.log("lpFee", coinB);
+
       const donateVolume =
         donateVolume7d.find((v) => v.pool_address === address)?.volume ?? 0;
 

@@ -139,7 +139,7 @@ function Overview({
                 href={`${RUNESCAN_URL}/runes/${rune?.name}?tab=Holder&page=1`}
               >
                 <span className="text-xs hidden sm:inline">
-                  View on Explorer
+                  {t("viewOnExplorer")}
                 </span>
                 <ExternalLink className="size-3 ml-1" />
               </Link>
