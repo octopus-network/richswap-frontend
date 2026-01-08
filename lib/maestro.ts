@@ -121,8 +121,6 @@ export class Maestro {
       )
       .then((res) => res.data);
 
-    console.log("rune utxos response", response);
-
     return response;
   }
 
