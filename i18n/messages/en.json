@@ -83,7 +83,8 @@
     "value": "Value",
     "time": "Time",
     "status": "Status",
-    "holders": "Holders"
+    "holders": "Holders",
+    "viewOnExplorer": "View on Explorer"
   },
   "Pools": {
     "pool": "Pool",
