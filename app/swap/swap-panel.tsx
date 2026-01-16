@@ -109,12 +109,21 @@ export function SwapPanel({
     [formattedAmounts, coinABalance]
   );
 
+  const poolList = usePoolList();
+
+  const defaultCoinB = useMemo(() => {
+    const sortedPoolList = poolList.sort((pa, pb) => Number(pa) - Number(pb));
+    return sortedPoolList?.length && sortedPoolList[0].coinB.name
+      ? sortedPoolList[0].coinB.name
+      : "HOPE•YOU•GET•RICH";
+  }, [poolList]);
+
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
 
     const [symbolA, symbolB] = [
       searchParams.get("coinA") ?? "BTC",
-      searchParams.get("coinB") ?? "HOPE•YOU•GET•RICH",
+      searchParams.get("coinB") ?? defaultCoinB,
     ];
 
     const [_coinA, _coinB] = [
@@ -123,7 +132,7 @@ export function SwapPanel({
     ];
 
     onUpdateCoins(_coinA, _coinB);
-  }, [onUpdateCoins, coins]);
+  }, [onUpdateCoins, coins, defaultCoinB]);
 
   const coinAPrice = useCoinPrice(coinA?.id);
   const coinBPrice = useCoinPrice(coinB?.id);
@@ -135,8 +144,6 @@ export function SwapPanel({
     ],
     [formattedAmounts]
   );
-
-  const poolList = usePoolList();
 
   const pools = useMemo(() => {
     if (!coinA || !coinB) {
