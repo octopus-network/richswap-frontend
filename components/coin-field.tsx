@@ -17,6 +17,7 @@ import { formatNumber } from "@/lib/utils";
 import Decimal from "decimal.js";
 
 import { useTranslations } from "next-intl";
+import { BITCOIN } from "@/lib/constants";
 import { getCoinSymbol, getCoinName } from "@/lib/utils";
 
 export function beautify(str = ""): string {
@@ -125,9 +126,9 @@ export function CoinField({
   };
 
   const onSetMax = () => {
-    // const minimumReserveAmount =
-    //   coin === BITCOIN ? new Decimal(0.0001) : new Decimal(0);
-    const minimumReserveAmount = new Decimal(0);
+    const minimumReserveAmount =
+      coin === BITCOIN ? new Decimal(0.00006) : new Decimal(0);
+    // const minimumReserveAmount = new Decimal(0);
     onUserInput(
       Decimal.max(
         new Decimal(balance!).sub(minimumReserveAmount),
